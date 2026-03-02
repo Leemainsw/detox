@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+
+// Font Awesome
+import { config } from "@fortawesome/fontawesome-svg-core";
+import "@fortawesome/fontawesome-svg-core/styles.css";
+config.autoAddCss = false; // 자동으로 CSS 추가하는 기능 끄기
+
 import "../styles/globals.css";
 
 const pretendard = localFont({
