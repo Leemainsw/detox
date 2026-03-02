@@ -27,17 +27,15 @@ export default function Button({
   children,
   icon,
 }: Props) {
-  const isDisabled = disabled || loading;
-
   return (
     <button
       className={cn(
         "btn",
         `btn-${variant}`,
         `btn-${size}`,
-        isDisabled ? "btn-disabled" : ""
+        disabled ? "btn-disabled" : ""
       )}
-      disabled={isDisabled}
+      disabled={disabled || loading}
       onClick={onClick}
       type="button"
     >
