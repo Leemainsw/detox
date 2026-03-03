@@ -22,7 +22,7 @@ function Calendar({
       className={cn("p-6 inline-block", className ?? "")}
       locale={ko}
       classNames={{
-        root: "rounded-3xl bg-white shadow-xl border border-gray-100", // 더 깊은 그림자와 부드러운 외곽선
+        root: "rounded-3xl bg-white shadow-xl border border-gray-50", // 더 깊은 그림자와 부드러운 외곽선
         months: "flex flex-col gap-2",
         month: "flex flex-col gap-1",
         month_caption:
@@ -30,9 +30,9 @@ function Calendar({
         caption_label: "text-[17px] font-bold text-gray-800 tracking-tight", // 가독성 향상
         nav: "flex items-center gap-1",
         button_previous:
-          "inline-flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-90",
+          "inline-flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition-all hover:bg-gray-50 hover:text-gray-900 active:scale-90",
         button_next:
-          "inline-flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-90",
+          "inline-flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition-all hover:bg-gray-50 hover:text-gray-900 active:scale-90",
         month_grid: "w-full border-collapse",
         weekdays: "flex mb-2",
         weekday:
@@ -49,7 +49,7 @@ function Calendar({
         today:
           "text-brand-primary font-bold bg-brand-primary/5 rounded-xl underline underline-offset-4", // 오늘 날짜는 브랜드 컬러로 포인트
         outside: "text-gray-300 opacity-40 aria-selected:opacity-100",
-        disabled: "text-gray-200 cursor-not-allowed",
+        disabled: "text-gray-100 cursor-not-allowed",
         range_middle: "bg-brand-primary/5 text-brand-primary rounded-none", // 범위 선택 시 부드러운 배경색
         hidden: "invisible",
         ...classNames,

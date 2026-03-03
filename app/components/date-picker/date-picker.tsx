@@ -43,9 +43,9 @@ export default function DatePicker({
             type="button"
             disabled={disabled}
             className={cn(
-              "w-full flex justify-between items-center gap-2 rounded-lg bg-gray-100 px-6 py-3",
+              "w-full flex justify-between items-center gap-2 rounded-lg bg-gray-50 px-6 py-3",
               "text-base text-gray-400 placeholder:text-gray-300",
-              "outline-none hover:bg-gray-200/80 transition-colors",
+              "outline-none hover:bg-gray-100/80 transition-colors",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "min-h-[46px]",
               !value ? "text-gray-300" : ""
@@ -54,7 +54,10 @@ export default function DatePicker({
             <span className="flex-1 text-left">
               {value ? format(value, "PPP", { locale: ko }) : placeholder}
             </span>
-            <FontAwesomeIcon icon={faCalendar} className="h-5 w-5 shrink-0 text-gray-300" />
+            <FontAwesomeIcon
+              icon={faCalendar}
+              className="h-5 w-5 shrink-0 text-gray-300"
+            />
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
