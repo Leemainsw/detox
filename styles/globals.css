@@ -119,109 +119,17 @@
 }
 
 /****************************
-  * Badge Components
-  ****************************/
-@layer components {
-  .badge {
-    @apply rounded-lg text-xs leading-none font-bold h-[25px] py-1 px-2 inline-flex items-center justify-center;
-  }
-
-  .badge-primary {
-    @apply bg-blue-50 text-blue-400;
-  }
-
-  .badge-danger {
-    @apply bg-red-50 text-red-400;
-  }
-}
-
-/****************************
-  * BottomNav Components
-  ****************************/
-@layer components {
-  .bottom-nav {
-    @apply rounded-t-lg fixed bottom-0 left-0 w-full h-[60px] bg-white shadow-xl flex justify-around items-center;
-  }
-
-  .bottom-nav-item {
-    @apply flex flex-col items-center justify-around gap-1 text-gray-300;
-  }
-  .bottom-nav-item.active {
-    @apply text-blue-400;
-  }
-  .bottom-nav-item span {
-    @apply text-xs;
-  }
-}
-
-/****************************
   * SubscriptionCard Components
   ****************************/
 @layer components {
-  .subscription-item {
-    @apply w-full grid grid-cols-[1fr_auto_auto] items-center gap-4 py-4 bg-white;
-  }
-  .thumb {
-    @apply w-12 h-12 rounded-xl border border-gray-100 bg-white flex items-center justify-center overflow-hidden;
-  }
-  .item-info {
-    @apply flex items-start gap-3;
-  }
-  .item-name {
-    @apply text-base text-black font-bold leading-[150%];
-  }
   .item-subtext {
     @apply text-sm text-gray-300;
   }
   .item-subtext span:not(:last-child)::after {
     @apply content-[''] inline-block w-px h-[9px] bg-gray-100 mx-2;
   }
-  .item-arrow-right {
-    @apply w-5 h-5 text-gray-300;
-  }
 }
 
-/****************************
-  * CommunityCard Components
-  ****************************/
-@layer components {
-  .community-item-list {
-    @apply w-full flex flex-col gap-5 bg-gray-50 py-4 rounded-lg;
-  }
-  .community-item {
-    @apply w-full grid grid-cols-1 items-center gap-4 py-4 px-6 bg-white rounded-lg;
-  }
-  .profile-info {
-    @apply flex items-start gap-3;
-  }
-  .profile-info .text-wrap {
-    @apply flex gap-2;
-  }
-  .profile-info .item-name {
-    @apply text-sm text-black font-bold leading-[110%];
-  }
-  .profile-info .item-time {
-    @apply text-xs text-gray-300;
-  }
-  .community-item .item-content {
-    @apply text-sm text-gray-300;
-  }
-  .community-item .item-content h6 {
-    @apply text-lg text-black font-bold leading-[140%] mb-2 line-clamp-2;
-  }
-  .community-item .item-content p {
-    @apply text-base leading-[140%] text-gray-300 line-clamp-3;
-  }
-  .reaction-bar {
-    @apply flex gap-4 mt-2;
-  }
-  .reaction-bar div {
-    @apply text-sm flex items-center gap-1 text-gray-200;
-  }
-  .reaction-bar span {
-    @apply text-gray-400;
-  }
-}
 /****************************
   * Typography
   ****************************/
