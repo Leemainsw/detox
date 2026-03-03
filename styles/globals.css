@@ -140,7 +140,7 @@
   ****************************/
 @layer components {
   .bottom-nav {
-    @apply rounded-t-lg fixed bottom-0 left-0 w-full h-15 bg-white shadow-xl flex justify-around items-center;
+    @apply rounded-t-lg fixed bottom-0 left-0 w-full h-[60px] bg-white shadow-xl flex justify-around items-center;
   }
 
   .bottom-nav-item {
