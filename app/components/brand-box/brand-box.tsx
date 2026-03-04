@@ -33,7 +33,7 @@ export default function BrandBox({
   return (
     <div
       className={cn(
-        `flex items-center justify-center border border-gray-100`,
+        `flex items-center justify-center border border-gray-100 bg-white`,
         onClick && `cursor-pointer`,
         onClick && isActive && `bg-blue-50 border-blue-300`,
         sizeMap[size],
