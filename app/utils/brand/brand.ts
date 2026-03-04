@@ -75,7 +75,7 @@ export const subscriptableBrand: SubscriptableBrand = {
     category: "book",
   },
   "naver-membership": {
-    label: "네이버 맴버십",
+    label: "네이버 멤버십",
     image: "/images/subscribe-logos/naver-membership.png",
     category: "shopping",
   },
