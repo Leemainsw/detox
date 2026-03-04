@@ -109,6 +109,10 @@
     @apply bg-state-danger text-white;
   }
 
+  .btn-rounded {
+    @apply w-10 h-10 rounded-full p-0;
+  }
+
   .btn-md {
     @apply w-1/2;
   }
