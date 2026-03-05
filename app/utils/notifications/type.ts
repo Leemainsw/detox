@@ -41,4 +41,5 @@ export type NotificationDataItem = NotificationItemProps & {
   id: number;
   description: string;
   createdAt: string;
+  isRead?: boolean;
 };
