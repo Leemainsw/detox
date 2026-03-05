@@ -14,7 +14,9 @@ export default function Input({
 }: InputProps & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="w-full flex flex-col gap-2">
-      <label className="text-base font-semibold text-gray-400">{label}</label>
+      {label && (
+        <label className="text-base font-semibold text-gray-400">{label}</label>
+      )}
       <div className="flex justify-between items-center gap-2 rounded-lg bg-gray-50 px-6 py-3">
         <div className="flex items-center gap-2 w-full">
           {prefix && (
