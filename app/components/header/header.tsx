@@ -26,7 +26,7 @@ export default function Header({
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-[999] w-full">
+    <header className="w-full">
       <div className="flex items-center justify-between h-14">
         <div className="flex flex-1 justify-start ml-6 items-center">
           {variant === "back" && (
