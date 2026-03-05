@@ -4,10 +4,27 @@ import SubscriptionList from "@/app/components/subscriptionList";
 import { useParams, useRouter } from "next/navigation";
 import PaymentInfoCard from "./_components/payment-info-card";
 import SubscriptionMetaList from "./_components/subscription-meta-list";
+import { useAlert } from "@/app/hooks/useAlert";
 
 export default function Page() {
   const router = useRouter();
   const { id } = useParams();
+
+  const alert = useAlert();
+
+  const goEdit = () => {
+    router.push(`/subscription-detail/${id}/edit`);
+  };
+
+  const handleDelete = () => {
+    alert.alert({
+      title: "구독을 삭제하시겠습니까?",
+      description: "삭제된 구독은 복구할 수 없습니다.",
+      variant: "danger",
+      cancelText: "취소",
+      confirmText: "삭제",
+    });
+  };
 
   return (
     <main className="relative w-full min-h-screen flex flex-col items-start justify-start">
@@ -15,7 +32,10 @@ export default function Page() {
         variant="back"
         onBack={() => router.back()}
         rightContent={
-          <button className="body-lg font-normal text-gray-300 cursor-pointer">
+          <button
+            className="body-lg font-normal text-gray-300 cursor-pointer"
+            onClick={goEdit}
+          >
             수정
           </button>
         }
@@ -52,7 +72,10 @@ export default function Page() {
         />
       </div>
 
-      <button className="absolute bottom-10 left-1/2 -translate-x-1/2 underline text-gray-300 body-md cursor-pointer">
+      <button
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 underline text-gray-300 body-md cursor-pointer"
+        onClick={handleDelete}
+      >
         구독 삭제하기
       </button>
     </main>
