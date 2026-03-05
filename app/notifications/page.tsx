@@ -17,6 +17,7 @@ const mockData: NotificationDataItem[] = [
     payload: { brand: "youtube-premium" },
     description: "유튜브 프리미엄 멤버십이 내일 결제될 예정입니다.",
     createdAt: "2026-03-05T10:00:00.000Z",
+    isRead: true,
   },
   {
     id: 2,
@@ -73,6 +74,10 @@ const mockData: NotificationDataItem[] = [
 export default function Page() {
   const router = useRouter();
 
+  const goNotificationSettings = () => {
+    router.push("/notifications/settings");
+  };
+
   return (
     <main className="relative w-full min-h-screen flex flex-col items-start justify-start">
       <Header
@@ -83,6 +88,7 @@ export default function Page() {
           <button
             type="button"
             className="w-11 h-11 flex items-center justify-center text-gray-400 cursor-pointer"
+            onClick={goNotificationSettings}
           >
             <span className="inline-flex items-center justify-center w-[28px] h-[28px] overflow-hidden shrink-0">
               <FontAwesomeIcon
