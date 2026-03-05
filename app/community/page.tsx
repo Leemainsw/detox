@@ -1,3 +1,4 @@
+"use client";
 import CommunityList from "./_components/community-list";
 import BrandTabs from "./_components/brand-tabs";
 import Header from "../components/header";
@@ -12,6 +13,7 @@ const mockItems = [
     timeAgo: "2분전",
     likeCount: 10,
     commentCount: 5,
+    thumbUrl: "/images/default-user.png",
   },
   {
     id: 2,
@@ -21,6 +23,7 @@ const mockItems = [
     timeAgo: "1분전",
     likeCount: 20,
     commentCount: 8,
+    thumbUrl: "/images/default-user.png",
   },
 ];
 

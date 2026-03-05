@@ -1,3 +1,5 @@
+"use client";
+import Avatar from "@/app/components/avatar";
 import { faCommentDots, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
@@ -10,6 +12,7 @@ type CommunityItem = {
   content: string;
   likeCount: number;
   commentCount: number;
+  thumbUrl: string;
 };
 type CommunityListProps = {
   items: CommunityItem[];
@@ -24,11 +27,9 @@ export default function CommunityList({ items }: CommunityListProps) {
           className="w-full grid grid-cols-1 items-center gap-4 py-4 px-6 bg-white rounded-lg"
         >
           <Link href={`/community/${item.id}`} className="block">
-            <div className="flex items-start gap-3">
-              {/* <div className="w-12 h-12 rounded-xl border border-gray-100 bg-white flex items-center justify-center overflow-hidden">
-          프로필사진
-        </div> */}
-              <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <Avatar size="sm" src={item.thumbUrl} alt={item.author} />
+              <div className="flex gap-3">
                 <div className="text-sm text-black font-bold leading-[110%]">
                   {item.author}
                 </div>
