@@ -1,15 +1,12 @@
 import Avatar from "@/app/components/avatar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCommentDots,
-  faPaperPlane,
-  faThumbsUp,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { mockCommunityItems } from "../_data/mock-community";
 import Header from "@/app/components/header";
 import KebabMenu from "@/app/components/kebabmenu";
 import CommunityList from "../_components/community-list";
 import Input from "@/app/components/input";
+import CommunityReactionStats from "../_components/community-reaction-stats";
 
 type CommunityDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -47,26 +44,22 @@ export default async function CommunityDetailPage({
         </section>
 
         <section className="border-t-8 border-gray-50 py-5">
-          <div className="flex gap-4 mb-5 px-6">
-            <button
-              type="button"
-              className="text-sm flex items-center gap-1 text-gray-200"
-            >
-              <FontAwesomeIcon icon={faThumbsUp} size="sm" />
-              <span className="text-gray-400">좋아요 {item.likeCount}</span>
-            </button>
-            <button
-              type="button"
-              className="text-sm flex items-center gap-1 text-gray-200"
-            >
-              <FontAwesomeIcon icon={faCommentDots} size="sm" />
-              <span className="text-gray-400">댓글 {item.commentCount}</span>
-            </button>
-          </div>
+          <CommunityReactionStats
+            likeCount={item.likeCount}
+            commentCount={item.commentCount}
+            showLabel
+            interactive
+            likeActive
+            className="mb-5 px-6"
+            itemClassName="cursor-pointer"
+          />
 
           <div className="relative px-5">
             <Input placeholder="댓글을 입력하세요" />
-            <button className="w-12 h-12 flex items-center justify-center absolute right-6 top-[50%] translate-y-[-50%]">
+            <button
+              type="button"
+              className="w-12 h-12 flex items-center justify-center absolute right-6 top-[50%] translate-y-[-50%] cursor-pointer"
+            >
               <FontAwesomeIcon icon={faPaperPlane} />
             </button>
           </div>

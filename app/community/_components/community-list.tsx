@@ -1,8 +1,7 @@
 "use client";
 import Avatar from "@/app/components/avatar";
-import { faCommentDots, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
+import CommunityReactionStats from "./community-reaction-stats";
 
 type CommunityItem = {
   id: number;
@@ -20,7 +19,7 @@ type CommunityListProps = {
 
 export default function CommunityList({ items }: CommunityListProps) {
   return (
-    <ul className="grid grid-cols-1 gap-5 pt-6 px-6">
+    <ul className="grid grid-cols-1 gap-5 pt-6">
       {items.map((item) => (
         <li
           key={item.id}
@@ -44,16 +43,11 @@ export default function CommunityList({ items }: CommunityListProps) {
                 {item.content}
               </p>
             </div>
-            <div className="flex gap-4 mt-2">
-              <div className="text-sm flex items-center gap-1 text-gray-200">
-                <FontAwesomeIcon icon={faThumbsUp} size="sm" />
-                <span className="text-gray-400">{item.likeCount}</span>
-              </div>
-              <div className="text-sm flex items-center gap-1 text-gray-200">
-                <FontAwesomeIcon icon={faCommentDots} size="sm" />
-                <span className="text-gray-400">{item.commentCount}</span>
-              </div>
-            </div>
+            <CommunityReactionStats
+              likeCount={item.likeCount}
+              commentCount={item.commentCount}
+              className="mt-2"
+            />
           </Link>
         </li>
       ))}
