@@ -17,7 +17,7 @@ export default function Input({
       {label && (
         <label className="text-base font-semibold text-gray-400">{label}</label>
       )}
-      <div className="flex min-h-[50] justify-between items-center gap-2 rounded-lg bg-gray-50 px-6 py-3">
+      <div className="flex min-h-12.5 justify-between items-center gap-2 rounded-lg bg-gray-50 px-6 py-3">
         <div className="flex items-center gap-2 w-full">
           {prefix && (
             <span className="body-md font-bold text-brand-primary whitespace-nowrap">
