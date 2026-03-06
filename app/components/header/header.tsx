@@ -32,6 +32,7 @@ export default function Header({
           {variant === "back" && (
             <button
               type="button"
+              aria-label="뒤로 이동"
               onClick={() => (onBack ? onBack() : router.back())}
               className="cursor-pointer flex items-center justify-center w-10 h-10 -ml-2"
             >
@@ -42,7 +43,12 @@ export default function Header({
             </button>
           )}
           {variant === "default" && (
-            <div className="cursor-pointer" onClick={() => router.push("/")}>
+            <button
+              type="button"
+              aria-label="홈으로 이동"
+              className="cursor-pointer"
+              onClick={() => router.push("/")}
+            >
               <Image
                 src="/images/logo.png"
                 alt="logo"
@@ -50,7 +56,7 @@ export default function Header({
                 height={40}
                 className="object-contain"
               />
-            </div>
+            </button>
           )}
           {variant === "text" && (
             <span className="header-md text-gray-400">{leftText}</span>

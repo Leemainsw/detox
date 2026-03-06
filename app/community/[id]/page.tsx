@@ -63,6 +63,7 @@ export default async function CommunityDetailPage({
             <Input placeholder="댓글을 입력하세요" />
             <button
               type="button"
+              aria-label="댓글 달기"
               className="w-12 h-12 flex items-center justify-center absolute right-6 top-[50%] translate-y-[-50%] cursor-pointer"
             >
               <FontAwesomeIcon icon={faPaperPlane} />

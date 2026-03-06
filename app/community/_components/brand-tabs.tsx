@@ -23,6 +23,7 @@ export default function BrandTabs() {
           key={key}
           type="button"
           aria-pressed={activeKey === key}
+          onClick={() => setActiveKey(key)}
           className={cn(
             "flex min-w-fit max-w-12 flex-col items-center gap-2 transition-opacity",
             activeKey === key ? "opacity-100" : "opacity-60"
@@ -32,7 +33,6 @@ export default function BrandTabs() {
             brandType={key as SubscriptableBrandType}
             size="sm"
             isActive={activeKey === key}
-            onClick={() => setActiveKey(key)}
           />
           <span
             className={cn(

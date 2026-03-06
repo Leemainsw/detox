@@ -23,7 +23,7 @@ export default function CommunityList({ items }: CommunityListProps) {
       {items.map((item) => (
         <li
           key={item.id}
-          className="w-full grid grid-cols-1 items-center gap-4 py-4 px-6 bg-white rounded-lg"
+          className="w-full grid grid-cols-1 items-center gap-2 py-4 px-6 bg-white rounded-lg"
         >
           <Link href={`/community/${item.id}`} className="block">
             <div className="flex items-center gap-2">
@@ -43,12 +43,11 @@ export default function CommunityList({ items }: CommunityListProps) {
                 {item.content}
               </p>
             </div>
-            <CommunityReactionStats
-              likeCount={item.likeCount}
-              commentCount={item.commentCount}
-              className="mt-2"
-            />
           </Link>
+          <CommunityReactionStats
+            likeCount={item.likeCount}
+            commentCount={item.commentCount}
+          />
         </li>
       ))}
     </ul>
