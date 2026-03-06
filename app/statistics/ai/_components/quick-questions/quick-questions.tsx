@@ -14,7 +14,7 @@ export default function QuickQuestions({ onSelect }: QuickQuestionsProps) {
   ];
 
   return (
-    <div className="flex flex-col items-end gap-2 px-4 mb-6">
+    <div className="flex flex-col items-end gap-2 px-6 mb-6">
       {questions.map((q, idx) => (
         <button
           key={idx}
