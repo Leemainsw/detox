@@ -19,8 +19,6 @@ export default function ComparisonInsight({
 
   const [showSkeleton] = useState(false);
 
-  // 3초 이전에 보여주는건 추가 예정..
-
   if (isLoading && showSkeleton) {
     return (
       <div className="flex flex-col items-start px-6 py-6 w-full gap-2">
