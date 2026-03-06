@@ -10,6 +10,7 @@ import ComparisonChart from "./_components/comparison-chart";
 import EmptyAnalysis from "./_components/empty-analysis";
 import EmptySubscriptionOverlay from "./_components/empty-subscription-overlay";
 import { MOCK_SUBSCRIPTIONS, SubscriptionItem } from "./mock-subscriptions";
+import AnalysisSummary from "./_components/analysis-summary/analysis-summary";
 
 interface StatisticsPageProps {
   userName?: string;
@@ -21,23 +22,20 @@ export default function StatisticsPage({
   subscriptions
 }: StatisticsPageProps) {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  
+  const [hasAiData, setHasAiData] = useState(true);
 
   const data = subscriptions || MOCK_SUBSCRIPTIONS;
-
   const isAllEmpty = data.length === 0;
 
   const monthlyTotalAmount = useMemo(() => {
     const currentMonth = selectedDate.getMonth() + 1;
-    
     return data.reduce((acc, sub) => {
       if (sub.paymentType !== "paid") return acc;
-      
       if (sub.type === "monthly") return acc + sub.price;
-      
       if (sub.type === "yearly" && sub.billingDate.month === currentMonth) {
         return acc + sub.price;
       }
-      
       return acc;
     }, 0);
   }, [selectedDate, data]);
@@ -66,38 +64,44 @@ export default function StatisticsPage({
             onChangeDate={handleMonthChange}
           />
 
-        <div className="relative flex-1 w-full">
-          {!isAllEmpty && !isMonthlyEmpty && (
-            <div className="w-full animate-in fade-in duration-500">
-              <div className="mt-4">
-                <ComparisonInsight 
-                  isLoading={false} 
-                  title="30대의 평균 소비 비교" 
-                  diffAmount={diffAmount} 
-                  status={status} 
-                />
-                <ComparisonChart 
-                  userName={`${userName}님`}
-                  userAmount={displayAmount} 
-                  compareName="30대 평균" 
-                  compareAmount={average30s} 
-                />
+          <div className="relative flex-1 w-full">
+            {!isAllEmpty && !isMonthlyEmpty && (
+              <div className="w-full animate-in fade-in duration-500">
+                <div className="mt-4">
+                  <ComparisonInsight 
+                    isLoading={false} 
+                    title="30대의 평균 소비 비교" 
+                    diffAmount={diffAmount} 
+                    status={status} 
+                  />
+                  <ComparisonChart 
+                    userName={`${userName}님`}
+                    userAmount={displayAmount} 
+                    compareName="30대 평균" 
+                    compareAmount={average30s} 
+                  />
+                </div>
+
+                <div className="mt-10">
+                  <ComparisonInsight 
+                    isLoading={false} 
+                    title="넷플릭스 유저들과 평균 소비 비교" 
+                    diffAmount={8500} 
+                    status="under" 
+                  />
+                  <ComparisonChart 
+                    userName={`${userName}님`}
+                    userAmount={displayAmount} 
+                    compareName="넷플릭스 평균" 
+                    compareAmount={displayAmount + 8500} 
+                  />
+                </div>
+
+                <div className="mt-10 border-t border-gray-50">
+                   <AnalysisSummary hasData={hasAiData} />
+                </div>
               </div>
-              <div className="h-10" />
-              <ComparisonInsight 
-                isLoading={false} 
-                title="넷플릭스 유저들과 평균 소비 비교" 
-                diffAmount={8500} 
-                status="under" 
-              />
-              <ComparisonChart 
-                userName={`${userName}님`}
-                userAmount={displayAmount} 
-                compareName="넷플릭스 평균" 
-                compareAmount={displayAmount + 8500} 
-              />
-            </div>
-          )}
+            )}
 
             {!isAllEmpty && isMonthlyEmpty && <EmptyAnalysis />}
           </div>
