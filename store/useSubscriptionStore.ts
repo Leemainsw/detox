@@ -1,8 +1,10 @@
 import { create } from "zustand";
+import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 
 export interface SubscriptionItem {
   id: number;
   href: string;
+  brandType: SubscriptableBrandType;
   name: string;
   price?: number;
   billingCycle: "월간결제" | "연간결제";
@@ -10,9 +12,6 @@ export interface SubscriptionItem {
   badgeVariant: "primary" | "danger";
   group?: boolean;
   groupCount?: number;
-  imageSrc?: string;
-  imageAlt?: string;
-  trialLabel?: string;
 }
 
 interface SubscriptionStoreState {
@@ -24,7 +23,7 @@ interface SubscriptionStoreState {
 }
 
 export const useSubscriptionStore = create<SubscriptionStoreState>((set) => ({
-  hasSubscription: false,
+  hasSubscription: true,
   list: [],
   setHasSubscription: (value) => set({ hasSubscription: value }),
   setList: (items) => set({ list: items }),

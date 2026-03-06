@@ -1,18 +1,17 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import Badge from "../badge/badge";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight";
 import { faUserGroup } from "@fortawesome/free-solid-svg-icons";
 import type { SubscriptionItem } from "@/store";
+import BrandBox from "../brand-box";
 
 type Props = Pick<
   SubscriptionItem,
   | "href"
-  | "imageSrc"
-  | "imageAlt"
+  | "brandType"
   | "name"
   | "price"
   | "billingCycle"
@@ -23,8 +22,7 @@ type Props = Pick<
 >;
 export default function SubscriptionList({
   href,
-  imageSrc = "/images/default.svg",
-  imageAlt,
+  brandType,
   name,
   price,
   billingCycle,
@@ -33,7 +31,6 @@ export default function SubscriptionList({
   group = false,
   groupCount,
 }: Props) {
-  const resolvedImageAlt = imageAlt ?? `${name} 로고`;
   const isFreeTrial = price === 0;
   return (
     <Link
@@ -41,9 +38,7 @@ export default function SubscriptionList({
       className="w-full grid grid-cols-[1fr_auto_auto] items-center gap-4 py-4 bg-white"
     >
       <div className="flex items-start gap-3">
-        <div className="w-12 h-12 rounded-xl border border-gray-100 bg-white flex items-center justify-center overflow-hidden">
-          <Image src={imageSrc} alt={resolvedImageAlt} width={40} height={40} />
-        </div>
+        <BrandBox brandType={brandType} size="sm" />
         <div>
           <div className="text-base text-black font-bold leading-[150%] flex gap-2 items-center">
             {name}

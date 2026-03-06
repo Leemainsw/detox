@@ -10,14 +10,15 @@ import Button from "./components/button";
 import BottomNav from "./components/bottomNav";
 import { useSubscriptionStore } from "@/store";
 import type { SubscriptionItem } from "@/store";
+import { subscriptableBrand } from "./utils/brand/brand";
 
 export default function Home() {
-  const subsList: SubscriptionItem[] = [
+  const subsList: Omit<SubscriptionItem, "name">[] = [
     //더미 데이터
     {
       id: 1,
       href: "/",
-      name: "넷플릭스",
+      brandType: "netflix",
       price: 0,
       billingCycle: "월간결제",
       badgeLabel: "내일결제",
@@ -26,7 +27,7 @@ export default function Home() {
     {
       id: 2,
       href: "/",
-      name: "웨이브",
+      brandType: "wavve",
       price: 7900,
       billingCycle: "연간결제",
       badgeLabel: "내일결제",
@@ -35,7 +36,7 @@ export default function Home() {
     {
       id: 3,
       href: "/",
-      name: "유튜브 프리미엄",
+      brandType: "youtube-premium",
       price: 6900,
       billingCycle: "월간결제",
       badgeLabel: "D-14",
@@ -44,7 +45,7 @@ export default function Home() {
     {
       id: 4,
       href: "/",
-      name: "스포티파이",
+      brandType: "spotify",
       price: 10900,
       billingCycle: "월간결제",
       badgeLabel: "D-24",
@@ -58,7 +59,13 @@ export default function Home() {
     (state) => state.hasSubscription
   );
   const list = useSubscriptionStore((state) => state.list);
-  const subscriptionList = list.length > 0 ? list : subsList;
+  const subscriptionList =
+    list.length > 0
+      ? list
+      : subsList.map((item) => ({
+          ...item,
+          name: subscriptableBrand[item.brandType].label,
+        }));
   const subscriptionCount = subscriptionList.length;
   const totalPrice = subscriptionList.reduce(
     (sum, item) => sum + (item.price ?? 0),
@@ -132,6 +139,7 @@ export default function Home() {
                 <li key={item.id}>
                   <SubscriptionList
                     href={item.href}
+                    brandType={item.brandType}
                     name={item.name}
                     price={item.price}
                     billingCycle={item.billingCycle}
@@ -139,8 +147,6 @@ export default function Home() {
                     badgeVariant={item.badgeVariant}
                     group={item.group}
                     groupCount={item.groupCount}
-                    imageSrc={item.imageSrc}
-                    imageAlt={item.imageAlt}
                   />
                 </li>
               ))}
