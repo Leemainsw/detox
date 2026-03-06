@@ -32,6 +32,8 @@
 
   --btn-disabled: #9e9e9e;
 
+  --progress-bar: #d9d9d9;
+
   --white: #fff;
   --black: #000;
 }
@@ -72,6 +74,8 @@
   --color-black: var(--black);
 
   --color-btn-disabled: var(--btn-disabled);
+
+  --color-progress-bar: var(--progress-bar);
 
   /****************************
   * Fonts
