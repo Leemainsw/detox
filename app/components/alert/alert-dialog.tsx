@@ -31,10 +31,13 @@ export default function AlertDialogComponent({
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
+        <AlertDialog.Overlay
+          className="fixed inset-0 z-50 bg-black/50"
+          onClick={() => onOpenChange(false)}
+        />
         <AlertDialog.Content
           className={cn(
-            "fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
+            "fixed left-1/2 top-1/2 z-50 w-full max-w-xs -translate-x-1/2 -translate-y-1/2",
             "rounded-xl border border-gray-100 bg-white p-6 shadow-lg"
           )}
         >
@@ -46,7 +49,7 @@ export default function AlertDialogComponent({
               {alert.description}
             </AlertDialog.Description>
           )}
-          <div className="mt-6 flex gap-3 justify-end">
+          <div className="mt-6 flex gap-3 justify-end ">
             <AlertDialog.Cancel asChild>
               <Button variant="neutral" size="md" onClick={handleCancel}>
                 {alert.cancelText ?? "취소"}

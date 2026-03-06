@@ -35,7 +35,7 @@ export const subscriptableBrand: SubscriptableBrand = {
     category: "ai",
   },
   class101: {
-    label: "클래스101",
+    label: "클래스 101",
     image: "/images/subscribe-logos/class101.png",
     category: "education",
   },
@@ -90,12 +90,12 @@ export const subscriptableBrand: SubscriptableBrand = {
     category: "etc",
   },
   office365: {
-    label: "오피스365",
+    label: "오피스 365",
     image: "/images/subscribe-logos/office365.png",
     category: "education",
   },
   perplexity: {
-    label: "퍼플렉시티",
+    label: "퍼플렉 시티",
     image: "/images/subscribe-logos/perplexity.png",
     category: "ai",
   },
@@ -115,7 +115,7 @@ export const subscriptableBrand: SubscriptableBrand = {
     category: "picture",
   },
   spotify: {
-    label: "스포티파이",
+    label: "스포티 파이",
     image: "/images/subscribe-logos/spotify.png",
     category: "music",
   },

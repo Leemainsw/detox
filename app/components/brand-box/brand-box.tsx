@@ -46,6 +46,7 @@ export default function BrandBox({
         alt={subscriptableBrand[brandType].label}
         width={imageSizeMap[size]}
         height={imageSizeMap[size]}
+        className="mix-blend-multiply"
       />
     </div>
   );
