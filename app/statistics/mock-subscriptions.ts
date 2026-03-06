@@ -20,18 +20,18 @@ export interface SubscriptionItem {
 
 // 2. 실제 목데이터 리스트
 export const MOCK_SUBSCRIPTIONS: SubscriptionItem[] = [
-   {
-     id: 1,
-     name: "넷플릭스",
-     type: "monthly",
-     billingDate: { day: 24 }, // 매달 24일 결제
-     endDate: "2026-12-31",
-     isShared: true,
-     sharedCount: 4,
-     paymentType: "paid",
-     price: 17000,
-     category: "OTT",
-   },
+  //  {
+  //    id: 1,
+  //    name: "넷플릭스",
+  //    type: "monthly",
+  //    billingDate: { day: 24 }, // 매달 24일 결제
+  //    endDate: "2026-12-31",
+  //    isShared: true,
+  //    sharedCount: 4,
+  //    paymentType: "paid",
+  //    price: 17000,
+  //    category: "OTT",
+  //  },
    {
      id: 2,
      name: "유튜브 프리미엄",
@@ -55,16 +55,16 @@ export const MOCK_SUBSCRIPTIONS: SubscriptionItem[] = [
      freePeriod: 3, // 3개월 무료
      category: "Shopping",
    },
-   {
-     id: 4,
-     name: "스포티파이",
-     type: "monthly",
-     billingDate: { day: 15 },
-     endDate: "2026-11-15",
-     isShared: true,
-     sharedCount: 6,
-     paymentType: "paid",
-     price: 10900,
-     category: "Music",
-   },
+  //  {
+  //    id: 4,
+  //    name: "스포티파이",
+  //    type: "monthly",
+  //    billingDate: { day: 15 },
+  //    endDate: "2026-11-15",
+  //    isShared: true,
+  //    sharedCount: 6,
+  //    paymentType: "paid",
+  //    price: 10900,
+  //    category: "Music",
+  //  },
 ];
