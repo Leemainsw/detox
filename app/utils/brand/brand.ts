@@ -91,11 +91,11 @@ export const subscriptableBrand: SubscriptableBrand = {
   },
   office365: {
     label: "오피스 365",
-    image: "/images/subscribe-logos/offiece365.png",
+    image: "/images/subscribe-logos/office365.png",
     category: "education",
   },
   perplexity: {
-    label: "퍼플렉 r시티",
+    label: "퍼플렉 시티",
     image: "/images/subscribe-logos/perplexity.png",
     category: "ai",
   },
