@@ -23,7 +23,7 @@ export default function Input({
             </span>
           )}
           <input
-            className="w-full h-10 rounded-md outline-0 text-base text-gray-400 placeholder:text-gray-300"
+            className="w-full rounded-md outline-0 text-base text-gray-400 placeholder:text-gray-300"
             placeholder={placeholder}
             type={type}
             inputMode={type === "number" ? "numeric" : undefined}
