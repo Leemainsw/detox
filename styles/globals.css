@@ -136,6 +136,14 @@
   .item-subtext span:not(:last-child)::after {
     @apply content-[''] inline-block w-px h-[9px] bg-gray-100 mx-2;
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /****************************
