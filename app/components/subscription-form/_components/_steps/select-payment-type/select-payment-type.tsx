@@ -47,7 +47,12 @@ export default function SelectPaymentType({ onNext }: Props) {
           onValueChange={setPaymentMethod}
         />
         {paymentMethod === "paid" && (
-          <Input prefix="매월" placeholder="총 금액을 입력하세요" suffix="원" />
+          <Input
+            prefix="매월"
+            label="매월 얼마를 내고 있나요?"
+            placeholder="총 금액을 입력하세요"
+            suffix="원"
+          />
         )}
         {paymentMethod === "free" && (
           <Input
