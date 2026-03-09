@@ -9,12 +9,11 @@ interface Props {
   groupCount: number;
 }
 
-export default function MonthExpenseSelector({ 
-    selectedDate, 
-    onChangeDate, 
-    groupCount 
-  }: Props) {
-  
+export default function MonthExpenseSelector({
+  selectedDate,
+  onChangeDate,
+  groupCount,
+}: Props) {
   const changeMonth = (offset: number) => {
     const newDate = new Date(
       selectedDate.getFullYear(),

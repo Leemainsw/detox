@@ -9,9 +9,7 @@ interface Props {
   isAllEmpty?: boolean;
 }
 
-export default function AIAnalysisBanner({ 
-  isAllEmpty 
-}: Props) {
+export default function AIAnalysisBanner({ isAllEmpty }: Props) {
   const router = useRouter();
 
   return (
@@ -22,17 +20,18 @@ export default function AIAnalysisBanner({
           치킨을 먹을 수 있어요
         </h1>
         <p className="bady-lg md:header-md text-gray-300 leading-relaxed">
-          숨겨진 구독료를 찾아<br />
+          숨겨진 구독료를 찾아
+          <br />
           낭비를 줄여보세요
         </p>
       </div>
 
       <div className="mt-5 transition-transform hover:scale-105 duration-300">
-        <Image 
-          src={Robot} 
-          alt="Robot Emoji" 
-          width={100} 
-          height={100} 
+        <Image
+          src={Robot}
+          alt="Robot Emoji"
+          width={100}
+          height={100}
           className="w-24 h-24 md:w-32 md:h-32 object-contain"
         />
       </div>
@@ -40,8 +39,11 @@ export default function AIAnalysisBanner({
       {!isAllEmpty && (
         <div className="mt-8 w-full flex justify-center">
           <div className="w-full">
-            <Button variant="primary" size="lg"
-              onClick={() => router.push("/statistics/ai")}>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => router.push("/statistics/ai")}
+            >
               AI 분석 시작하기
             </Button>
           </div>

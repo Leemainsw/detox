@@ -32,29 +32,29 @@ export const MOCK_SUBSCRIPTIONS: SubscriptionItem[] = [
   //    price: 17000,
   //    category: "OTT",
   //  },
-   {
-     id: 2,
-     name: "유튜브 프리미엄",
-     type: "yearly",
-     billingDate: { month: 2, day: 24 }, // 매년 2월 24일 결제
-     endDate: "2027-02-24",
-     isShared: false,
-     paymentType: "paid",
-     price: 149000, // 연간 금액
-     category: "OTT",
-   },
-   {
-     id: 3,
-     name: "쿠팡 와우",
-     type: "monthly",
-     billingDate: { day: 10 },
-     endDate: "2026-08-10",
-     isShared: false,
-     paymentType: "free", // 무료 체험 중
-     price: 0,
-     freePeriod: 3, // 3개월 무료
-     category: "Shopping",
-   },
+  {
+    id: 2,
+    name: "유튜브 프리미엄",
+    type: "yearly",
+    billingDate: { month: 2, day: 24 }, // 매년 2월 24일 결제
+    endDate: "2027-02-24",
+    isShared: false,
+    paymentType: "paid",
+    price: 149000, // 연간 금액
+    category: "OTT",
+  },
+  {
+    id: 3,
+    name: "쿠팡 와우",
+    type: "monthly",
+    billingDate: { day: 10 },
+    endDate: "2026-08-10",
+    isShared: false,
+    paymentType: "free", // 무료 체험 중
+    price: 0,
+    freePeriod: 3, // 3개월 무료
+    category: "Shopping",
+  },
   //  {
   //    id: 4,
   //    name: "스포티파이",

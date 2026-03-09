@@ -15,12 +15,12 @@ import { calculateMonthlyTotal } from "@/app/utils/subscriptions/calculate";
 
 interface StatisticsPageProps {
   userName?: string;
-  subscriptions?: SubscriptionItem[]; 
+  subscriptions?: SubscriptionItem[];
 }
 
-export default function StatisticsPage({ 
-  userName = "나영", 
-  subscriptions
+export default function StatisticsPage({
+  userName = "나영",
+  subscriptions,
 }: StatisticsPageProps) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [hasAiData] = useState(true);
@@ -30,13 +30,13 @@ export default function StatisticsPage({
 
   // 유틸 함수 호출
   const monthlyTotalAmount = useMemo(
-    () => calculateMonthlyTotal(data, selectedDate), 
+    () => calculateMonthlyTotal(data, selectedDate),
     [selectedDate, data]
   );
 
   const isMonthlyEmpty = !isAllEmpty && monthlyTotalAmount === 0;
   const average30s = 25000;
-  const displayAmount = (isAllEmpty || isMonthlyEmpty) ? 0 : monthlyTotalAmount;
+  const displayAmount = isAllEmpty || isMonthlyEmpty ? 0 : monthlyTotalAmount;
   const diffAmount = Math.abs(displayAmount - average30s);
   const status = displayAmount > average30s ? "over" : "under";
 
@@ -45,7 +45,9 @@ export default function StatisticsPage({
   };
 
   return (
-    <div className={`relative flex flex-col w-full min-h-screen bg-white ${isAllEmpty ? "overflow-hidden h-screen" : ""}`}>
+    <div
+      className={`relative flex flex-col w-full min-h-screen bg-white ${isAllEmpty ? "overflow-hidden h-screen" : ""}`}
+    >
       <Header variant="text" leftText="통계" />
 
       <div className="flex flex-col w-full flex-1 pb-32">
@@ -62,44 +64,44 @@ export default function StatisticsPage({
             {!isAllEmpty && !isMonthlyEmpty && (
               <div className="w-full animate-in fade-in duration-500">
                 <div className="mt-4">
-                  <ComparisonInsight 
-                    isLoading={false} 
-                    title="30대의 평균 소비 비교" 
-                    diffAmount={diffAmount} 
-                    status={status} 
+                  <ComparisonInsight
+                    isLoading={false}
+                    title="30대의 평균 소비 비교"
+                    diffAmount={diffAmount}
+                    status={status}
                   />
-                  <ComparisonChart 
+                  <ComparisonChart
                     userName={`${userName}님`}
-                    userAmount={displayAmount} 
-                    compareName="30대 평균" 
-                    compareAmount={average30s} 
+                    userAmount={displayAmount}
+                    compareName="30대 평균"
+                    compareAmount={average30s}
                   />
                 </div>
 
                 <div className="mt-10">
-                  <ComparisonInsight 
-                    isLoading={false} 
-                    title="넷플릭스 유저들과 평균 소비 비교" 
-                    diffAmount={8500} 
-                    status="under" 
+                  <ComparisonInsight
+                    isLoading={false}
+                    title="넷플릭스 유저들과 평균 소비 비교"
+                    diffAmount={8500}
+                    status="under"
                   />
-                  <ComparisonChart 
+                  <ComparisonChart
                     userName={`${userName}님`}
-                    userAmount={displayAmount} 
-                    compareName="넷플릭스 평균" 
-                    compareAmount={displayAmount + 8500} 
+                    userAmount={displayAmount}
+                    compareName="넷플릭스 평균"
+                    compareAmount={displayAmount + 8500}
                   />
                 </div>
 
                 <div className="mt-10 border-t-8 border-gray-50">
-                   <AnalysisSummary hasData={hasAiData} />
+                  <AnalysisSummary hasData={hasAiData} />
                 </div>
               </div>
             )}
 
             {!isAllEmpty && isMonthlyEmpty && <EmptyAnalysis />}
           </div>
-          
+
           {isAllEmpty && <EmptySubscriptionOverlay />}
         </div>
       </div>

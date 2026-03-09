@@ -20,25 +20,30 @@ export default function AnalysisSummary({ hasData }: AnalysisSummaryProps) {
         </p>
       </div>
 
-      <AnalysisCard 
+      <AnalysisCard
         title="비슷한 콘텐츠를 구독 중이에요"
         description={
           <>
-            이 서비스 모두 <span className="underline">영화</span>와 <span className="underline">드라마</span>를 제공해요<br/>
-            <span className="font-bold text-gray-800">넷플릭스</span>를 해지하면 최소 월 4,900원 아낄 수 있어요
+            이 서비스 모두 <span className="underline">영화</span>와{" "}
+            <span className="underline">드라마</span>를 제공해요
+            <br />
+            <span className="font-bold text-gray-800">넷플릭스</span>를 해지하면
+            최소 월 4,900원 아낄 수 있어요
           </>
         }
-        brandType="netflix" 
+        brandType="netflix"
       />
 
-      <AnalysisCard 
+      <AnalysisCard
         title="1년이면 운동화 한 켤레 살 수 있어요"
         description={
           <>
-            넷플릭스를 해지하면 연 <span className="text-brand-primary body-lg">167,000원</span> 아낄 수 있어요
+            넷플릭스를 해지하면 연{" "}
+            <span className="text-brand-primary body-lg">167,000원</span> 아낄
+            수 있어요
           </>
         }
-        brandType="netflix" 
+        brandType="netflix"
       />
     </div>
   );

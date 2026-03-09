@@ -10,13 +10,12 @@ interface Props {
   compareAmount: number;
 }
 
-export default function ComparisonChart({ 
-  userName, 
-  userAmount, 
-  compareName, 
-  compareAmount
+export default function ComparisonChart({
+  userName,
+  userAmount,
+  compareName,
+  compareAmount,
 }: Props) {
-
   const chartData = [
     { name: userName, amount: userAmount },
     { name: compareName, amount: compareAmount },
@@ -29,7 +28,10 @@ export default function ComparisonChart({
   return (
     <div className="mx-6 py-6 bg-gray-50 rounded-3xl h-46">
       <ChartContainer config={chartConfig} className="h-full w-full">
-        <BarChart data={chartData} margin={{ top: 30, right: 20, left: 20, bottom: 0 }}>
+        <BarChart
+          data={chartData}
+          margin={{ top: 30, right: 20, left: 20, bottom: 0 }}
+        >
           <XAxis
             dataKey="name"
             axisLine={false}

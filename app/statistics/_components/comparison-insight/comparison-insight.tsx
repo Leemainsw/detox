@@ -9,13 +9,12 @@ interface Props {
   isLoading?: boolean;
 }
 
-export default function ComparisonInsight({ 
-  title, 
-  diffAmount, 
-  status, 
-  isLoading = false
+export default function ComparisonInsight({
+  title,
+  diffAmount,
+  status,
+  isLoading = false,
 }: Props) {
-
   if (isLoading) {
     return (
       <div className="flex flex-col items-start px-6 py-6 w-full gap-2">
@@ -27,15 +26,15 @@ export default function ComparisonInsight({
 
   return (
     <div className="flex flex-col items-start px-6 py-6 w-full">
-      <h3 className="title-md text-black leading-tight">
-        {title}
-      </h3>
+      <h3 className="title-md text-black leading-tight">{title}</h3>
       <div className="flex items-center mt-1 body-lg text-gray-400">
         <span>평균보다&nbsp;</span>
         <span className="font-bold text-brand-primary">
           {diffAmount.toLocaleString()}원
         </span>
-        <span>&nbsp;{status === "over" ? "더 쓰고 있어요" : "아끼고 있어요"}</span>
+        <span>
+          &nbsp;{status === "over" ? "더 쓰고 있어요" : "아끼고 있어요"}
+        </span>
       </div>
     </div>
   );
