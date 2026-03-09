@@ -11,6 +11,7 @@ export default function Input({
   prefix,
   suffix,
   type = "text",
+  onKeyDown: externalOnKeyDown,
   ...props
 }: InputProps & React.InputHTMLAttributes<HTMLInputElement>) {
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -19,6 +20,8 @@ export default function Input({
         event.preventDefault();
       }
     }
+
+    externalOnKeyDown?.(event);
   };
 
   return (
