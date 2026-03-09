@@ -8,9 +8,21 @@ import Image from "next/image";
 import SubscriptionList from "./components/subscriptionList";
 import Button from "./components/button";
 import BottomNav from "./components/bottomNav";
-import { useSubscriptionStore } from "@/store";
-import type { SubscriptionItem } from "@/store";
 import { subscriptableBrand } from "./utils/brand/brand";
+import type { SubscriptableBrandType } from "./utils/brand/type";
+
+interface SubscriptionItem {
+  id: number;
+  href: string;
+  brandType: SubscriptableBrandType;
+  name: string;
+  price?: number;
+  billingCycle: "월간결제" | "연간결제";
+  badgeLabel: string;
+  badgeVariant: "primary" | "danger";
+  group?: boolean;
+  groupCount?: number;
+}
 
 export default function Home() {
   const subsList: Omit<SubscriptionItem, "name">[] = [
@@ -55,17 +67,11 @@ export default function Home() {
     },
   ];
 
-  const hasSubscription = useSubscriptionStore(
-    (state) => state.hasSubscription
-  );
-  const list = useSubscriptionStore((state) => state.list);
-  const subscriptionList =
-    list.length > 0
-      ? list
-      : subsList.map((item) => ({
-          ...item,
-          name: subscriptableBrand[item.brandType].label,
-        }));
+  const subscriptionList: SubscriptionItem[] = subsList.map((item) => ({
+    ...item,
+    name: subscriptableBrand[item.brandType].label,
+  }));
+  const hasSubscription = subscriptionList.length > 0;
   const subscriptionCount = subscriptionList.length;
   const totalPrice = subscriptionList.reduce(
     (sum, item) => sum + (item.price ?? 0),

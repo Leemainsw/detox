@@ -5,21 +5,20 @@ import Badge from "../badge/badge";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight";
 import { faUserGroup } from "@fortawesome/free-solid-svg-icons";
-import type { SubscriptionItem } from "@/store";
 import BrandBox from "../brand-box";
+import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 
-type Props = Pick<
-  SubscriptionItem,
-  | "href"
-  | "brandType"
-  | "name"
-  | "price"
-  | "billingCycle"
-  | "badgeLabel"
-  | "badgeVariant"
-  | "group"
-  | "groupCount"
->;
+interface Props {
+  href: string;
+  brandType: SubscriptableBrandType;
+  name: string;
+  price?: number;
+  billingCycle: "월간결제" | "연간결제";
+  badgeLabel: string;
+  badgeVariant: "primary" | "danger";
+  group?: boolean;
+  groupCount?: number;
+}
 export default function SubscriptionList({
   href,
   brandType,
