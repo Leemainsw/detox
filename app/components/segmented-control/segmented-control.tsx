@@ -46,6 +46,7 @@ export default function SegmentedControl({
             "data-[state=off]:bg-transparent data-[state=off]:text-gray-300 data-[state=off]:font-medium",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 focus-visible:ring-offset-1"
           )}
+          aria-label={option.label}
         >
           {option.label}
         </ToggleGroup.Item>
