@@ -11,7 +11,16 @@ export default function Input({
   prefix,
   suffix,
   type = "text",
+  ...props
 }: InputProps & React.InputHTMLAttributes<HTMLInputElement>) {
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (type === "number") {
+      if (event.key === "e" || event.key === "E") {
+        event.preventDefault();
+      }
+    }
+  };
+
   return (
     <div className="w-full flex flex-col gap-2">
       <label className="text-base font-semibold text-gray-400">{label}</label>
@@ -27,6 +36,8 @@ export default function Input({
             placeholder={placeholder}
             type={type}
             inputMode={type === "number" ? "numeric" : undefined}
+            onKeyDown={onKeyDown}
+            {...props}
           />
         </div>
         {suffix && (
