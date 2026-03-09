@@ -43,7 +43,7 @@ export default function TextArea({
         {...props}
       />
 
-      <div className="absolute bottom-4 right-4 text-xs text-gray-300">
+      <div className="absolute bottom-4 right-4 label-lg text-gray-300 label-lg">
         <span className={currentLength > 0 ? "text-gray-300" : ""}>
           {currentLength}
         </span>
