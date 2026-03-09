@@ -21,11 +21,14 @@ export default function PaymentSplitBar(props: PaymentSplitBarProps) {
   const { myAmount, label = "내 부담금" } = props;
   const isMulti = props.type === "multi";
 
-  const partyTotal = isMulti ? props.totalAmount - props.myAmount : 0;
-  const myPct = isMulti
+  const partyTotal = isMulti
+    ? Math.max(props.totalAmount - props.myAmount, 0)
+    : 0;
+  const hasPartyShare = isMulti && props.totalAmount > 0 && partyTotal > 0;
+  const myPct = hasPartyShare
     ? Math.round((props.myAmount / props.totalAmount) * 100)
     : 100;
-  const partyPct = 100 - myPct;
+  const partyPct = hasPartyShare ? 100 - myPct : 0;
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -42,7 +45,7 @@ export default function PaymentSplitBar(props: PaymentSplitBarProps) {
         </div>
 
         {/* 파티원 부담금 (multi only) */}
-        {isMulti && (
+        {hasPartyShare && (
           <div
             className="flex items-center justify-center px-3 py-1 bg-blue-100 shrink-0 transition-all duration-300"
             style={{ width: `${partyPct}%`, minWidth: 80 }}
@@ -59,7 +62,7 @@ export default function PaymentSplitBar(props: PaymentSplitBarProps) {
         <Dot className="bg-state-primary" />
         <span className="body-md font-bold text-gray-400 mr-4">{label}</span>
 
-        {isMulti && (
+        {hasPartyShare && (
           <>
             <Dot className="bg-blue-100" />
             <span className="body-md font-bold text-gray-400">
