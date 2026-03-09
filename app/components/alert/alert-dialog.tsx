@@ -33,7 +33,7 @@ export default function AlertDialogComponent({
       <AlertDialog.Portal>
         <AlertDialog.Overlay
           className="fixed inset-0 z-50 bg-black/50"
-          onClick={() => onOpenChange(false)}
+          onClick={handleCancel}
         />
         <AlertDialog.Content
           className={cn(
