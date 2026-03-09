@@ -11,10 +11,14 @@ export default function ProgressBar({ steps, currentStep }: Props) {
   const [scale, setScale] = useState(0);
 
   useEffect(() => {
+    let innerId: number;
     const id = requestAnimationFrame(() => {
-      requestAnimationFrame(() => setScale(targetScale));
+      innerId = requestAnimationFrame(() => setScale(targetScale));
     });
-    return () => cancelAnimationFrame(id);
+    return () => {
+      cancelAnimationFrame(id);
+      cancelAnimationFrame(innerId);
+    };
   }, [targetScale]);
 
   return (
