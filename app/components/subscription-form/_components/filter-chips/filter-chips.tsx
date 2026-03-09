@@ -26,13 +26,11 @@ export default function FilterChips({
         "flex gap-2 overflow-x-auto pb-1 scrollbar-hide",
         className ?? ""
       )}
-      role="tablist"
       aria-label="필터 선택"
     >
       <button
         type="button"
-        role="tab"
-        aria-selected={value === "all"}
+        aria-pressed={value === "all"}
         onClick={() => onChange("all")}
         className={cn(
           "shrink-0 rounded-xl px-4 py-2 body-lg transition-colors",
@@ -49,8 +47,7 @@ export default function FilterChips({
           <button
             key={option.value}
             type="button"
-            role="tab"
-            aria-selected={isSelected}
+            aria-pressed={isSelected}
             onClick={() => onChange(option.value)}
             className={cn(
               "shrink-0 rounded-xl px-4 py-2 body-lg transition-colors",
