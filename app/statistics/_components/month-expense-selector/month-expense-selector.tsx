@@ -33,11 +33,11 @@ export default function MonthExpenseSelector({
           onClick={() => changeMonth(-1)}
           className="text-black hover:opacity-50 transition-colors p-1"
         >
-          <FontAwesomeIcon icon={faCaretLeft} size="xl" />
+          <FontAwesomeIcon icon={faCaretLeft} size="lg" />
         </button>
 
         <div className="min-w-40 text-center px-1">
-          <h2 className="text-lg font-bold text-black tracking-tight whitespace-nowrap">
+          <h2 className="body-lg font-bold text-black tracking-tight whitespace-nowrap">
             {selectedDate.getMonth() + 1}월에 사용한 총 금액
           </h2>
         </div>
@@ -48,7 +48,7 @@ export default function MonthExpenseSelector({
           onClick={() => changeMonth(1)}
           className="text-black hover:opacity-50 transition-colors p-1"
         >
-          <FontAwesomeIcon icon={faCaretRight} size="xl" />
+          <FontAwesomeIcon icon={faCaretRight} size="lg" />
         </button>
       </div>
 

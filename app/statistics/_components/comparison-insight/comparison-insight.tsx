@@ -27,10 +27,10 @@ export default function ComparisonInsight({
 
   return (
     <div className="flex flex-col items-start px-6 py-6 w-full">
-      <h3 className="text-[18px] font-bold text-black leading-tight">
+      <h3 className="title-md text-black leading-tight">
         {title}
       </h3>
-      <div className="flex items-center mt-1 text-[16px] text-gray-400 font-medium">
+      <div className="flex items-center mt-1 body-lg text-gray-400">
         <span>평균보다&nbsp;</span>
         <span className="font-bold text-brand-primary">
           {diffAmount.toLocaleString()}원

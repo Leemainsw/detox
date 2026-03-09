@@ -12,10 +12,10 @@ export default function AnalysisSummary({ hasData }: AnalysisSummaryProps) {
   return (
     <div className="w-full px-5 py-6 bg-white animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="mb-8">
-        <h2 className="text-[18px] font-bold text-brand-primary">
+        <h2 className="title-md text-brand-primary">
           AI디톡이<span className="text-gray-900">의 소비분석 요약</span>
         </h2>
-        <p className="text-[14px] text-gray-200 mt-1">
+        <p className="body-md text-gray-200 mt-1">
           AI가 분석한 정보로 일부는 실제와 다를 수 있어요.
         </p>
       </div>
@@ -35,7 +35,7 @@ export default function AnalysisSummary({ hasData }: AnalysisSummaryProps) {
         title="1년이면 운동화 한 켤레 살 수 있어요"
         description={
           <>
-            넷플릭스를 해지하면 연 <span className="text-brand-primary font-bold text-[16px]">167,000원</span> 아낄 수 있어요
+            넷플릭스를 해지하면 연 <span className="text-brand-primary body-lg">167,000원</span> 아낄 수 있어요
           </>
         }
         brandType="netflix" 

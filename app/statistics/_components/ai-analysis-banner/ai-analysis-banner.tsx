@@ -3,7 +3,6 @@
 import Robot from "@/public/images/emoji/Robot.png";
 import Image from "next/image";
 import Button from "@/app/components/button";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -18,11 +17,11 @@ export default function AIAnalysisBanner({
   return (
     <section className="flex flex-col items-center justify-center text-center px-6 py-6 bg-linear-to-t from-brand-primary/50 to-white md:min-h-100 md:py-8">
       <div className="space-y-3">
-        <h1 className="text-2xl font-bold md:text-4xl leading-tight text-black">
+        <h1 className="header-md md:header-md leading-tight text-black">
           <span className="text-brand-primary">낭비되는 구독료</span>로<br />
           치킨을 먹을 수 있어요
         </h1>
-        <p className="text-[16px] md:text-2xl text-gray-300 leading-relaxed">
+        <p className="bady-lg md:header-md text-gray-300 leading-relaxed">
           숨겨진 구독료를 찾아<br />
           낭비를 줄여보세요
         </p>

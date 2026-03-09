@@ -97,7 +97,7 @@ export default function StatisticsPage({
                   />
                 </div>
 
-                <div className="mt-10 border-t border-gray-50">
+                <div className="mt-10 border-t-8 border-gray-50">
                    <AnalysisSummary hasData={hasAiData} />
                 </div>
               </div>
