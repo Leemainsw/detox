@@ -60,14 +60,10 @@ export default function SelectPaymentType({ onNext }: Props) {
             placeholder="개월수를 입력해주세요"
             suffix="개월"
             type="number"
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              if (value > 12) {
-                e.target.value = "12";
-              }
-              if (value < 1) {
-                e.target.value = "1";
-              }
+            onBlur={(e) => {
+              if (!e.target.value) return;
+              const value = Math.min(12, Math.max(1, Number(e.target.value)));
+              e.target.value = String(value);
             }}
           />
         )}
