@@ -14,8 +14,9 @@ export function formatRelativeTime(
   }
 ): string {
   const now = new Date();
-  const target = typeof date === "object" ? date : new Date(date);
-  const diffMs = now.getTime() - target.getTime();
+  const target = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(target.getTime())) return "";
+  const diffMs = Math.max(0, now.getTime() - target.getTime());
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
   const diffHour = Math.floor(diffMin / 60);
