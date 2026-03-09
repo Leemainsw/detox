@@ -4,6 +4,7 @@ import getNotificationTitle from "@/app/utils/notifications/getNotificationTitle
 import { NotificationItemProps } from "@/app/utils/notifications/type";
 import { cn } from "@/lib/utils";
 import CommunityNotificationBox from "./community-notification-box";
+import { formatRelativeTime } from "@/app/utils/date/formatRelativeTime";
 
 type Props = NotificationItemProps & {
   description: string;
@@ -42,7 +43,9 @@ export default function NotificationItem({
         </div>
       </div>
       <div className="flex flex-col justify-between items-end gap-2 whitespace-nowrap w-1/4">
-        <span className="body-md text-gray-200">5분전</span>
+        <span className="body-md text-gray-200">
+          {formatRelativeTime(createdAt)}
+        </span>
         <button className="body-md font-normal text-gray-300">삭제</button>
       </div>
     </li>
