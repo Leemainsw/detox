@@ -3,12 +3,14 @@ import BottomCTA from "@/app/components/bottom-cta";
 import { DatePicker } from "@/app/components/date-picker";
 import SegmentedControl from "@/app/components/segmented-control";
 import { useState } from "react";
+import SelectDay from "./_components";
 
 interface Props {
   onNext: () => void;
 }
 export default function InputPaymentInfo({ onNext }: Props) {
   const [paymentInterval, setPaymentInterval] = useState("monthly");
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   return (
     <>
@@ -30,7 +32,10 @@ export default function InputPaymentInfo({ onNext }: Props) {
           onValueChange={setPaymentInterval}
         />
 
-        <DatePicker label="몇일마다 결제하나요?" />
+        {/* 월간 */}
+        <SelectDay value={selectedDay} onValueChange={setSelectedDay} />
+        {/* 연간 */}
+
         <DatePicker label="언제 구독이 끝나나요?" />
       </div>
 
