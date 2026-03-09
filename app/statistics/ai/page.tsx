@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Header from "@/app/components/header";
 import DateDivider from "./_components/date-divider/date-divider";
 import UserBubble from "./_components/user-bubble";
@@ -20,6 +20,15 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -35,7 +44,8 @@ export default function ChatPage() {
 
     setAiStatus("analyzing");
 
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
+      const responseTime = new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
       const isChartQuestion = question.includes("분석") || question.includes("얼마");
       
       if (isChartQuestion) {
@@ -46,7 +56,7 @@ export default function ChatPage() {
             role: "ai",
             type: "chart",
             content: "나영님의 최근 3개월 소비 추이 분석 결과입니다.",
-            time: now,
+             time: responseTime,
           },
         ]);
       } else {
