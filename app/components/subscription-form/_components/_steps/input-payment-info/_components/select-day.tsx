@@ -8,7 +8,7 @@ export default function SelectDay({ value, onValueChange }: Props) {
   return (
     <SelectBox
       value={value?.toString() ?? ""}
-      onValueChange={(value) => onValueChange?.(Number(value))}
+      onValueChange={(value) => onValueChange?.(value ? Number(value) : null)}
     >
       <SelectBox.Wrapper>
         <SelectBox.Label>몇일마다 결제하나요?</SelectBox.Label>
