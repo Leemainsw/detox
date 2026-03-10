@@ -21,7 +21,6 @@ export interface SubscriptionItem {
   category: string;
 }
 
-// 2. 주석 풀고 DB 구조에 맞춘 실제 목데이터 리스트
 export const MOCK_SUBSCRIPTIONS: SubscriptionItem[] = [
   {
     id: "uuid-001",
