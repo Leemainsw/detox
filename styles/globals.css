@@ -12,6 +12,8 @@
   --state-secondary: #0081a7;
   --state-danger: #d94d4c;
 
+  --line-gray: #bdbdbd;
+
   --blue-400: #33999f;
   --blue-300: #54a9af;
   --blue-200: #8ac4c8;
@@ -32,6 +34,8 @@
 
   --btn-disabled: #9e9e9e;
 
+  --progress-bar: #d9d9d9;
+
   --white: #fff;
   --black: #000;
 }
@@ -49,6 +53,8 @@
   --color-state-primary: var(--state-primary);
   --color-state-secondary: var(--state-secondary);
   --color-state-danger: var(--state-danger);
+
+  --color-line-gray: var(--line-gray);
 
   --color-blue-400: var(--blue-400);
   --color-blue-300: var(--blue-300);
@@ -72,6 +78,8 @@
   --color-black: var(--black);
 
   --color-btn-disabled: var(--btn-disabled);
+
+  --color-progress-bar: var(--progress-bar);
 
   /****************************
   * Fonts
@@ -105,8 +113,16 @@
     @apply bg-white text-gray-400 border border-gray-200;
   }
 
+  .btn-white {
+    @apply bg-white text-gray-300 border border-gray-100;
+  }
+
   .btn-danger {
     @apply bg-state-danger text-white;
+  }
+
+  .btn-rounded {
+    @apply w-12 h-12 rounded-full p-0 shadow-sm;
   }
 
   .btn-md {
@@ -130,14 +146,38 @@
     @apply text-sm text-gray-300;
   }
   .item-subtext span:not(:last-child)::after {
-    @apply content-[''] inline-block w-px h-[9px] bg-gray-100 mx-2;
+    content: "";
+    @apply inline-block w-px h-[9px] bg-line-gray mx-2;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/****************************
+  * Sns Login Button Components
+  ****************************/
+@layer components {
+  .kakao-login {
+    @apply bg-[#FFE400] text-gray-400;
+  }
+  .naver-login {
+    @apply bg-[#00CB4B] text-white;
+  }
+  .google-login {
+    @apply bg-white text-gray-400 border border-gray-100;
   }
 }
 
 /****************************
   * Typography
   ****************************/
-@layer utilities {
+@layer components {
   .header-lg {
     font-size: 1.75rem;
     font-weight: 700;
