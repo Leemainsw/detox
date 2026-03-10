@@ -12,7 +12,6 @@ import { Toaster } from "./components/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import QueryProvider from "./providers/query-client-provider";
 import SupabaseAuthListener from "./components/supabase-auth-listener";
-import QueryProvider from "./providers/query-client-provider";
 
 const pretendard = localFont({
   src: "../public/fonts/PretendardVariable.woff2",
