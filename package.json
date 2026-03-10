@@ -9,7 +9,7 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "generate-supabase-types": "npx supabase gen types typescript --project-id \"$VITE_SUPABASE_PROJECT_ID\" --schema public > ./types/supabase.types.ts"
+    "generate-supabase-types": "npx supabase gen types typescript --project-id \"$NEXT_PUBLIC_SUPABASE_PROJECT_ID\" --schema public > ./types/supabase.types.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
