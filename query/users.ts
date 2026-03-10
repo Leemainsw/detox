@@ -38,7 +38,12 @@ export function useAnonymousLoginMutation() {
       });
 
       if (upsertError) {
-        await signOut();
+        const { error: signOutError } = await signOut();
+
+        if (signOutError) {
+          console.error(signOutError);
+        }
+
         throw upsertError;
       }
 

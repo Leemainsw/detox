@@ -14,22 +14,27 @@ import {
 import { useAnonymousLoginMutation, useCurrentUserQuery } from "@/query/users";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
-import { toast } from "sonner";
+import { useToast } from "../hooks/useToast";
 
 export default function Page() {
   const router = useRouter();
-  const anonymousLoginMutation = useAnonymousLoginMutation();
-  const currentUserQuery = useCurrentUserQuery();
+  const { toast } = useToast();
+
+  const { mutateAsync: anonymousLogin, isPending: isAnonymousLoginPending } =
+    useAnonymousLoginMutation();
+
+  const { data: currentUser, isPending: isCurrentUserPending } =
+    useCurrentUserQuery();
 
   useEffect(() => {
-    if (currentUserQuery.data) {
+    if (currentUser) {
       router.replace("/");
     }
-  }, [currentUserQuery.data, router]);
+  }, [currentUser, router]);
 
   const handleAnonymousLogin = async () => {
     try {
-      await anonymousLoginMutation.mutateAsync();
+      await anonymousLogin();
       router.push("/");
     } catch (error) {
       console.error(error);
@@ -49,7 +54,7 @@ export default function Page() {
     }
   };
 
-  if (currentUserQuery.isPending) {
+  if (isCurrentUserPending) {
     return <LoadingScreen message="잠시만 기다려 주세요." />;
   }
 
@@ -76,12 +81,8 @@ export default function Page() {
               variant="primary"
               size="lg"
               onClick={handleAnonymousLogin}
-              loading={
-                anonymousLoginMutation.isPending || currentUserQuery.isPending
-              }
-              disabled={
-                anonymousLoginMutation.isPending || currentUserQuery.isPending
-              }
+              loading={isAnonymousLoginPending || isCurrentUserPending}
+              disabled={isAnonymousLoginPending || isCurrentUserPending}
             >
               익명 아이디로 로그인하기
             </Button>

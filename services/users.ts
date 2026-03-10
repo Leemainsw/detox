@@ -1,16 +1,11 @@
+"use client";
+
 import { supabase } from "@/lib/supabase";
+import type { TablesInsert } from "@/types/supabase.types";
 
 export type AuthProvider = "anonymous" | "google" | "kakao" | "naver";
 
-interface UpsertUserParams {
-  id: string;
-  provider: AuthProvider;
-  provider_id: string;
-  email?: string | null;
-  nickname?: string | null;
-  profile_image?: string | null;
-  is_anonymous: boolean;
-}
+type UpsertUserParams = TablesInsert<"users">;
 
 export async function signInAnonymously() {
   return supabase.auth.signInAnonymously();
