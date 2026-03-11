@@ -20,7 +20,7 @@ export default function BottomCTA({
       <div style={{ height: BOTTOM_CTA_HEIGHT }} aria-hidden />
       <div
         className={cn(
-          "fixed bottom-0 left-0 right-0 bg-white px-6 py-4",
+          "fixed bottom-0 left-0 right-0 bg-white px-6 py-4 max-w-(--max-width) mx-auto",
           hasBottomNav ? "pb-[calc(1rem+60px)]" : "",
           className ?? ""
         )}
