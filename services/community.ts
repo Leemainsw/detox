@@ -1,41 +1,55 @@
-"use client";
-
 import { formatRelativeTime } from "@/app/utils/date/formatRelativeTime";
+import { supabase } from "@/lib/supabase";
 import type {
   CommunityDetailData,
-  CommunityListItemData,
+  CommunityListCursor,
+  CommunityListPage,
 } from "@/app/community/_types";
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import type { Tables } from "@/types/supabase.types";
-import { supabase } from "@/lib/supabase";
 
 type UserRow = Tables<"users">;
 
-export async function getCommunityList(
-  service?: SubscriptableBrandType
-): Promise<CommunityListItemData[]> {
-  let query = supabase
-    .from("post")
-    .select("*")
-    .is("deleted_at", null)
-    .order("created_at", { ascending: false });
+export async function getCommunityListPage(params: {
+  service?: SubscriptableBrandType;
+  cursor?: CommunityListCursor | null;
+  pageSize?: number;
+}): Promise<CommunityListPage> {
+  const pageSize = params.pageSize ?? 10;
 
-  if (service) {
-    query = query.eq("service", service);
+  let query = supabase.from("post").select("*").is("deleted_at", null);
+
+  if (params.service) {
+    query = query.eq("service", params.service);
   }
 
-  const { data: posts, error: postsError } = await query;
+  if (params.cursor) {
+    query = query.or(
+      `created_at.lt.${params.cursor.createdAt},and(created_at.eq.${params.cursor.createdAt},id.lt.${params.cursor.id})`
+    );
+  }
+
+  const { data: posts, error: postsError } = await query
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(pageSize + 1);
 
   if (postsError) {
     throw postsError;
   }
 
   if (!posts || posts.length === 0) {
-    return [];
+    return {
+      items: [],
+      nextCursor: null,
+    };
   }
 
-  const postIds = posts.map((post) => post.id);
-  const userIds = [...new Set(posts.map((post) => post.user_id))];
+  const hasNextPage = posts.length > pageSize;
+  const visiblePosts = hasNextPage ? posts.slice(0, pageSize) : posts;
+
+  const postIds = visiblePosts.map((post) => post.id);
+  const userIds = [...new Set(visiblePosts.map((post) => post.user_id))];
 
   const [
     { data: users, error: usersError },
@@ -75,7 +89,7 @@ export async function getCommunityList(
     {}
   );
 
-  return posts.map((post) => {
+  const items = visiblePosts.map((post) => {
     const user = userMap.get(post.user_id);
 
     return {
@@ -90,6 +104,19 @@ export async function getCommunityList(
       thumbUrl: user?.profile_image ?? "/images/default-user.png",
     };
   });
+
+  const lastPost = visiblePosts[visiblePosts.length - 1];
+
+  return {
+    items,
+    nextCursor:
+      hasNextPage && lastPost
+        ? {
+            createdAt: lastPost.created_at,
+            id: lastPost.id,
+          }
+        : null,
+  };
 }
 
 export async function getCommunityDetail(

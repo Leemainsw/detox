@@ -15,3 +15,13 @@ export type CommunityListItemData = {
 export type CommunityDetailData = CommunityListItemData & {
   createdAt: string;
 };
+
+export type CommunityListCursor = {
+  createdAt: string;
+  id: string;
+};
+
+export type CommunityListPage = {
+  items: CommunityListItemData[];
+  nextCursor: CommunityListCursor | null;
+};

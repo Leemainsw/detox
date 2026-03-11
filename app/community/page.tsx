@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "../components/header";
 import BottomNav from "../components/bottom-nav";
@@ -9,12 +10,13 @@ import Button from "@/app/components/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { subscriptableBrand } from "@/app/utils/brand/brand";
 import type { CommunityServiceFilter } from "./_types";
-import { useCommunityListQuery } from "@/query/community";
+import { useInfiniteCommunityListQuery } from "@/query/community";
 import FloatingButton from "../components/floating-button";
 
 export default function CommunityListPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const serviceParam = searchParams.get("service");
 
@@ -25,7 +27,11 @@ export default function CommunityListPage() {
 
   const queryService = selectedService === "all" ? undefined : selectedService;
 
-  const communityListQuery = useCommunityListQuery(queryService);
+  const communityListQuery = useInfiniteCommunityListQuery(queryService);
+
+  const items =
+    communityListQuery.data?.pages.flatMap((page) => page.items) ?? [];
+
   const handleChangeService = (nextService: CommunityServiceFilter) => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -41,6 +47,25 @@ export default function CommunityListPage() {
 
     router.replace(nextUrl);
   };
+
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = communityListQuery;
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+
+      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    });
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   const renderLoading = () => (
     <div className="grid grid-cols-1 gap-5 pt-6">
       {Array.from({ length: 4 }).map((_, index) => (
@@ -59,6 +84,25 @@ export default function CommunityListPage() {
       ))}
     </div>
   );
+
+  const renderFetchMoreLoading = () => (
+    <div className="grid grid-cols-1 gap-5 pt-5">
+      {Array.from({ length: 2 }).map((_, index) => (
+        <div
+          key={index}
+          className="grid grid-cols-1 gap-3 rounded-lg bg-white px-6 py-4"
+        >
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+      ))}
+    </div>
+  );
+
   const renderError = () => (
     <div className="flex flex-col items-center gap-4 px-6 py-12 text-center">
       <p className="body-md text-gray-400">게시글을 불러오지 못했어요.</p>
@@ -71,6 +115,7 @@ export default function CommunityListPage() {
       </Button>
     </div>
   );
+
   const renderEmpty = () => (
     <div className="flex flex-col items-center px-6 py-12 text-center">
       <p className="body-md text-gray-400">
@@ -91,13 +136,15 @@ export default function CommunityListPage() {
         <section className="px-6">
           {communityListQuery.isPending && renderLoading()}
           {communityListQuery.isError && renderError()}
-          {communityListQuery.isSuccess &&
-            communityListQuery.data.length === 0 &&
-            renderEmpty()}
-          {communityListQuery.isSuccess &&
-            communityListQuery.data.length > 0 && (
-              <CommunityList items={communityListQuery.data} />
-            )}
+          {communityListQuery.isSuccess && items.length === 0 && renderEmpty()}
+          {communityListQuery.isSuccess && items.length > 0 && (
+            <>
+              <CommunityList items={items} />
+              {communityListQuery.isFetchingNextPage &&
+                renderFetchMoreLoading()}
+              <div ref={loadMoreRef} className="h-10" />
+            </>
+          )}
         </section>
 
         <div className="fixed right-0 bottom-24 z-10">

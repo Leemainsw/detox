@@ -1,11 +1,17 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import type { CommunityListCursor } from "@/app/community/_types";
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import {
   createCommunityPost,
   getCommunityDetail,
-  getCommunityList,
+  getCommunityListPage,
 } from "@/services/community";
 
 export const communityKeys = {
@@ -19,10 +25,18 @@ export const communityKeys = {
   detail: (postId: string) => [...communityKeys.details(), postId],
 } as const;
 
-export function useCommunityListQuery(service?: SubscriptableBrandType) {
-  return useQuery({
+export function useInfiniteCommunityListQuery(
+  service?: SubscriptableBrandType
+) {
+  return useInfiniteQuery({
     queryKey: communityKeys.list(service),
-    queryFn: () => getCommunityList(service),
+    initialPageParam: null as CommunityListCursor | null,
+    queryFn: ({ pageParam }) =>
+      getCommunityListPage({
+        service,
+        cursor: pageParam,
+      }),
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 }
 
