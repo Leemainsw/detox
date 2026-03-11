@@ -4,6 +4,7 @@ import Header from "../components/header";
 import Input from "../components/input";
 import Button from "../components/button";
 import BottomNav from "../components/bottom-nav";
+import TextButton from "../components/text-button";
 
 export default function Page() {
   return (
@@ -11,11 +12,7 @@ export default function Page() {
       <Header
         variant="text"
         leftText="내 정보"
-        rightContent={
-          <button className="flex items-center gap-2 cursor-pointer">
-            <span className="body-lg font-normal text-gray-300">로그아웃</span>
-          </button>
-        }
+        rightContent={<TextButton size="md">로그아웃</TextButton>}
       />
 
       <div className="w-full flex flex-col px-6 mt-18 gap-18">
@@ -47,11 +44,13 @@ export default function Page() {
         </div>
       </div>
 
-      <button className="absolute left-1/2 -translate-x-1/2 bottom-[108px] w-auto flex items-center justify-center gap-2 cursor-pointer">
-        <span className="body-lg font-normal text-gray-300 underline">
-          탈퇴하기
-        </span>
-      </button>
+      <TextButton
+        size="sm"
+        className="absolute left-1/2 -translate-x-1/2 bottom-[108px] w-auto flex items-center justify-center gap-2"
+        underline
+      >
+        탈퇴하기
+      </TextButton>
 
       <BottomNav />
     </main>
