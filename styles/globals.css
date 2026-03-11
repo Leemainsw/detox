@@ -34,8 +34,12 @@
 
   --btn-disabled: #9e9e9e;
 
+  --progress-bar: #d9d9d9;
+
   --white: #fff;
   --black: #000;
+
+  --max-width: 600px;
 }
 
 @theme inline {
@@ -77,6 +81,8 @@
 
   --color-btn-disabled: var(--btn-disabled);
 
+  --color-progress-bar: var(--progress-bar);
+
   /****************************
   * Fonts
   ****************************/
@@ -87,6 +93,11 @@
   * shadows
   ****************************/
   --shadow-xl: 0 4px 10px rgba(0, 0, 0, 0.25);
+
+  /****************************
+  * Max Width
+  ****************************/
+  --max-width: var(--max-width);
 }
 
 /****************************
@@ -144,6 +155,14 @@
   .item-subtext span:not(:last-child)::after {
     content: "";
     @apply inline-block w-px h-[9px] bg-line-gray mx-2;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -212,6 +231,29 @@
     font-size: 0.6875rem; /* 11px */
     font-weight: 500;
     line-height: 110%;
+  }
+}
+
+/****************************
+  * Text Button Components
+  ****************************/
+@layer components {
+  .text-button-sm,
+  .text-button-md,
+  .text-button-lg {
+    @apply text-gray-300 cursor-pointer;
+  }
+
+  .text-button-sm {
+    @apply text-sm;
+  }
+
+  .text-button-md {
+    @apply text-base;
+  }
+
+  .text-button-lg {
+    @apply text-lg;
   }
 }
 

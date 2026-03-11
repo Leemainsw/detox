@@ -7,10 +7,13 @@ export default function Toaster() {
     <SonnerToaster
       position="bottom-center"
       richColors
-      closeButton
+      closeButton={false}
       toastOptions={{
         style: {
           fontFamily: "var(--font-pretendard), sans-serif",
+          backgroundColor: "var(--color-gray-400)",
+          color: "var(--color-white)",
+          border: "none",
         },
       }}
     />

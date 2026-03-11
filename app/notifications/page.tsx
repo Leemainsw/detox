@@ -9,6 +9,7 @@ import {
   NotificationDataItem,
   NotificationItemProps,
 } from "@/app/utils/notifications/type";
+import TextButton from "../components/text-button";
 
 const mockData: NotificationDataItem[] = [
   {
@@ -104,9 +105,9 @@ export default function Page() {
         }
       />
 
-      <button className="body-md text-gray-300 cursor-pointer px-6 mt-3 flex ml-auto">
+      <TextButton size="md" className="font-bold px-6 mt-3 flex ml-auto">
         일괄 삭제
-      </button>
+      </TextButton>
 
       <div className="w-full mt-5 px-6 flex flex-col gap-10">
         <div className="flex flex-col gap-5 items-start">

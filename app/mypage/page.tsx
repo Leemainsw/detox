@@ -1,20 +1,73 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect } from "react";
 import Avatar from "../components/avatar";
 import Header from "../components/header";
 import Input from "../components/input";
 import Button from "../components/button";
 import BottomNav from "../components/bottom-nav";
+import LoadingScreen from "../components/loading-screen";
+import TextButton from "../components/text-button";
+import { useRouter } from "next/navigation";
+import {
+  useCurrentUserQuery,
+  useLogoutMutation,
+  useUserProfileQuery,
+} from "@/query/users";
+import { useToast } from "../hooks/useToast";
 
 export default function Page() {
+  const router = useRouter();
+  const { errorToast } = useToast();
+  const logoutMutation = useLogoutMutation();
+  const currentUserQuery = useCurrentUserQuery();
+  const userProfileQuery = useUserProfileQuery(currentUserQuery.data?.id);
+
+  useEffect(() => {
+    if (!currentUserQuery.isPending && !currentUserQuery.data) {
+      router.replace("/login");
+    }
+  }, [currentUserQuery.data, currentUserQuery.isPending, router]);
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      router.push("/login");
+    } catch (error) {
+      console.error(error);
+      errorToast("로그아웃에 실패했어요.");
+    }
+  };
+
+  if (
+    currentUserQuery.isPending ||
+    !currentUserQuery.data ||
+    userProfileQuery.isPending
+  ) {
+    return <LoadingScreen message="내 정보를 불러오는 중이에요." />;
+  }
+
+  const nickname = userProfileQuery.data?.nickname ?? "사용자";
+  const email =
+    userProfileQuery.data?.email ??
+    currentUserQuery.data.email ??
+    "이메일 정보가 없어요.";
+
   return (
     <main className="w-full min-h-screen flex flex-col items-center relative">
       <Header
         variant="text"
         leftText="내 정보"
         rightContent={
-          <button className="flex items-center gap-2 cursor-pointer">
-            <span className="body-lg font-normal text-gray-300">로그아웃</span>
-          </button>
+          <TextButton
+            size="md"
+            className="flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={logoutMutation.isPending}
+            onClick={handleLogout}
+          >
+            로그아웃
+          </TextButton>
         }
       />
 
@@ -32,26 +85,32 @@ export default function Page() {
             </button>
           </div>
           <div className="flex flex-col gap-1 items-center">
-            <span className="body-lg font-bold">김철수</span>
-            <span className="body-md font-normal text-gray-300">
-              kim@gmail.com
-            </span>
+            <span className="body-lg font-bold">{nickname}</span>
+            <span className="body-md font-normal text-gray-300">{email}</span>
           </div>
         </div>
 
         <div className="flex flex-col gap-4 items-center">
-          <Input label="닉네임" placeholder="닉네임을 입력해주세요" />
+          <Input
+            label="닉네임"
+            placeholder="닉네임을 입력해주세요"
+            defaultValue={userProfileQuery.data?.nickname ?? ""}
+          />
           <Button variant="primary" size="lg">
             저장하기
           </Button>
         </div>
       </div>
 
-      <button className="absolute left-1/2 -translate-x-1/2 bottom-[108px] w-auto flex items-center justify-center gap-2 cursor-pointer">
-        <span className="body-lg font-normal text-gray-300 underline">
+      {!currentUserQuery.data?.is_anonymous ? (
+        <TextButton
+          size="md"
+          underline
+          className="absolute left-1/2 -translate-x-1/2 bottom-[108px] w-auto flex items-center justify-center gap-2"
+        >
           탈퇴하기
-        </span>
-      </button>
+        </TextButton>
+      ) : null}
 
       <BottomNav />
     </main>

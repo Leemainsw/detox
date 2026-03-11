@@ -1,13 +1,49 @@
+"use client";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Button from "../components/button";
+import LoadingScreen from "../components/loading-screen";
 import SnsLoginButton from "./_components/sns-login-button";
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { useAnonymousLoginMutation, useCurrentUserQuery } from "@/query/users";
+import { useToast } from "../hooks/useToast";
 
 export default function Page() {
+  const router = useRouter();
+  const { errorToast } = useToast();
+
+  const { mutateAsync: anonymousLogin, isPending: isAnonymousLoginPending } =
+    useAnonymousLoginMutation();
+
+  const { data: currentUser, isPending: isCurrentUserPending } =
+    useCurrentUserQuery();
+
+  useEffect(() => {
+    if (currentUser) {
+      router.replace("/");
+    }
+  }, [currentUser, router]);
+
+  const handleAnonymousLogin = async () => {
+    try {
+      await anonymousLogin();
+      router.push("/");
+    } catch (error) {
+      console.error(error);
+      errorToast("로그인에 실패했어요.");
+    }
+  };
+
+  if (isCurrentUserPending || currentUser) {
+    return <LoadingScreen message="잠시만 기다려 주세요." />;
+  }
+
   return (
     <main className="relative w-full min-h-screen flex flex-col items-center justify-center gap-20">
       <header className="flex flex-col items-center gap-4">
@@ -15,7 +51,6 @@ export default function Page() {
           디지털 구독 다이어트{" "}
           <span className="text-brand-primary">디톡스</span>
         </p>
-
         <Image src="/images/logo.png" alt="logo" width={200} height={55} />
       </header>
 
@@ -28,7 +63,12 @@ export default function Page() {
       <Tooltip open>
         <TooltipTrigger asChild>
           <div className="w-full px-6 flex flex-col gap-4 absolute bottom-12 left-1/2 -translate-x-1/2">
-            <Button variant="primary" size="lg">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={handleAnonymousLogin}
+              loading={isAnonymousLoginPending}
+            >
               익명 아이디로 로그인하기
             </Button>
           </div>
