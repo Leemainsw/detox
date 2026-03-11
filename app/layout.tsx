@@ -36,7 +36,7 @@ export default function RootLayout({
         <TooltipProvider>
           <AlertProvider />
           <Toaster />
-          {children}
+          <main className="max-w-[var(--max-width)] mx-auto">{children}</main>
         </TooltipProvider>
       </body>
     </html>
