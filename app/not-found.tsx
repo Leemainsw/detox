@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Button from "./components/button";
 import { useRouter } from "next/navigation";
+import BottomCTA from "./components/bottom-cta";
 
 export default function NotFound() {
   const router = useRouter();
@@ -11,7 +12,7 @@ export default function NotFound() {
   };
 
   return (
-    <main className="max-w-xl mx-auto min-h-screen flex flex-col items-center justify-center px-6">
+    <div className="mx-auto min-h-screen flex flex-col items-center justify-center px-6">
       <div className="flex flex-col items-center justify-center gap-5">
         <Image
           src="/images/not-found/sad-face.png"
@@ -27,11 +28,11 @@ export default function NotFound() {
         </div>
       </div>
 
-      <div className="w-full fixed bottom-10 left-0 right-0 px-6">
+      <BottomCTA>
         <Button variant="primary" size="lg" className="w-full" onClick={goHome}>
           홈으로 이동
         </Button>
-      </div>
-    </main>
+      </BottomCTA>
+    </div>
   );
 }
