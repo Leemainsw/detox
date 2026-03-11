@@ -9,7 +9,7 @@ import {
 
 export default function Page() {
   return (
-    <div className="relative w-full min-h-screen flex flex-col items-center justify-center gap-20">
+    <main className="relative w-full min-h-screen flex flex-col items-center justify-center gap-20">
       <header className="flex flex-col items-center gap-4">
         <p className="body-md font-bold text-gray-400">
           디지털 구독 다이어트{" "}
@@ -37,6 +37,6 @@ export default function Page() {
           계정 생성 없이 바로 시작할 수 있어요
         </TooltipContent>
       </Tooltip>
-    </div>
+    </main>
   );
 }

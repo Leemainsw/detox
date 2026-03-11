@@ -7,7 +7,7 @@ import BottomNav from "../components/bottom-nav";
 
 export default function Page() {
   return (
-    <div className="w-full min-h-screen flex flex-col items-center relative">
+    <main className="w-full min-h-screen flex flex-col items-center relative">
       <Header
         variant="text"
         leftText="내 정보"
@@ -54,6 +54,6 @@ export default function Page() {
       </button>
 
       <BottomNav />
-    </div>
+    </main>
   );
 }

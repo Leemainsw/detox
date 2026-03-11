@@ -79,7 +79,7 @@ export default function Page() {
   };
 
   return (
-    <div className="relative w-full min-h-screen flex flex-col items-start justify-start">
+    <main className="relative w-full min-h-screen flex flex-col items-start justify-start">
       <Header
         variant="back"
         onBack={() => router.back()}
@@ -144,6 +144,6 @@ export default function Page() {
           </ul>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

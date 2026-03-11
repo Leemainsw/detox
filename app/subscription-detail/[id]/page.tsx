@@ -1,6 +1,5 @@
 "use client";
 import Header from "@/app/components/header";
-import SubscriptionList from "@/app/components/subscriptionList";
 import { useParams, useRouter } from "next/navigation";
 import PaymentInfoCard from "./_components/payment-info-card";
 import SubscriptionMetaList from "./_components/subscription-meta-list";

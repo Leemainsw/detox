@@ -45,7 +45,7 @@ export default function StatisticsPage({
   };
 
   return (
-    <div
+    <main
       className={`relative flex flex-col w-full min-h-screen bg-white ${isAllEmpty ? "overflow-hidden h-screen" : ""}`}
     >
       <Header variant="text" leftText="통계" />
@@ -107,6 +107,6 @@ export default function StatisticsPage({
       </div>
 
       <BottomNav />
-    </div>
+    </main>
   );
 }

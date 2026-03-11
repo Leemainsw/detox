@@ -7,7 +7,7 @@ export default function Page() {
   const router = useRouter();
 
   return (
-    <div className="relative w-full min-h-screen flex flex-col items-start justify-start">
+    <main className="relative w-full min-h-screen flex flex-col items-start justify-start">
       <Header variant="back" onBack={() => router.back()} title="알림설정" />
 
       <div className="w-full py-4 px-6 bg-blue-50 flex items-center justify-center">
@@ -45,6 +45,6 @@ export default function Page() {
           <Switch checked={true} onCheckedChange={() => {}} />
         </div>
       </div>
-    </div>
+    </main>
   );
 }
