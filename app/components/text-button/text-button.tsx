@@ -8,6 +8,7 @@ interface Props {
   underline?: boolean;
   onClick?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 export default function TextButton({
   size = "md",
@@ -15,6 +16,7 @@ export default function TextButton({
   underline = false,
   onClick,
   className,
+  disabled = false,
 }: Props) {
   return (
     <button
@@ -24,6 +26,8 @@ export default function TextButton({
         className ?? ""
       )}
       onClick={onClick}
+      type="button"
+      disabled={disabled}
     >
       {children}
     </button>
