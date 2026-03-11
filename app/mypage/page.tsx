@@ -3,7 +3,8 @@ import Avatar from "../components/avatar";
 import Header from "../components/header";
 import Input from "../components/input";
 import Button from "../components/button";
-import BottomNav from "../components/bottomNav";
+import BottomNav from "../components/bottom-nav";
+import TextButton from "../components/text-button";
 
 export default function Page() {
   return (
