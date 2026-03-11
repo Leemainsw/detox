@@ -227,6 +227,29 @@
   }
 }
 
+/****************************
+  * Text Button Components
+  ****************************/
+@layer components {
+  .text-button-sm,
+  .text-button-md,
+  .text-button-lg {
+    @apply text-gray-300 cursor-pointer;
+  }
+
+  .text-button-sm {
+    @apply text-sm;
+  }
+
+  .text-button-md {
+    @apply text-base;
+  }
+
+  .text-button-lg {
+    @apply text-lg;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
