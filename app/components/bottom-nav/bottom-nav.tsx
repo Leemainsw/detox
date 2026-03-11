@@ -26,7 +26,7 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="rounded-t-lg fixed bottom-0 left-0 w-full h-[60px] bg-white shadow-xl flex justify-around items-center"
+      className="max-w-(--max-width) rounded-t-lg fixed bottom-0 w-full h-[60px] bg-white shadow-xl flex justify-around items-center"
       aria-label="하단 네비게이션"
     >
       {NAV_ITEMS.map(({ href, icon, label }) => (
