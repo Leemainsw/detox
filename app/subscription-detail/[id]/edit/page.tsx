@@ -1,5 +1,6 @@
 import Header from "@/app/components/header";
 import SubscriptionForm from "@/app/components/subscription-form";
+import TextButton from "@/app/components/text-button";
 
 export default function Page() {
   return (
@@ -7,11 +8,7 @@ export default function Page() {
       <Header
         variant="back"
         title="구독 수정"
-        rightContent={
-          <button className="flex items-center gap-2 cursor-pointer">
-            <span className="body-lg font-normal text-gray-300">취소</span>
-          </button>
-        }
+        rightContent={<TextButton>취소</TextButton>}
       />
       <SubscriptionForm />
     </main>

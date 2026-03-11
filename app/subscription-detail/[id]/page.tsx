@@ -1,10 +1,10 @@
 "use client";
 import Header from "@/app/components/header";
-import SubscriptionList from "@/app/components/subscriptionList";
 import { useParams, useRouter } from "next/navigation";
 import PaymentInfoCard from "./_components/payment-info-card";
 import SubscriptionMetaList from "./_components/subscription-meta-list";
 import { useAlert } from "@/app/hooks/useAlert";
+import TextButton from "@/app/components/text-button";
 
 export default function Page() {
   const router = useRouter();
@@ -31,14 +31,7 @@ export default function Page() {
       <Header
         variant="back"
         onBack={() => router.back()}
-        rightContent={
-          <button
-            className="body-lg font-normal text-gray-300 cursor-pointer"
-            onClick={goEdit}
-          >
-            수정
-          </button>
-        }
+        rightContent={<TextButton onClick={goEdit}>수정</TextButton>}
       />
 
       <div className="w-full mt-5 px-6 flex flex-col gap-5">
@@ -72,12 +65,14 @@ export default function Page() {
         />
       </div>
 
-      <button
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 underline text-gray-300 body-md cursor-pointer"
+      <TextButton
+        size="sm"
+        className="absolute left-1/2 -translate-x-1/2 bottom-[108px]"
+        underline
         onClick={handleDelete}
       >
         구독 삭제하기
-      </button>
+      </TextButton>
     </main>
   );
 }
