@@ -11,6 +11,9 @@ export default function Toaster() {
       toastOptions={{
         style: {
           fontFamily: "var(--font-pretendard), sans-serif",
+          backgroundColor: "var(--color-gray-400)",
+          color: "var(--color-white)",
+          border: "none",
         },
       }}
     />

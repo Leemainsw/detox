@@ -12,13 +12,11 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { useAnonymousLoginMutation, useCurrentUserQuery } from "@/query/users";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { useToast } from "../hooks/useToast";
 
 export default function Page() {
   const router = useRouter();
-  const { toast } = useToast();
+  const { errorToast } = useToast();
 
   const { mutateAsync: anonymousLogin, isPending: isAnonymousLoginPending } =
     useAnonymousLoginMutation();
@@ -38,19 +36,7 @@ export default function Page() {
       router.push("/");
     } catch (error) {
       console.error(error);
-      toast(
-        <span className="body-md inline-flex items-center gap-2">
-          <FontAwesomeIcon
-            icon={faCircleExclamation}
-            className="h-4 w-4 text-gray-400"
-          />
-          로그인에 실패했어요.
-        </span>,
-        {
-          className: "!justify-center",
-          style: { textAlign: "center" },
-        }
-      );
+      errorToast("로그인에 실패했어요.");
     }
   };
 
