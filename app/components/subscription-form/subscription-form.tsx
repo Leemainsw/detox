@@ -1,26 +1,77 @@
 "use client";
-import { useState } from "react";
-import ProgressBar from "./_components/progress-bar/progress-bar";
-import SelectPaymentType from "./_components/_steps/select-payment-type";
+
+import { StepType } from "@/app/hooks/useFunnel";
+import { SubscriptionFormData } from "./types/type";
 import InputPaymentInfo from "./_components/_steps/input-payment-info";
 import SelectBrand from "./_components/_steps/select-brand";
+import SelectPaymentType from "./_components/_steps/select-payment-type";
+import ProgressBar from "./_components/progress-bar/progress-bar";
 
-const steps = ["select-brand", "select-payment-type", "input-payment-info"];
+export const SUBSCRIPTION_FUNNEL_KEY = "subscription-form";
+export const SUBSCRIPTION_STEPS = [
+  "select-brand",
+  "input-payment-info",
+  "select-payment-type",
+] as const;
 
-export default function SubscriptionForm() {
-  const [currentStep, setCurrentStep] = useState(1);
+export const initialSubscriptionFormData: Partial<SubscriptionFormData> = {};
 
+interface Props {
+  currentStep: StepType<typeof SUBSCRIPTION_STEPS>;
+  currentStepIndex: number;
+  canGoPrev: boolean;
+  state: Partial<SubscriptionFormData>;
+  next: () => void;
+  back: () => void;
+  setState: (
+    partial:
+      | Partial<SubscriptionFormData>
+      | ((prev: Partial<SubscriptionFormData>) => Partial<SubscriptionFormData>)
+  ) => void;
+  onSubmit: (data: Partial<SubscriptionFormData>) => void;
+}
+
+export default function SubscriptionForm({
+  currentStep,
+  currentStepIndex,
+  canGoPrev,
+  state,
+  next,
+  back,
+  setState,
+  onSubmit,
+}: Props) {
   return (
     <>
-      <ProgressBar steps={steps} currentStep={currentStep} />
+      <ProgressBar
+        steps={[...SUBSCRIPTION_STEPS]}
+        currentStep={currentStepIndex + 1}
+      />
 
-      {currentStep === 1 && <SelectBrand onNext={() => setCurrentStep(2)} />}
-
-      {currentStep === 2 && (
-        <InputPaymentInfo onNext={() => setCurrentStep(3)} />
+      {currentStep === "select-brand" && (
+        <SelectBrand
+          onNext={(values) => {
+            setState((prev) => ({ ...prev, ...values }));
+            next();
+          }}
+        />
       )}
-      {currentStep === 3 && (
-        <SelectPaymentType onNext={() => setCurrentStep(4)} />
+      {currentStep === "input-payment-info" && (
+        <InputPaymentInfo
+          onNext={(values) => {
+            setState((prev) => ({ ...prev, ...values }));
+            next();
+          }}
+        />
+      )}
+      {currentStep === "select-payment-type" && (
+        <SelectPaymentType
+          onNext={(values) => {
+            const merged = { ...state, ...values };
+            setState(merged);
+            onSubmit(merged);
+          }}
+        />
       )}
     </>
   );
