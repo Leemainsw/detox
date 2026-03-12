@@ -10,8 +10,10 @@ import type { CommunityListCursor } from "@/app/community/_types";
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import {
   createCommunityPost,
+  deleteCommunityPost,
   getCommunityDetail,
   getCommunityListPage,
+  updateCommunityPost,
 } from "@/services/community";
 
 export const communityKeys = {
@@ -56,6 +58,38 @@ export function useCreateCommunityPostMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: communityKeys.lists(),
+      });
+    },
+  });
+}
+
+export function useUpdateCommunityPostMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateCommunityPost,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: communityKeys.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: communityKeys.detail(variables.postId),
+      });
+    },
+  });
+}
+
+export function useDeleteCommunityPostMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteCommunityPost,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: communityKeys.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: communityKeys.detail(variables.postId),
       });
     },
   });
