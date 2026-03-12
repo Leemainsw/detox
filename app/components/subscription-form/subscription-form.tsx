@@ -19,27 +19,25 @@ export const initialSubscriptionFormData: Partial<SubscriptionFormData> = {};
 interface Props {
   currentStep: StepType<typeof SUBSCRIPTION_STEPS>;
   currentStepIndex: number;
-  canGoPrev: boolean;
   state: Partial<SubscriptionFormData>;
   next: () => void;
-  back: () => void;
   setState: (
     partial:
       | Partial<SubscriptionFormData>
       | ((prev: Partial<SubscriptionFormData>) => Partial<SubscriptionFormData>)
   ) => void;
   onSubmit: (data: Partial<SubscriptionFormData>) => void;
+  loading?: boolean;
 }
 
 export default function SubscriptionForm({
   currentStep,
   currentStepIndex,
-  canGoPrev,
   state,
   next,
-  back,
   setState,
   onSubmit,
+  loading,
 }: Props) {
   return (
     <>
@@ -50,6 +48,7 @@ export default function SubscriptionForm({
 
       {currentStep === "select-brand" && (
         <SelectBrand
+          values={state}
           onNext={(values) => {
             setState((prev) => ({ ...prev, ...values }));
             next();
@@ -58,6 +57,7 @@ export default function SubscriptionForm({
       )}
       {currentStep === "input-payment-info" && (
         <InputPaymentInfo
+          values={state}
           onNext={(values) => {
             setState((prev) => ({ ...prev, ...values }));
             next();
@@ -66,11 +66,13 @@ export default function SubscriptionForm({
       )}
       {currentStep === "select-payment-type" && (
         <SelectPaymentType
+          values={state}
           onNext={(values) => {
             const merged = { ...state, ...values };
             setState(merged);
             onSubmit(merged);
           }}
+          loading={loading}
         />
       )}
     </>
