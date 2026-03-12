@@ -1,6 +1,6 @@
 export { default } from "./subscription-form";
 export {
+  getSubscriptionFunnelKey,
   initialSubscriptionFormData,
-  SUBSCRIPTION_FUNNEL_KEY,
   SUBSCRIPTION_STEPS,
 } from "./subscription-form";

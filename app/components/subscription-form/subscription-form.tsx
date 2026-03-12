@@ -7,7 +7,12 @@ import SelectBrand from "./_components/_steps/select-brand";
 import SelectPaymentType from "./_components/_steps/select-payment-type";
 import ProgressBar from "./_components/progress-bar/progress-bar";
 
-export const SUBSCRIPTION_FUNNEL_KEY = "subscription-form";
+const SUBSCRIPTION_FUNNEL_BASE = "subscription-form";
+
+/** Per-route funnel key to avoid state collision between add/edit flows */
+export function getSubscriptionFunnelKey(routeId: string): string {
+  return `${SUBSCRIPTION_FUNNEL_BASE}-${routeId}`;
+}
 export const SUBSCRIPTION_STEPS = [
   "select-brand",
   "input-payment-info",

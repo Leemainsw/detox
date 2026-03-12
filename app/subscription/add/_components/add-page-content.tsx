@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import Header from "@/app/components/header";
 import SubscriptionForm, {
+  getSubscriptionFunnelKey,
   initialSubscriptionFormData,
-  SUBSCRIPTION_FUNNEL_KEY,
   SUBSCRIPTION_STEPS,
 } from "@/app/components/subscription-form";
 import { useFunnel } from "@/app/hooks/useFunnel";
@@ -27,7 +27,7 @@ export default function AddPageContent() {
     setState,
     state,
   } = useFunnel<Partial<SubscriptionFormData>, typeof SUBSCRIPTION_STEPS>({
-    key: SUBSCRIPTION_FUNNEL_KEY,
+    key: getSubscriptionFunnelKey("add"),
     steps: SUBSCRIPTION_STEPS,
     initialState: initialSubscriptionFormData,
     syncWithQuery: true,
