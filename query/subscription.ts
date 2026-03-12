@@ -18,13 +18,6 @@ export const subscriptionKeys = {
   detail: (id: string) => [...subscriptionKeys.all, "detail", id] as const,
 };
 
-export function useGetSubscriptionQuery() {
-  return useQuery({
-    queryKey: subscriptionKeys.list(),
-    // queryFn: () => fetchSubscriptions(),
-  });
-}
-
 /**
  * 구독 생성
  * @returns 구독 생성 뮤테이션
@@ -70,8 +63,9 @@ export const useDeleteSubscriptionMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteSubscription,
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.list() });
+      queryClient.removeQueries({ queryKey: subscriptionKeys.detail(id) });
     },
   });
 };
@@ -90,6 +84,7 @@ export const useUpdateSubscriptionMutation = () => {
       values: TablesInsert<"subscription">;
     }) => updateSubscription(id, values),
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: subscriptionKeys.list() });
       queryClient.setQueryData(subscriptionKeys.detail(data.id), data);
     },
   });
