@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import TextButton from "@/app/components/text-button";
 import SubscriptionDetailContent from "./_components/subscription-detail-content";
 import { Suspense } from "react";
-import LoadingScreen from "@/app/components/loading-screen";
+import LoadingScreen from "./loading";
 
 export default function Page() {
   const router = useRouter();
