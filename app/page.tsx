@@ -10,73 +10,74 @@ import Button from "./components/button";
 import BottomNav from "./components/bottom-nav";
 import { subscriptableBrand } from "./utils/brand/brand";
 import type { SubscriptableBrandType } from "./utils/brand/type";
-
-interface SubscriptionItem {
-  id: number;
-  href: string;
-  brandType: SubscriptableBrandType;
-  name: string;
-  price?: number;
-  billingCycle: "월간결제" | "연간결제";
-  badgeLabel: string;
-  badgeVariant: "primary" | "danger";
-  group?: boolean;
-  groupCount?: number;
-}
+import { Tables } from "@/types/supabase.types";
 
 export default function Home() {
   // 실제 데이터와 무관하게 홈 상단/빈 상태 UI만 분기하고, 목록은 목업 데이터를 유지합니다.
   const showSubscribedUiState = true;
-  const subsList: Omit<SubscriptionItem, "name">[] = [
+  const subsList: Tables<"subscription">[] = [
     //더미 데이터
     {
-      id: 1,
-      href: "/",
-      brandType: "netflix",
-      price: 0,
-      billingCycle: "월간결제",
-      badgeLabel: "내일결제",
-      badgeVariant: "danger",
+      id: "2",
+      service: "wavve",
+      total_amount: 7900,
+      billing_cycle: "yearly",
+      created_at: "2026-03-13",
+      end_date: "2027-03-13",
+      payment_day: 1,
+      payment_type: "trial",
+      user_id: "1",
+      next_payment_date: "2026-03-13",
+      member_count: 1,
+      status: "active",
+      subscription_mode: "solo",
+      trial_months: 3,
+      updated_at: "2026-03-13",
     },
     {
-      id: 2,
-      href: "/",
-      brandType: "wavve",
-      price: 7900,
-      billingCycle: "연간결제",
-      badgeLabel: "내일결제",
-      badgeVariant: "danger",
+      id: "3",
+      service: "youtube-premium",
+      total_amount: 6900,
+      billing_cycle: "monthly",
+      created_at: "2026-03-14",
+      end_date: "2027-03-14",
+      payment_day: 1,
+      payment_type: "paid",
+      user_id: "1",
+      next_payment_date: "2026-03-14",
+      member_count: 1,
+      status: "active",
+      subscription_mode: "solo",
+      trial_months: 0,
+      updated_at: "2026-03-14",
     },
     {
-      id: 3,
-      href: "/",
-      brandType: "youtube-premium",
-      price: 6900,
-      billingCycle: "월간결제",
-      badgeLabel: "D-14",
-      badgeVariant: "primary",
-    },
-    {
-      id: 4,
-      href: "/",
-      brandType: "spotify",
-      price: 10900,
-      billingCycle: "월간결제",
-      badgeLabel: "D-24",
-      badgeVariant: "primary",
-      group: true,
-      groupCount: 4,
+      id: "4",
+      service: "spotify",
+      total_amount: 10900,
+      billing_cycle: "monthly",
+      created_at: "2026-03-24",
+      end_date: "2027-03-24",
+      payment_day: 1,
+      payment_type: "paid",
+      user_id: "1",
+      next_payment_date: "2026-03-24",
+      member_count: 4,
+      subscription_mode: "group",
+      status: "active",
+      trial_months: 0,
+      updated_at: "2026-03-24",
     },
   ];
 
-  const subscriptionList: SubscriptionItem[] = subsList.map((item) => ({
+  const subscriptionList: Tables<"subscription">[] = subsList.map((item) => ({
     ...item,
-    name: subscriptableBrand[item.brandType].label,
+    name: subscriptableBrand[item.service as SubscriptableBrandType].label,
   }));
   const subscriptionCount = subscriptionList.length;
   const totalPrice = subscriptionList.reduce(
-    (sum, item) => sum + (item.price ?? 0),
-    0
+    (sum, item) => sum + item.total_amount / Math.max(item.member_count, 1),
+    0 as number
   );
 
   return (
@@ -145,15 +146,12 @@ export default function Home() {
               {subscriptionList.map((item) => (
                 <li key={item.id}>
                   <SubscriptionList
-                    href={item.href}
-                    brandType={item.brandType}
-                    name={item.name}
-                    price={item.price}
-                    billingCycle={item.billingCycle}
-                    badgeLabel={item.badgeLabel}
-                    badgeVariant={item.badgeVariant}
-                    group={item.group}
-                    groupCount={item.groupCount}
+                    href={`/subscription/${item.id}`}
+                    brandType={item.service as SubscriptableBrandType}
+                    price={item.total_amount / item.member_count}
+                    billingCycle={item.billing_cycle}
+                    group={item.subscription_mode === "group"}
+                    groupCount={Math.max(item.member_count - 1, 0)}
                   />
                 </li>
               ))}
