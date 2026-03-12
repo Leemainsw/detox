@@ -26,9 +26,8 @@ function CommunityEditFormContent({
 }: CommunityEditFormContentProps) {
   const router = useRouter();
   const updateCommunityPostMutation = useUpdateCommunityPostMutation();
-  const [selectedService, setSelectedService] = useState<CommunityServiceFilter>(
-    initialPost.service
-  );
+  const [selectedService, setSelectedService] =
+    useState<CommunityServiceFilter>(initialPost.service);
   const [title, setTitle] = useState(initialPost.title);
   const [content, setContent] = useState(initialPost.content);
 
@@ -57,7 +56,11 @@ function CommunityEditFormContent({
 
   return (
     <>
-      <BrandTabs value={selectedService} onChange={setSelectedService} />
+      <BrandTabs
+        value={selectedService}
+        onChange={setSelectedService}
+        includeAll={false}
+      />
 
       <main className="px-6">
         <CommunityForm

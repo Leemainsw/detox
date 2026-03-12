@@ -14,7 +14,7 @@ export default function CommunityNewPage() {
   const router = useRouter();
 
   const [selectedService, setSelectedService] =
-    useState<CommunityServiceFilter>("all");
+    useState<CommunityServiceFilter>("netflix");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
@@ -48,7 +48,11 @@ export default function CommunityNewPage() {
     <>
       <Header variant="back" title="게시글 작성하기" />
 
-      <BrandTabs value={selectedService} onChange={setSelectedService} />
+      <BrandTabs
+        value={selectedService}
+        onChange={setSelectedService}
+        includeAll={false}
+      />
 
       <main className="px-6">
         <CommunityForm

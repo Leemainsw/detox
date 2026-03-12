@@ -8,11 +8,16 @@ import type { CommunityServiceFilter } from "../_types";
 type BrandTabsProps = {
   value: CommunityServiceFilter;
   onChange: (value: CommunityServiceFilter) => void;
+  includeAll?: boolean;
 };
 
-export default function BrandTabs({ value, onChange }: BrandTabsProps) {
+export default function BrandTabs({
+  value,
+  onChange,
+  includeAll = true,
+}: BrandTabsProps) {
   const brandTabs = [
-    { key: "all", label: "전체" },
+    ...(includeAll ? [{ key: "all", label: "전체" }] : []),
     ...Object.entries(subscriptableBrand).map(([key, brand]) => ({
       key,
       label: brand.label,
