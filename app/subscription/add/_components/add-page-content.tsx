@@ -10,13 +10,18 @@ import SubscriptionForm, {
 import { useFunnel } from "@/app/hooks/useFunnel";
 import type { SubscriptionFormData } from "@/app/components/subscription-form/types/type";
 import TextButton from "@/app/components/text-button";
+import { useSupabase } from "@/hooks/useSupabase";
+import { useCreateSubscriptionMutation } from "@/query/subscription";
+import { useToast } from "@/app/hooks/useToast";
+import parseSubscriptionFormData from "@/app/utils/subscriptions/parseSubscriptionFormData";
 
-export default function EditPageContent() {
+export default function AddPageContent() {
   const router = useRouter();
+  const { session } = useSupabase();
+
   const {
     currentStep,
     currentStepIndex,
-    canGoPrev,
     next,
     back,
     setState,
@@ -30,27 +35,40 @@ export default function EditPageContent() {
     destroyOnUnmount: false,
   });
 
-  const handleSubmit = (data: Partial<SubscriptionFormData>) => {
-    console.log("Form submitted:", data);
+  const { mutateAsync: createSubscription, isPending } =
+    useCreateSubscriptionMutation();
+
+  const { success, error } = useToast();
+
+  const handleSubmit = async (data: Partial<SubscriptionFormData>) => {
+    const user = session?.user;
+    if (!user) return;
+
+    try {
+      await createSubscription(parseSubscriptionFormData(data, user.id));
+      success("구독이 추가되었습니다");
+    } catch (err) {
+      console.error(err);
+      error("구독 추가에 실패했습니다");
+    }
   };
 
   return (
     <main className="mx-auto flex flex-col gap-5 relative">
       <Header
         variant="back"
-        title="구독 수정"
+        title="구독 추가"
         onBack={() => back(router.back)}
         rightContent={<TextButton>취소</TextButton>}
       />
       <SubscriptionForm
         currentStep={currentStep}
         currentStepIndex={currentStepIndex}
-        canGoPrev={canGoPrev}
         state={state}
         next={next}
-        back={back}
         setState={setState}
         onSubmit={handleSubmit}
+        loading={isPending}
       />
     </main>
   );
