@@ -9,7 +9,7 @@ import NotificationSettingsSkeleton from "./_components/notification-settings-sk
 
 export default function Page() {
   const router = useRouter();
-  const { session } = useSupabase();
+  const { session, loading } = useSupabase();
   const userId = session?.user.id;
 
   return (
@@ -22,7 +22,7 @@ export default function Page() {
         </span>
       </div>
 
-      {userId ? (
+      {userId && !loading ? (
         <Suspense fallback={<NotificationSettingsSkeleton />}>
           <NotificationSettingsContent userId={userId} />
         </Suspense>
