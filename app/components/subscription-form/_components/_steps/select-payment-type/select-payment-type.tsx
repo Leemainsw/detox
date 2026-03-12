@@ -125,13 +125,15 @@ export default function SelectPaymentType({ values, onNext, loading }: Props) {
               trial_months: trialMonthCount ?? 0,
             })
           }
-          disabled={!isSelectPaymentTypeValid(
-            subscriptionMode,
-            paymentType,
-            memberCount,
-            totalAmount,
-            trialMonthCount
-          )}
+          disabled={
+            !isSelectPaymentTypeValid(
+              subscriptionMode,
+              paymentType,
+              memberCount,
+              totalAmount,
+              trialMonthCount
+            )
+          }
           loading={loading}
         >
           저장
