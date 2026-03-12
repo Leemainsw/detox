@@ -47,7 +47,7 @@ export const upsertNotificationSettings = async (
       { onConflict: "user_id" }
     )
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) {
     throw error;
