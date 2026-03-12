@@ -5,17 +5,20 @@ import { subscriptableBrand } from "@/app/utils/brand/brand";
 import { cn } from "@/lib/utils";
 import type { CommunityServiceFilter, CommunityServiceValue } from "../_types";
 
-type BrandTabsProps = {
-  value: CommunityServiceFilter | CommunityServiceValue;
-  onChange: (value: CommunityServiceFilter | CommunityServiceValue) => void;
-  includeAll?: boolean;
-};
+type BrandTabsProps =
+  | {
+      value: CommunityServiceFilter;
+      onChange: (value: CommunityServiceFilter) => void;
+      includeAll?: true;
+    }
+  | {
+      value: CommunityServiceValue;
+      onChange: (value: CommunityServiceValue) => void;
+      includeAll: false;
+    };
 
-export default function BrandTabs({
-  value,
-  onChange,
-  includeAll = true,
-}: BrandTabsProps) {
+export default function BrandTabs(props: BrandTabsProps) {
+  const { value, onChange, includeAll = true } = props;
   const brandTabs = [
     ...(includeAll ? [{ key: "all", label: "전체" }] : []),
     ...Object.entries(subscriptableBrand).map(([key, brand]) => ({
