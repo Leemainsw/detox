@@ -37,12 +37,18 @@ export const useFunnelStore = create<FunnelStore>((set, get) => ({
     // 이미 초기화된 funnel이면 스킵 (재렌더 시 초기화 방지)
     if (get().funnels[key]) return;
 
+    // URL/query 복원 시 initialStepIndex > 0이면 stepHistory를 채워 canGoPrev/back 동작
+    const stepHistory =
+      initialStepIndex > 0
+        ? Array.from({ length: initialStepIndex }, (_, i) => i)
+        : [];
+
     set((state) => ({
       funnels: {
         ...state.funnels,
         [key]: {
           currentStepIndex: initialStepIndex,
-          stepHistory: [],
+          stepHistory,
           state: initialState,
           steps,
         },
