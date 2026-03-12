@@ -76,7 +76,11 @@ export default function Home() {
   }));
   const subscriptionCount = subscriptionList.length;
   const totalPrice = subscriptionList.reduce(
-    (sum, item) => sum + item.total_amount / Math.max(item.member_count, 1),
+    (sum, item) =>
+      sum +
+      (item.payment_type === "trial"
+        ? 0
+        : item.total_amount / Math.max(item.member_count, 1)),
     0 as number
   );
 
@@ -148,10 +152,11 @@ export default function Home() {
                   <SubscriptionList
                     href={`/subscription/${item.id}`}
                     brandType={item.service as SubscriptableBrandType}
-                    price={item.total_amount / item.member_count}
+                    price={item.total_amount / Math.max(item.member_count, 1)}
                     billingCycle={item.billing_cycle}
                     group={item.subscription_mode === "group"}
                     groupCount={Math.max(item.member_count - 1, 0)}
+                    isFreeTrial={item.payment_type === "trial"}
                   />
                 </li>
               ))}
