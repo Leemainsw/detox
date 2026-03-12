@@ -48,12 +48,21 @@ export async function getSubscriptionDetail(id: string) {
  * 구독 삭제
  * @param id 구독 ID
  * @returns 구독 삭제
+ * @throws 구독이 없거나 접근 권한이 없을 때
  */
 export async function deleteSubscription(id: string): Promise<boolean> {
-  const { error } = await supabase.from("subscription").delete().eq("id", id);
+  const { error, data } = await supabase
+    .from("subscription")
+    .delete()
+    .eq("id", id)
+    .select();
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (!data || data.length === 0) {
+    throw new Error("구독을 찾을 수 없습니다");
   }
 
   return true;
