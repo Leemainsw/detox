@@ -23,6 +23,7 @@ import {
 } from "@/query/community";
 import CommentList from "./comment-list";
 import CommunityList from "./community-list";
+import CommunityPostListSkeleton from "./community-post-list-skeleton";
 import CommunityReactionStats from "./community-reaction-stats";
 import DetailKebab from "./detail-kebab";
 import AuthorMeta from "./author-meta";
@@ -59,25 +60,65 @@ export default function CommunityDetailContent({
   const toggleLikeMutation = useToggleCommunityPostLikeMutation();
   const reportCommunityPostMutation = useReportCommunityPostMutation();
 
+  const renderCommentsLoading = () => (
+    <div className="grid grid-cols-1 gap-5 py-5">
+      {Array.from({ length: 2 }).map((_, index) => (
+        <div key={index} className="grid grid-cols-1 gap-3 rounded-lg bg-white">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-4/5" />
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderRecommendedPostsLoading = () => (
+    <section className="bg-gray-50 px-6 py-6">
+      <Skeleton className="h-6 w-52" />
+      <CommunityPostListSkeleton count={3} className="pt-6" />
+    </section>
+  );
+
   if (communityDetailQuery.isPending) {
     return (
       <>
         <Header variant="back" />
-        <main className="px-6 py-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-8 w-8 rounded-full" />
-              <Skeleton className="h-4 w-24" />
+        <main>
+          <section className="px-6 py-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <Skeleton className="h-10 w-10 rounded-full" />
             </div>
-            <Skeleton className="h-10 w-10 rounded-full" />
-          </div>
 
-          <div className="mt-4 space-y-3">
-            <Skeleton className="h-7 w-3/4" />
-            <Skeleton className="h-5 w-full" />
-            <Skeleton className="h-5 w-5/6" />
-            <Skeleton className="h-5 w-2/3" />
-          </div>
+            <div className="mt-4 space-y-3">
+              <Skeleton className="h-7 w-3/4" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-5/6" />
+              <Skeleton className="h-5 w-2/3" />
+            </div>
+          </section>
+
+          <section className="border-t-8 border-gray-50 px-6 py-5">
+            <div className="flex gap-8">
+              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-5 w-16" />
+            </div>
+          </section>
+
+          <section className="border-t border-gray-50 px-6 py-5">
+            <Skeleton className="h-5 w-10" />
+            {renderCommentsLoading()}
+
+            <div className="mt-4 flex items-center rounded-lg bg-gray-50 px-4 py-3">
+              <Skeleton className="h-5 w-full" />
+            </div>
+          </section>
         </main>
       </>
     );
@@ -178,7 +219,11 @@ export default function CommunityDetailContent({
   };
 
   const handleCreateComment = async () => {
-    if (!currentUserQuery.data?.id || !comment.trim()) {
+    if (
+      !currentUserQuery.data?.id ||
+      !comment.trim() ||
+      createCommentMutation.isPending
+    ) {
       return;
     }
 
@@ -281,7 +326,9 @@ export default function CommunityDetailContent({
         <section className="border-t border-gray-50 px-6 py-5">
           <h3 className="title-md text-gray-400">댓글</h3>
 
-          {commentsQuery.isError ? (
+          {commentsQuery.isPending ? (
+            renderCommentsLoading()
+          ) : commentsQuery.isError ? (
             <FeedbackState
               description="댓글을 불러오지 못했어요."
               className="py-8"
@@ -321,7 +368,9 @@ export default function CommunityDetailContent({
           </div>
         </section>
 
-        {recommendedPosts.length > 0 ? (
+        {recommendedPostsQuery.isPending ? (
+          renderRecommendedPostsLoading()
+        ) : recommendedPosts.length > 0 ? (
           <section className="bg-gray-50 px-6 py-6">
             <h3 className="title-md">
               <span className="text-brand-primary">AI디톡이</span>가 추천해주는
