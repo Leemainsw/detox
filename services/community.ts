@@ -437,45 +437,18 @@ export async function toggleCommunityPostLike(params: {
   postId: string;
   userId: string;
 }) {
-  const { data: existingLikes, error: likesError } = await supabase
-    .from("likes")
-    .select("id")
-    .eq("post_id", params.postId)
-    .eq("user_id", params.userId);
+  const { data, error } = await supabase.rpc("toggle_post_like", {
+    p_post_id: params.postId,
+    p_user_id: params.userId,
+  });
 
-  if (likesError) {
-    throw likesError;
+  if (error) {
+    throw error;
   }
 
-  if ((existingLikes?.length ?? 0) > 0) {
-    const { error: deleteError } = await supabase
-      .from("likes")
-      .delete()
-      .in(
-        "id",
-        existingLikes!.map((like) => like.id)
-      );
-
-    if (deleteError) {
-      throw deleteError;
-    }
-
-    return { liked: false };
-  }
-
-  const { data, error } = await supabase
-    .from("likes")
-    .insert({
-      post_id: params.postId,
-      user_id: params.userId,
-    })
-    .select("id")
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data) {
+  if (typeof data !== "boolean") {
     throw new Error("좋아요 처리에 실패했어요.");
   }
 
-  return { liked: true };
+  return { liked: data };
 }
