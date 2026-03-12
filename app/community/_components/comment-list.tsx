@@ -1,12 +1,24 @@
 "use client";
 import Avatar from "@/app/components/avatar";
 import type { CommunityCommentItemData } from "../_types";
+import {
+  useDeleteCommunityCommentMutation,
+  useReportCommunityCommentMutation,
+} from "@/query/community";
+import DetailKebab from "./detail-kebab";
 
 type CommentListProps = {
   items: CommunityCommentItemData[];
+  currentUserId?: string;
 };
 
-export default function CommentList({ items }: CommentListProps) {
+export default function CommentList({
+  items,
+  currentUserId,
+}: CommentListProps) {
+  const deleteCommunityCommentMutation = useDeleteCommunityCommentMutation();
+  const reportCommunityCommentMutation = useReportCommunityCommentMutation();
+
   if (items.length === 0) {
     return (
       <div className="py-8 text-center">
@@ -32,6 +44,33 @@ export default function CommentList({ items }: CommentListProps) {
                 <span className="text-xs text-gray-300">{item.timeAgo}</span>
               </div>
             </div>
+            {currentUserId ? (
+              <DetailKebab
+                entityName="댓글"
+                variant={currentUserId === item.userId ? "edit" : "default"}
+                onDelete={
+                  currentUserId === item.userId
+                    ? async () => {
+                        await deleteCommunityCommentMutation.mutateAsync({
+                          commentId: item.id,
+                          postId: item.postId,
+                          userId: currentUserId,
+                        });
+                      }
+                    : undefined
+                }
+                onReport={
+                  currentUserId !== item.userId
+                    ? async () => {
+                        await reportCommunityCommentMutation.mutateAsync({
+                          commentId: item.id,
+                          reporterUserId: currentUserId,
+                        });
+                      }
+                    : undefined
+                }
+              />
+            ) : null}
           </div>
           <div className="text-sm text-gray-300">
             <p className="text-base leading-[140%] text-gray-300 line-clamp-3">

@@ -225,23 +225,16 @@ export async function deleteCommunityPost(params: {
   postId: string;
   userId: string;
 }) {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("post")
     .update({
       deleted_at: new Date().toISOString(),
     })
     .eq("id", params.postId)
     .eq("user_id", params.userId)
-    .is("deleted_at", null)
-    .select("id")
-    .maybeSingle();
+    .is("deleted_at", null);
 
   if (error) throw error;
-  if (!data) {
-    throw new Error("삭제할 게시글이 없거나 권한이 없습니다.");
-  }
-
-  return data;
 }
 
 //게시글신고
@@ -337,23 +330,16 @@ export async function deleteCommunityComment(params: {
   postId: string;
   userId: string;
 }) {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("comment")
     .update({
       deleted_at: new Date().toISOString(),
     })
     .eq("id", params.commentId)
     .eq("user_id", params.userId)
-    .is("deleted_at", null)
-    .select("id")
-    .maybeSingle();
+    .is("deleted_at", null);
 
   if (error) throw error;
-  if (!data) {
-    throw new Error("삭제할 댓글이 없거나 권한이 없습니다.");
-  }
-
-  return data;
 }
 //댓글신고
 export async function reportCommunityComment(params: {

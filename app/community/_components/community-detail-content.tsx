@@ -21,6 +21,7 @@ import CommunityReactionStats from "./community-reaction-stats";
 import DetailKebab from "./detail-kebab";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useReportCommunityPostMutation } from "@/query/community";
 
 type CommunityDetailContentProps = {
   postId: string;
@@ -43,6 +44,7 @@ export default function CommunityDetailContent({
   const createCommentMutation = useCreateCommunityCommentMutation();
   const deleteCommunityPostMutation = useDeleteCommunityPostMutation();
   const toggleLikeMutation = useToggleCommunityPostLikeMutation();
+  const reportCommunityPostMutation = useReportCommunityPostMutation();
 
   if (communityDetailQuery.isPending) {
     return (
@@ -156,6 +158,17 @@ export default function CommunityDetailContent({
     }
   };
 
+  const handleReport = async () => {
+    if (!currentUserQuery.data?.id) {
+      throw new Error("신고하려면 로그인이 필요해요.");
+    }
+
+    await reportCommunityPostMutation.mutateAsync({
+      postId,
+      reporterUserId: currentUserQuery.data.id,
+    });
+  };
+
   return (
     <main>
       <section className="px-6 py-4">
@@ -170,9 +183,11 @@ export default function CommunityDetailContent({
             </div>
           </div>
           <DetailKebab
+            entityName="게시글"
             variant={isAuthor ? "edit" : "default"}
             onEdit={isAuthor ? handleEdit : undefined}
             onDelete={isAuthor ? handleDelete : undefined}
+            onReport={!isAuthor ? handleReport : undefined}
           />
         </div>
 
@@ -211,7 +226,10 @@ export default function CommunityDetailContent({
             <p className="body-md text-gray-400">댓글을 불러오지 못했어요.</p>
           </div>
         ) : (
-          <CommentList items={commentsQuery.data ?? []} />
+          <CommentList
+            items={commentsQuery.data ?? []}
+            currentUserId={currentUserQuery.data?.id}
+          />
         )}
 
         <div className="mt-4 flex items-center rounded-lg bg-gray-50 px-4 py-3">
