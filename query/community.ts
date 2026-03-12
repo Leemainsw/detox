@@ -6,6 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
 import type { CommunityListCursor } from "@/app/community/_types";
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import {
@@ -41,6 +42,45 @@ export const communityKeys = {
     userId ?? "guest",
   ],
 } as const;
+
+async function invalidateCommunityPost(
+  queryClient: QueryClient,
+  postId: string
+) {
+  await Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: communityKeys.lists(),
+    }),
+    queryClient.invalidateQueries({
+      queryKey: communityKeys.detail(postId),
+    }),
+  ]);
+}
+
+async function invalidateCommunityPostComments(
+  queryClient: QueryClient,
+  postId: string
+) {
+  await Promise.all([
+    invalidateCommunityPost(queryClient, postId),
+    queryClient.invalidateQueries({
+      queryKey: communityKeys.commentList(postId),
+    }),
+  ]);
+}
+
+async function invalidateCommunityPostLikes(
+  queryClient: QueryClient,
+  postId: string,
+  userId?: string
+) {
+  await Promise.all([
+    invalidateCommunityPost(queryClient, postId),
+    queryClient.invalidateQueries({
+      queryKey: communityKeys.likeStatus(postId, userId),
+    }),
+  ]);
+}
 
 //리스트
 export function useInfiniteCommunityListQuery(
@@ -87,13 +127,8 @@ export function useUpdateCommunityPostMutation() {
 
   return useMutation({
     mutationFn: updateCommunityPost,
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.lists(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.detail(variables.postId),
-      });
+    onSuccess: async (_, variables) => {
+      await invalidateCommunityPost(queryClient, variables.postId);
     },
   });
 }
@@ -104,13 +139,8 @@ export function useDeleteCommunityPostMutation() {
 
   return useMutation({
     mutationFn: deleteCommunityPost,
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.lists(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.detail(variables.postId),
-      });
+    onSuccess: async (_, variables) => {
+      await invalidateCommunityPost(queryClient, variables.postId);
     },
   });
 }
@@ -146,16 +176,8 @@ export function useCreateCommunityCommentMutation() {
 
   return useMutation({
     mutationFn: createCommunityComment,
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.lists(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.detail(variables.postId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.commentList(variables.postId),
-      });
+    onSuccess: async (_, variables) => {
+      await invalidateCommunityPostComments(queryClient, variables.postId);
     },
   });
 }
@@ -166,16 +188,12 @@ export function useToggleCommunityPostLikeMutation() {
 
   return useMutation({
     mutationFn: toggleCommunityPostLike,
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.lists(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.detail(variables.postId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.likeStatus(variables.postId, variables.userId),
-      });
+    onSuccess: async (_, variables) => {
+      await invalidateCommunityPostLikes(
+        queryClient,
+        variables.postId,
+        variables.userId
+      );
     },
   });
 }
@@ -186,16 +204,8 @@ export function useDeleteCommunityCommentMutation() {
 
   return useMutation({
     mutationFn: deleteCommunityComment,
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.lists(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.detail(variables.postId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: communityKeys.commentList(variables.postId),
-      });
+    onSuccess: async (_, variables) => {
+      await invalidateCommunityPostComments(queryClient, variables.postId);
     },
   });
 }
