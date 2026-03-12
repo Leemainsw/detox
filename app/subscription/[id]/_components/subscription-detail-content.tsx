@@ -12,6 +12,10 @@ import {
 import { useToast } from "@/app/hooks/useToast";
 import formatSubscriptionEndDateLabel from "@/app/utils/date/formatSubscriptionEndDateLabel";
 import calculateTotalAccumulatedAmount from "@/app/utils/subscriptions/calculateTotalAccumulatedAmount";
+import SubscriptionList from "@/app/components/subscription-list";
+import { SubscriptableBrandType } from "@/app/utils/brand/type";
+import { subscriptableBrand } from "@/app/utils/brand/brand";
+import calculateTrial from "@/app/utils/subscriptions/calculateTrial";
 
 export default function SubscriptionDetailContent() {
   const router = useRouter();
@@ -49,6 +53,24 @@ export default function SubscriptionDetailContent() {
   return (
     <>
       <div className="w-full mt-5 px-6 flex flex-col gap-5">
+        <SubscriptionList
+          brandType={subscription.service as SubscriptableBrandType}
+          group={subscription.subscription_mode === "group"}
+          price={
+            subscription.total_amount / Math.max(subscription.member_count, 1)
+          }
+          billingCycle={subscription.billing_cycle}
+          groupCount={subscription.member_count}
+          // 시작일로부터 무료체험기간이 자났다면 유료구독으로 봐야 함
+          isFreeTrial={
+            subscription.payment_type === "trial" &&
+            calculateTrial(
+              subscription.created_at!,
+              subscription.trial_months ?? 0
+            )
+          }
+        />
+
         <PaymentInfoCard
           splitBar={{
             type: subscription.subscription_mode,
