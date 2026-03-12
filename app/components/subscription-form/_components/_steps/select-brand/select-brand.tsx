@@ -16,12 +16,13 @@ interface Values {
 }
 
 interface Props {
+  values?: Partial<Values>;
   onNext: (values: Values) => void;
 }
-export default function SelectBrand({ onNext }: Props) {
+export default function SelectBrand({ values, onNext }: Props) {
   const [filter, setFilter] = useState("all");
   const [selectedBrand, setSelectedBrand] =
-    useState<SubscriptableBrandType | null>(null);
+    useState<SubscriptableBrandType | null>(values?.service ?? null);
 
   const filteredBrands = useMemo(() => getBrandsByCategory(filter), [filter]);
 

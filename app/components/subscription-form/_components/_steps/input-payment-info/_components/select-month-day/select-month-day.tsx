@@ -1,11 +1,9 @@
 "use client";
 
 import SelectBox from "@/app/components/select-box";
+import type { MonthDayValue } from "@/app/components/subscription-form/utils";
 
-export interface MonthDayValue {
-  month: number;
-  day: number;
-}
+export type { MonthDayValue };
 
 interface Props {
   value: MonthDayValue | null;

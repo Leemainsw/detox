@@ -4,6 +4,10 @@ import Input from "@/app/components/input";
 import SegmentedControl from "@/app/components/segmented-control";
 import { useState } from "react";
 import { PaymentType, SubscriptionMode } from "../../../types/type";
+import {
+  clampTrialMonths,
+  isSelectPaymentTypeValid,
+} from "@/app/components/subscription-form/utils";
 
 interface Values {
   subscription_mode: SubscriptionMode;
@@ -14,15 +18,26 @@ interface Values {
 }
 
 interface Props {
+  values?: Partial<Values>;
   onNext: (values: Values) => void;
+  loading?: boolean;
 }
-export default function SelectPaymentType({ onNext }: Props) {
-  const [subscriptionMode, setSubscriptionMode] =
-    useState<SubscriptionMode>("solo");
-  const [paymentType, setPaymentType] = useState<PaymentType>("paid");
-  const [memberCount, setMemberCount] = useState<number | null>(null);
-  const [trialMonthCount, setTrialMonthCount] = useState<number | null>(null);
-  const [totalAmount, setTotalAmount] = useState<number | null>(null);
+export default function SelectPaymentType({ values, onNext, loading }: Props) {
+  const [subscriptionMode, setSubscriptionMode] = useState<SubscriptionMode>(
+    values?.subscription_mode ?? "solo"
+  );
+  const [paymentType, setPaymentType] = useState<PaymentType>(
+    values?.payment_type ?? "paid"
+  );
+  const [memberCount, setMemberCount] = useState<number | null>(
+    values?.member_count ?? null
+  );
+  const [trialMonthCount, setTrialMonthCount] = useState<number | null>(
+    values?.trial_months ?? null
+  );
+  const [totalAmount, setTotalAmount] = useState<number | null>(
+    values?.total_amount ?? null
+  );
   return (
     <>
       <div className="flex flex-col gap-5 px-6 relative">
@@ -90,7 +105,7 @@ export default function SelectPaymentType({ onNext }: Props) {
             value={trialMonthCount ? trialMonthCount.toString() : ""}
             onBlur={(e) => {
               if (e.target.value === "" || e.target.value === "0") return;
-              const value = Math.min(12, Math.max(1, Number(e.target.value)));
+              const value = clampTrialMonths(Number(e.target.value));
               e.target.value = String(value);
             }}
           />
@@ -110,13 +125,16 @@ export default function SelectPaymentType({ onNext }: Props) {
               trial_months: trialMonthCount ?? 0,
             })
           }
-          disabled={
-            (subscriptionMode === "group" && !memberCount) ||
-            (paymentType === "paid" && !totalAmount) ||
-            (paymentType === "trial" && !trialMonthCount)
-          }
+          disabled={!isSelectPaymentTypeValid(
+            subscriptionMode,
+            paymentType,
+            memberCount,
+            totalAmount,
+            trialMonthCount
+          )}
+          loading={loading}
         >
-          다음
+          저장
         </Button>
       </BottomCTA>
     </>

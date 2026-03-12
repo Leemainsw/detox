@@ -4,10 +4,13 @@ import { DatePicker } from "@/app/components/date-picker";
 import SegmentedControl from "@/app/components/segmented-control";
 import { useState } from "react";
 import SelectDay from "./_components/select-day";
+import SelectMonthDay from "./_components/select-month-day";
 import { BillingCycle } from "../../../types/type";
-import SelectMonthDay, {
-  type MonthDayValue,
-} from "./_components/select-month-day";
+import {
+  parsePaymentDayToDay,
+  parsePaymentDayToMonthDay,
+  formatPaymentDay,
+} from "../../../utils";
 
 interface Values {
   billing_cycle: BillingCycle;
@@ -15,33 +18,33 @@ interface Values {
   end_date: string;
 }
 interface Props {
+  values?: Partial<Values>;
   onNext: (values: Values) => void;
 }
-export default function InputPaymentInfo({ onNext }: Props) {
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  const [selectedMonthDay, setSelectedMonthDay] =
-    useState<MonthDayValue | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(
-    new Date().toISOString()
+export default function InputPaymentInfo({ values, onNext }: Props) {
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>(
+    values?.billing_cycle ?? "monthly"
   );
 
-  const getPaymentDay = (): string | null => {
-    if (billingCycle === "monthly") {
-      return selectedDay ? selectedDay.toString() : null;
-    }
+  const [selectedDay, setSelectedDay] = useState<number | null>(() =>
+    parsePaymentDayToDay(values?.payment_day)
+  );
 
-    if (selectedMonthDay) {
-      const m = selectedMonthDay.month.toString().padStart(2, "0");
-      const d = selectedMonthDay.day.toString().padStart(2, "0");
-      return `${m}-${d}`;
-    }
+  const [selectedMonthDay, setSelectedMonthDay] = useState(() =>
+    parsePaymentDayToMonthDay(values?.payment_day)
+  );
 
-    return null;
-  };
+  const [endDate, setEndDate] = useState<string | null>(
+    values?.end_date ?? new Date().toISOString()
+  );
+
+  const paymentDay = formatPaymentDay(
+    billingCycle,
+    selectedDay,
+    selectedMonthDay
+  );
 
   const handleNext = () => {
-    const paymentDay = getPaymentDay();
     if (!paymentDay || !endDate) return;
     onNext({
       billing_cycle: billingCycle,
@@ -96,7 +99,7 @@ export default function InputPaymentInfo({ onNext }: Props) {
           variant="primary"
           size="lg"
           onClick={handleNext}
-          disabled={!getPaymentDay() || !endDate}
+          disabled={!paymentDay || !endDate}
         >
           다음
         </Button>
