@@ -12,13 +12,12 @@ export async function POST(req: Request) {
   try {
     const { subscriptions, userContext } = await req.json();
 
-    // 1. [데이터 컨텍스트 주입] 실시간 시장 데이터 수집
+    // 실시간 시장 데이터 수집 tavily AI
     const searchResult = await tavilyClient.search(
       "2026년 대한민국 주요 구독 서비스(OTT, 쇼핑, 음악, 통신사 결합, AI) 최신 요금제 및 프로모션 할인 혜택",
       { searchDepth: "basic", maxResults: 3 }
     );
 
-    // 2. [전략적 프롬프트 엔지니어링]
     const systemPrompt = `
       당신은 전문적인 구독 자산 관리 전략가입니다. 
       사용자의 소비 패턴을 시장 데이터와 대조하여 '자산 최적화 리포트'를 생성하세요.
@@ -47,7 +46,7 @@ export async function POST(req: Request) {
       }
     `;
 
-    // 3. OpenAI GPT-4o-mini 호출
+    // OpenAI GPT-4o-mini 호출
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -73,7 +72,7 @@ export async function POST(req: Request) {
       throw new Error("AI 응답 생성에 실패했습니다.");
     }
 
-    // 4. 결과 반환
+    // 결과 반환
     return Response.json(JSON.parse(content));
   } catch (error) {
     console.error("AI Analysis Error:", error);
