@@ -55,9 +55,11 @@ export default function SelectPaymentType({ values, onNext, loading }: Props) {
             { label: "여럿이서", value: "group" },
           ]}
           value={subscriptionMode}
-          onValueChange={(value) =>
-            setSubscriptionMode(value as SubscriptionMode)
-          }
+          onValueChange={(value) => {
+            const mode = value as SubscriptionMode;
+            setSubscriptionMode(mode);
+            if (mode === "solo") setMemberCount(1);
+          }}
         />
         {subscriptionMode === "group" && (
           <Input
@@ -78,7 +80,16 @@ export default function SelectPaymentType({ values, onNext, loading }: Props) {
             { label: "무료결제", value: "trial" },
           ]}
           value={paymentType}
-          onValueChange={(value) => setPaymentType(value as PaymentType)}
+          onValueChange={(value) => {
+            const type = value as PaymentType;
+            setPaymentType(type);
+            if (type === "paid") {
+              setTrialMonthCount(0);
+              setTotalAmount(0);
+            } else {
+              setTotalAmount(0);
+            }
+          }}
         />
 
         {paymentType === "paid" && (
@@ -106,7 +117,7 @@ export default function SelectPaymentType({ values, onNext, loading }: Props) {
             onBlur={(e) => {
               if (e.target.value === "" || e.target.value === "0") return;
               const value = clampTrialMonths(Number(e.target.value));
-              e.target.value = String(value);
+              setTrialMonthCount(value);
             }}
           />
         )}
