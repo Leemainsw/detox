@@ -18,6 +18,7 @@ import {
   getCommunityDetail,
   getCommunityListPage,
   getCommunityPostLikeStatus,
+  getRecommendedCommunityPosts,
   reportCommunityComment,
   reportCommunityPost,
   toggleCommunityPostLike,
@@ -33,6 +34,12 @@ export const communityKeys = {
   ],
   details: () => [...communityKeys.all, "detail"],
   detail: (postId: string) => [...communityKeys.details(), postId],
+  recommendations: () => [...communityKeys.all, "recommendation"],
+  recommendedPosts: (postId: string, service?: SubscriptableBrandType) => [
+    ...communityKeys.recommendations(),
+    postId,
+    service ?? "all",
+  ],
   comments: () => [...communityKeys.all, "comment"],
   commentList: (postId: string) => [...communityKeys.comments(), postId],
   likes: () => [...communityKeys.all, "like"],
@@ -104,6 +111,21 @@ export function useCommunityDetailQuery(postId: string) {
     queryKey: communityKeys.detail(postId),
     queryFn: () => getCommunityDetail(postId),
     enabled: Boolean(postId),
+  });
+}
+
+export function useRecommendedCommunityPostsQuery(
+  postId: string,
+  service?: SubscriptableBrandType
+) {
+  return useQuery({
+    queryKey: communityKeys.recommendedPosts(postId, service),
+    queryFn: () =>
+      getRecommendedCommunityPosts({
+        postId,
+        service: service!,
+      }),
+    enabled: Boolean(postId && service),
   });
 }
 

@@ -16,11 +16,13 @@ import {
   useCommunityDetailQuery,
   useDeleteCommunityCommentMutation,
   useDeleteCommunityPostMutation,
+  useRecommendedCommunityPostsQuery,
   useReportCommunityCommentMutation,
   useReportCommunityPostMutation,
   useToggleCommunityPostLikeMutation,
 } from "@/query/community";
 import CommentList from "./comment-list";
+import CommunityList from "./community-list";
 import CommunityReactionStats from "./community-reaction-stats";
 import DetailKebab from "./detail-kebab";
 import AuthorMeta from "./author-meta";
@@ -41,6 +43,10 @@ export default function CommunityDetailContent({
   const commentInputRef = useRef<HTMLInputElement | null>(null);
   const currentUserQuery = useCurrentUserQuery();
   const communityDetailQuery = useCommunityDetailQuery(postId);
+  const recommendedPostsQuery = useRecommendedCommunityPostsQuery(
+    postId,
+    communityDetailQuery.data?.service
+  );
   const commentsQuery = useCommunityCommentsQuery(postId);
   const likeStatusQuery = useCommunityPostLikeStatusQuery(
     postId,
@@ -123,6 +129,7 @@ export default function CommunityDetailContent({
 
   const post = communityDetailQuery.data;
   const isAuthor = currentUserQuery.data?.id === post.userId;
+  const recommendedPosts = recommendedPostsQuery.data ?? [];
 
   const handleEdit = () => {
     router.push(`/community/${postId}/edit`);
@@ -222,7 +229,7 @@ export default function CommunityDetailContent({
       <Header variant="back" />
       <main>
         <section className="px-6 py-4">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             <AuthorMeta
               thumbUrl={post.thumbUrl}
               author={post.author}
@@ -306,6 +313,17 @@ export default function CommunityDetailContent({
             </TextButton>
           </div>
         </section>
+
+        {recommendedPosts.length > 0 ? (
+          <section className="bg-gray-50 px-6 py-6">
+            <h3 className="title-md">
+              <span className="text-brand-primary">AI디톡이</span>가 추천해주는
+              관련 게시글
+            </h3>
+
+            <CommunityList items={recommendedPosts} />
+          </section>
+        ) : null}
       </main>
     </>
   );

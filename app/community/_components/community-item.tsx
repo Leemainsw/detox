@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Avatar from "@/app/components/avatar";
-import CommunityReactionStats from "./community-reaction-stats";
 import type { CommunityListItemData } from "../_types";
+import CommunityReactionStats from "./community-reaction-stats";
+import AuthorMeta from "./author-meta";
 
 type CommunityItemProps = {
   item: CommunityListItemData;
@@ -11,22 +11,18 @@ type CommunityItemProps = {
 
 export default function CommunityItem({ item }: CommunityItemProps) {
   return (
-    <li className="w-full grid grid-cols-1 items-center gap-2 py-4 px-6 bg-white rounded-lg">
+    <li className="w-full grid grid-cols-1 items-center gap-2 rounded-lg bg-white px-6 py-4">
       <Link href={`/community/${item.id}`} className="block">
-        <div className="flex items-center gap-2">
-          <Avatar size="sm" src={item.thumbUrl} alt={item.author} />
-          <div className="flex gap-3">
-            <div className="text-sm text-black font-bold leading-[110%]">
-              {item.author}
-            </div>
-            <span className="text-xs text-gray-300">{item.timeAgo}</span>
-          </div>
-        </div>
-        <div className="text-sm text-gray-300 mt-4">
-          <h6 className="text-lg text-black font-bold leading-[140%] mb-2 line-clamp-2">
+        <AuthorMeta
+          thumbUrl={item.thumbUrl}
+          author={item.author}
+          timeAgo={item.timeAgo}
+        />
+        <div className="mt-4 text-sm text-gray-300">
+          <h6 className="mb-2 line-clamp-2 text-lg font-bold leading-[140%] text-black">
             {item.title}
           </h6>
-          <p className="text-base leading-[140%] text-gray-300 line-clamp-3">
+          <p className="line-clamp-3 text-base leading-[140%] text-gray-300">
             {item.content}
           </p>
         </div>

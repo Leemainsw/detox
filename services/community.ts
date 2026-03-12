@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import type {
   CommunityCommentItemData,
   CommunityDetailData,
+  CommunityListItemData,
   CommunityListCursor,
   CommunityListPage,
 } from "@/app/community/_types";
@@ -177,6 +178,46 @@ export async function getCommunityDetail(
     createdAt: post.created_at,
   };
 }
+
+export async function getRecommendedCommunityPosts(params: {
+  postId: string;
+  service: SubscriptableBrandType;
+  limit?: number;
+}): Promise<CommunityListItemData[]> {
+  const limit = params.limit ?? 3;
+  const sameServicePage = await getCommunityListPage({
+    service: params.service,
+    pageSize: Math.max(limit + 1, 4),
+  });
+
+  const recommendedPosts = sameServicePage.items.filter(
+    (item) => item.id !== params.postId
+  );
+
+  if (recommendedPosts.length >= limit) {
+    return recommendedPosts.slice(0, limit);
+  }
+
+  const fallbackPage = await getCommunityListPage({
+    pageSize: Math.max(limit * 3, 10),
+  });
+
+  const existingIds = new Set(recommendedPosts.map((item) => item.id));
+  const mergedPosts = [
+    ...recommendedPosts,
+    ...fallbackPage.items.filter((item) => {
+      if (item.id === params.postId || existingIds.has(item.id)) {
+        return false;
+      }
+
+      existingIds.add(item.id);
+      return true;
+    }),
+  ];
+
+  return mergedPosts.slice(0, limit);
+}
+
 //게시글작성
 export async function createCommunityPost(params: {
   userId: string;
