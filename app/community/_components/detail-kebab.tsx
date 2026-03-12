@@ -3,22 +3,27 @@
 import { useState } from "react";
 import AlertDialogComponent from "@/app/components/alert/alert-dialog";
 import KebabMenu from "@/app/components/kebabmenu";
+import { useToast } from "@/app/hooks/useToast";
 import type { AlertItem } from "@/store/useAlertStore";
-import { toast } from "sonner";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrashCan,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 
-type KebabVariant = "default" | "edit";
-
 interface DetailKebabProps {
-  variant?: KebabVariant;
+  variant?: "default" | "edit";
+  onEdit?: () => void;
+  onDelete?: () => Promise<void> | void;
 }
 
-export default function DetailKebab({ variant = "default" }: DetailKebabProps) {
+export default function DetailKebab({
+  variant = "default",
+  onEdit,
+  onDelete,
+}: DetailKebabProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const deleteAlert: AlertItem = {
     id: "delete-post-alert",
@@ -27,20 +32,26 @@ export default function DetailKebab({ variant = "default" }: DetailKebabProps) {
     confirmText: "삭제",
     cancelText: "취소",
     variant: "danger",
-    onConfirm: () => {
-      toast(
-        <span className="inline-flex items-center gap-2 body-md">
-          <FontAwesomeIcon
-            icon={faTrashCan}
-            className="w-4 h-4 text-gray-400"
-          />
-          게시글이 삭제되었습니다.
-        </span>,
-        {
-          className: "!justify-center",
-          style: { textAlign: "center" },
-        }
-      );
+    onConfirm: async () => {
+      try {
+        await onDelete?.();
+
+        toast(
+          <span className="inline-flex items-center gap-2 body-md">
+            <FontAwesomeIcon
+              icon={faTrashCan}
+              className="w-4 h-4 text-gray-400"
+            />
+            게시글이 삭제되었습니다.
+          </span>,
+          {
+            className: "!justify-center",
+            style: { textAlign: "center" },
+          }
+        );
+      } catch (error) {
+        console.error(error);
+      }
     },
   };
 
@@ -48,22 +59,27 @@ export default function DetailKebab({ variant = "default" }: DetailKebabProps) {
     <>
       <KebabMenu
         variant={variant}
-        onEdit={variant === "edit" ? () => {} : undefined}
-        onDelete={() => setIsDeleteDialogOpen(true)}
-        onReport={() =>
-          toast(
-            <span className="inline-flex items-center gap-2 body-md">
-              <FontAwesomeIcon
-                icon={faTriangleExclamation}
-                className="w-4 h-4 text-gray-400"
-              />
-              게시글이 신고되었습니다.
-            </span>,
-            {
-              className: "!justify-center",
-              style: { textAlign: "center" },
-            }
-          )
+        onEdit={variant === "edit" ? onEdit : undefined}
+        onDelete={
+          variant === "edit" ? () => setIsDeleteDialogOpen(true) : undefined
+        }
+        onReport={
+          variant === "default"
+            ? () =>
+                toast(
+                  <span className="inline-flex items-center gap-2 body-md">
+                    <FontAwesomeIcon
+                      icon={faTriangleExclamation}
+                      className="w-4 h-4 text-gray-400"
+                    />
+                    게시글이 신고되었습니다.
+                  </span>,
+                  {
+                    className: "!justify-center",
+                    style: { textAlign: "center" },
+                  }
+                )
+            : undefined
         }
       />
       <AlertDialogComponent
