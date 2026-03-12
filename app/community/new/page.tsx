@@ -6,7 +6,7 @@ import Header from "@/app/components/header";
 import CommunityForm from "../_components/community-form";
 import BrandTabs from "../_components/brand-tabs";
 import Button from "@/app/components/button";
-import type { CommunityServiceFilter } from "../_types";
+import type { CommunityServiceValue } from "../_types";
 import { useCurrentUserQuery } from "@/query/users";
 import { useCreateCommunityPostMutation } from "@/query/community";
 
@@ -14,21 +14,17 @@ export default function CommunityNewPage() {
   const router = useRouter();
 
   const [selectedService, setSelectedService] =
-    useState<CommunityServiceFilter>("netflix");
+    useState<CommunityServiceValue>("netflix");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
   const currentUserQuery = useCurrentUserQuery();
   const createCommunityPostMutation = useCreateCommunityPostMutation();
 
-  const isFormValid =
-    selectedService !== "all" &&
-    title.trim().length > 0 &&
-    content.trim().length > 0;
+  const isFormValid = title.trim().length > 0 && content.trim().length > 0;
 
   const handleSubmit = async () => {
     if (!currentUserQuery.data?.id) return;
-    if (selectedService === "all") return;
 
     try {
       const createdPost = await createCommunityPostMutation.mutateAsync({

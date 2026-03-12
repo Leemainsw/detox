@@ -1,6 +1,7 @@
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 
 export type CommunityServiceFilter = SubscriptableBrandType | "all";
+export type CommunityServiceValue = SubscriptableBrandType;
 export type CommunityListItemData = {
   id: string;
   service: SubscriptableBrandType;

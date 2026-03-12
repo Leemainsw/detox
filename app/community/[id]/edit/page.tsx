@@ -5,7 +5,7 @@ import Header from "@/app/components/header";
 import CommunityForm from "../../_components/community-form";
 import BrandTabs from "../../_components/brand-tabs";
 import Button from "@/app/components/button";
-import type { CommunityDetailData, CommunityServiceFilter } from "../../_types";
+import type { CommunityDetailData, CommunityServiceValue } from "../../_types";
 import { useCurrentUserQuery } from "@/query/users";
 import {
   useCommunityDetailQuery,
@@ -27,18 +27,13 @@ function CommunityEditFormContent({
   const router = useRouter();
   const updateCommunityPostMutation = useUpdateCommunityPostMutation();
   const [selectedService, setSelectedService] =
-    useState<CommunityServiceFilter>(initialPost.service);
+    useState<CommunityServiceValue>(initialPost.service);
   const [title, setTitle] = useState(initialPost.title);
   const [content, setContent] = useState(initialPost.content);
 
-  const isFormValid =
-    selectedService !== "all" &&
-    title.trim().length > 0 &&
-    content.trim().length > 0;
+  const isFormValid = title.trim().length > 0 && content.trim().length > 0;
 
   const handleSubmit = async () => {
-    if (selectedService === "all") return;
-
     try {
       await updateCommunityPostMutation.mutateAsync({
         postId,

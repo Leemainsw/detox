@@ -3,11 +3,11 @@
 import BrandBox from "@/app/components/brand-box";
 import { subscriptableBrand } from "@/app/utils/brand/brand";
 import { cn } from "@/lib/utils";
-import type { CommunityServiceFilter } from "../_types";
+import type { CommunityServiceFilter, CommunityServiceValue } from "../_types";
 
 type BrandTabsProps = {
-  value: CommunityServiceFilter;
-  onChange: (value: CommunityServiceFilter) => void;
+  value: CommunityServiceFilter | CommunityServiceValue;
+  onChange: (value: CommunityServiceFilter | CommunityServiceValue) => void;
   includeAll?: boolean;
 };
 
@@ -72,7 +72,7 @@ export default function BrandTabs({
             key={tab.key}
             type="button"
             aria-pressed={isActive}
-            onClick={() => onChange(tab.key as CommunityServiceFilter)}
+            onClick={() => onChange(tab.key as CommunityServiceValue)}
             className={cn(
               "flex min-w-fit max-w-12 flex-col items-center gap-2 transition-opacity"
             )}
