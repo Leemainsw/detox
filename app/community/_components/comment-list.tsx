@@ -1,5 +1,6 @@
 "use client";
 
+import FeedbackState from "@/app/components/feedback-state";
 import type { CommunityCommentItemData } from "../_types";
 import AuthorMeta from "./author-meta";
 import DetailKebab from "./detail-kebab";
@@ -19,9 +20,13 @@ export default function CommentList({
 }: CommentListProps) {
   if (items.length === 0) {
     return (
-      <div className="py-8 text-center">
-        <p className="body-md text-gray-400">첫 댓글을 남겨보세요.</p>
-      </div>
+      <FeedbackState
+        description="첫 댓글을 남겨보세요."
+        className="py-8"
+        imageSrc="/images/emoji/no-alarm.png"
+        contentClassName="gap-0"
+        descriptionClassName="body-md font-normal text-gray-400"
+      />
     );
   }
 

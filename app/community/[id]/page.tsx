@@ -1,4 +1,3 @@
-import Header from "@/app/components/header";
 import CommunityDetailContent from "../_components/community-detail-content";
 
 type CommunityDetailPageProps = {
@@ -10,10 +9,5 @@ export default async function CommunityDetailPage({
 }: CommunityDetailPageProps) {
   const { id } = await params;
 
-  return (
-    <div>
-      <Header variant="back" />
-      <CommunityDetailContent postId={id} />
-    </div>
-  );
+  return <CommunityDetailContent postId={id} />;
 }

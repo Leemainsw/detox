@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/app/components/button";
+import FeedbackState from "@/app/components/feedback-state";
+import Header from "@/app/components/header";
 import TextButton from "@/app/components/text-button";
 import { useToast } from "@/app/hooks/useToast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,50 +55,68 @@ export default function CommunityDetailContent({
 
   if (communityDetailQuery.isPending) {
     return (
-      <main className="px-6 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-8 w-8 rounded-full" />
-            <Skeleton className="h-4 w-24" />
+      <>
+        <Header variant="back" />
+        <main className="px-6 py-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <Skeleton className="h-10 w-10 rounded-full" />
           </div>
-          <Skeleton className="h-10 w-10 rounded-full" />
-        </div>
 
-        <div className="mt-4 space-y-3">
-          <Skeleton className="h-7 w-3/4" />
-          <Skeleton className="h-5 w-full" />
-          <Skeleton className="h-5 w-5/6" />
-          <Skeleton className="h-5 w-2/3" />
-        </div>
-      </main>
+          <div className="mt-4 space-y-3">
+            <Skeleton className="h-7 w-3/4" />
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-5 w-5/6" />
+            <Skeleton className="h-5 w-2/3" />
+          </div>
+        </main>
+      </>
     );
   }
 
   if (communityDetailQuery.isError) {
     return (
-      <main className="px-6 py-12">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <p className="body-md text-gray-400">게시글을 불러오지 못했어요.</p>
+      <main className="mx-auto min-h-screen flex flex-col items-center justify-center px-6">
+        <FeedbackState
+          title="게시글을 불러오지 못했어요."
+          description="죄송하지만 나중에 다시 시도해주세요."
+          imageSrc="/images/emoji/error.png"
+          bottomCTA
+        >
           <Button
-            variant="secondary"
+            variant="primary"
             size="md"
+            className="w-full"
             onClick={() => communityDetailQuery.refetch()}
           >
             다시 시도
           </Button>
-        </div>
+        </FeedbackState>
       </main>
     );
   }
 
   if (!communityDetailQuery.data) {
     return (
-      <main className="px-6 py-12">
-        <div className="flex flex-col items-center text-center">
-          <p className="body-md text-gray-400">
-            삭제되었거나 없는 게시글입니다.
-          </p>
-        </div>
+      <main className="mx-auto min-h-screen flex flex-col items-center justify-center px-6">
+        <FeedbackState
+          title="페이지를 불러올 수 없어요"
+          description="삭제되었거나 없는 게시글입니다."
+          imageSrc="/images/emoji/error.png"
+          bottomCTA
+        >
+          <Button
+            variant="primary"
+            size="md"
+            className="w-full"
+            onClick={() => router.back()}
+          >
+            돌아가기
+          </Button>
+        </FeedbackState>
       </main>
     );
   }
@@ -198,88 +218,95 @@ export default function CommunityDetailContent({
   };
 
   return (
-    <main>
-      <section className="px-6 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <AuthorMeta
-            thumbUrl={post.thumbUrl}
-            author={post.author}
-            timeAgo={post.timeAgo}
-          />
-          <DetailKebab
-            entityName="게시글"
-            variant={isAuthor ? "edit" : "default"}
-            onEdit={isAuthor ? handleEdit : undefined}
-            onDelete={isAuthor ? handleDelete : undefined}
-            onReport={!isAuthor ? handleReport : undefined}
-          />
-        </div>
-
-        <div className="mt-4 text-sm text-gray-300">
-          <h6 className="mb-2 text-lg font-bold leading-[140%] text-black">
-            {post.title}
-          </h6>
-          <p className="text-base leading-[140%] text-gray-300 whitespace-pre-wrap">
-            {post.content}
-          </p>
-        </div>
-      </section>
-
-      <section className="border-t-8 border-gray-50 py-5">
-        <CommunityReactionStats
-          likeCount={post.likeCount}
-          commentCount={post.commentCount}
-          showLabel
-          className="px-6"
-          isLiked={likeStatusQuery.data ?? false}
-          likeDisabled={
-            !currentUserQuery.data?.id ||
-            likeStatusQuery.isPending ||
-            toggleLikeMutation.isPending
-          }
-          onLikeClick={handleToggleLike}
-          onCommentClick={() => commentInputRef.current?.focus()}
-        />
-      </section>
-
-      <section className="border-t border-gray-50 px-6 py-5">
-        <h3 className="title-md text-gray-400">댓글</h3>
-
-        {commentsQuery.isError ? (
-          <div className="py-8 text-center">
-            <p className="body-md text-gray-400">댓글을 불러오지 못했어요.</p>
+    <>
+      <Header variant="back" />
+      <main>
+        <section className="px-6 py-4">
+          <div className="flex items-start justify-between gap-4">
+            <AuthorMeta
+              thumbUrl={post.thumbUrl}
+              author={post.author}
+              timeAgo={post.timeAgo}
+            />
+            <DetailKebab
+              entityName="게시글"
+              variant={isAuthor ? "edit" : "default"}
+              onEdit={isAuthor ? handleEdit : undefined}
+              onDelete={isAuthor ? handleDelete : undefined}
+              onReport={!isAuthor ? handleReport : undefined}
+            />
           </div>
-        ) : (
-          <CommentList
-            items={commentsQuery.data ?? []}
-            currentUserId={currentUserQuery.data?.id}
-            onDeleteComment={handleDeleteComment}
-            onReportComment={handleReportComment}
-          />
-        )}
 
-        <div className="mt-4 flex items-center rounded-lg bg-gray-50 px-4 py-3">
-          <input
-            ref={commentInputRef}
-            type="text"
-            value={comment}
-            onChange={(event) => setComment(event.target.value)}
-            placeholder="댓글을 입력하세요"
-            disabled={
-              !currentUserQuery.data?.id || createCommentMutation.isPending
+          <div className="mt-4 text-sm text-gray-300">
+            <h6 className="mb-2 text-lg font-bold leading-[140%] text-black">
+              {post.title}
+            </h6>
+            <p className="text-base leading-[140%] text-gray-300 whitespace-pre-wrap">
+              {post.content}
+            </p>
+          </div>
+        </section>
+
+        <section className="border-t-8 border-gray-50 py-5">
+          <CommunityReactionStats
+            likeCount={post.likeCount}
+            commentCount={post.commentCount}
+            showLabel
+            className="px-6"
+            isLiked={likeStatusQuery.data ?? false}
+            likeDisabled={
+              !currentUserQuery.data?.id ||
+              likeStatusQuery.isPending ||
+              toggleLikeMutation.isPending
             }
-            className="flex-1 bg-transparent text-base text-gray-400 outline-none placeholder:text-gray-300 disabled:cursor-not-allowed"
+            onLikeClick={handleToggleLike}
+            onCommentClick={() => commentInputRef.current?.focus()}
           />
-          <TextButton
-            size="md"
-            disabled={!comment.trim() || createCommentMutation.isPending}
-            onClick={handleCreateComment}
-            className="disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <FontAwesomeIcon icon={faPaperPlane} />
-          </TextButton>
-        </div>
-      </section>
-    </main>
+        </section>
+
+        <section className="border-t border-gray-50 px-6 py-5">
+          <h3 className="title-md text-gray-400">댓글</h3>
+
+          {commentsQuery.isError ? (
+            <FeedbackState
+              description="댓글을 불러오지 못했어요."
+              className="py-8"
+              imageSrc="/images/emoji/no-alarm.png"
+              contentClassName="gap-0"
+              descriptionClassName="body-md font-normal text-gray-400"
+            />
+          ) : (
+            <CommentList
+              items={commentsQuery.data ?? []}
+              currentUserId={currentUserQuery.data?.id}
+              onDeleteComment={handleDeleteComment}
+              onReportComment={handleReportComment}
+            />
+          )}
+
+          <div className="mt-4 flex items-center rounded-lg bg-gray-50 px-4 py-3">
+            <input
+              ref={commentInputRef}
+              type="text"
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              placeholder="댓글을 입력하세요"
+              disabled={
+                !currentUserQuery.data?.id || createCommentMutation.isPending
+              }
+              className="flex-1 bg-transparent text-base text-gray-400 outline-none placeholder:text-gray-300 disabled:cursor-not-allowed"
+            />
+            <TextButton
+              size="md"
+              disabled={!comment.trim() || createCommentMutation.isPending}
+              onClick={handleCreateComment}
+              className="disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <FontAwesomeIcon icon={faPaperPlane} />
+            </TextButton>
+          </div>
+        </section>
+      </main>
+    </>
   );
 }

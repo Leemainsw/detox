@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import FeedbackState from "@/app/components/feedback-state";
 import Header from "../components/header";
 import BottomNav from "../components/bottom-nav";
 import BrandTabs from "./_components/brand-tabs";
@@ -12,7 +13,6 @@ import { subscriptableBrand } from "@/app/utils/brand/brand";
 import type { CommunityServiceFilter } from "./_types";
 import { useInfiniteCommunityListQuery } from "@/query/community";
 import FloatingButton from "../components/floating-button";
-import Image from "next/image";
 
 export default function CommunityListPage() {
   const router = useRouter();
@@ -105,28 +105,39 @@ export default function CommunityListPage() {
   );
 
   const renderError = () => (
-    <div className="flex flex-col items-center gap-4 px-6 py-12 text-center">
-      <p className="body-md text-gray-400">게시글을 불러오지 못했어요.</p>
+    <FeedbackState
+      description="게시글을 불러오지 못했어요."
+      className="px-6 py-12"
+      bottomCTA
+      ctaClassName="bg-gray-100"
+      hasBottomNav
+      imageSrc="/images/emoji/no-alarm.png"
+      contentClassName="gap-0"
+      descriptionClassName="body-md font-normal text-gray-400"
+    >
       <Button
         variant="secondary"
         size="md"
+        className="w-full"
         onClick={() => communityListQuery.refetch()}
       >
         다시 시도
       </Button>
-    </div>
+    </FeedbackState>
   );
 
   const renderEmpty = () => (
-    <div className="flex flex-col gap-5 items-center px-6 py-12 text-center">
-      <Image src="/images/emoji/no-alarm.png" alt="" width={80} height={80} />
-
-      <p className="body-md text-gray-400">
-        {selectedService === "all"
+    <FeedbackState
+      description={
+        selectedService === "all"
           ? "아직 등록된 게시글이 없어요."
-          : "선택한 서비스의 게시글이 아직 없어요."}
-      </p>
-    </div>
+          : "선택한 서비스의 게시글이 아직 없어요."
+      }
+      className="gap-5 px-6 py-12"
+      imageSrc="/images/emoji/no-alarm.png"
+      contentClassName="gap-0"
+      descriptionClassName="body-md font-normal text-gray-400"
+    />
   );
 
   return (

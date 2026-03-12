@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import FeedbackState from "@/app/components/feedback-state";
 import Header from "@/app/components/header";
 import CommunityForm from "../../_components/community-form";
 import BrandTabs from "../../_components/brand-tabs";
@@ -107,7 +108,12 @@ export default function CommunityEditPage() {
       <>
         <Header variant="back" title="게시글 수정하기" />
         <main className="px-6 py-8">
-          <p className="body-md text-gray-400">게시글을 불러오지 못했어요.</p>
+          <FeedbackState
+            description="게시글을 불러오지 못했어요."
+            imageSrc="/images/emoji/no-alarm.png"
+            contentClassName="gap-0"
+            descriptionClassName="body-md font-normal text-gray-400"
+          />
         </main>
       </>
     );
@@ -118,9 +124,12 @@ export default function CommunityEditPage() {
       <>
         <Header variant="back" title="게시글 수정하기" />
         <main className="px-6 py-8">
-          <p className="body-md text-gray-400">
-            작성한 게시글만 수정할 수 있어요.
-          </p>
+          <FeedbackState
+            description="작성한 게시글만 수정할 수 있어요."
+            imageSrc="/images/emoji/no-alarm.png"
+            contentClassName="gap-0"
+            descriptionClassName="body-md font-normal text-gray-400"
+          />
         </main>
       </>
     );
