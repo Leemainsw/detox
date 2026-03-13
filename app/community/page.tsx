@@ -13,7 +13,6 @@ import { subscriptableBrand } from "@/app/utils/brand/brand";
 import type { CommunityServiceFilter } from "./_types";
 import { useInfiniteCommunityListQuery } from "@/query/community";
 import FloatingButton from "../components/floating-button";
-import CommunityAuthGuard from "./_components/community-auth-guard";
 
 function CommunityListPageContent() {
   const router = useRouter();
@@ -149,9 +148,5 @@ function CommunityListPageContent() {
 }
 
 export default function CommunityListPage() {
-  return (
-    <CommunityAuthGuard>
-      <CommunityListPageContent />
-    </CommunityAuthGuard>
-  );
+  return <CommunityListPageContent />;
 }
