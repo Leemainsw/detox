@@ -141,7 +141,8 @@ function applyOptimisticLikeToInfiniteData(
     ...data,
     pages: data.pages.map((page) => ({
       ...page,
-      items: applyOptimisticLikeToItems(page.items, postId, nextLiked),
+      items:
+        applyOptimisticLikeToItems(page.items, postId, nextLiked) ?? page.items,
     })),
   };
 }
