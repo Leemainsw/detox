@@ -18,19 +18,24 @@ const avatarSize = {
 };
 
 export default function Avatar({ size = "md", src, alt }: AvatarProps) {
+  const imageSrc = src || DefaultUserImage;
+  const isExternalUrl =
+    typeof imageSrc === "string" && imageSrc.startsWith("http");
+
   return (
     <div
       className={`w-[${avatarSize[size]}px] h-[${avatarSize[size]}px] rounded-full bg-gray-100`}
     >
       <Image
         className="w-full h-full object-cover rounded-full"
-        src={src || DefaultUserImage}
+        src={imageSrc}
         onError={(e) => {
           (e.target as HTMLImageElement).src = DefaultUserImage.src;
         }}
         alt={alt || ""}
         width={avatarSize[size]}
         height={avatarSize[size]}
+        unoptimized={isExternalUrl}
       />
     </div>
   );
