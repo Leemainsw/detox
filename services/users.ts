@@ -48,7 +48,7 @@ export async function updateUserProfile(
 ) {
   return supabase
     .from("users")
-    .update({ ...params, updated_at: new Date().toISOString() })
+    .update(params)
     .eq("id", userId)
     .select()
     .single();

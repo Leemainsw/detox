@@ -45,10 +45,12 @@ export default function MypageContent({ userId }: Props) {
     }
   };
 
+  const trimmedNickname = nickname.trim();
+
   const handleSave = async () => {
     try {
       await updateProfileMutation.mutateAsync({
-        nickname: nickname || undefined,
+        nickname: trimmedNickname === "" ? undefined : trimmedNickname,
       });
       success("저장되었어요.");
     } catch (saveError) {
@@ -163,7 +165,8 @@ export default function MypageContent({ userId }: Props) {
             onClick={handleSave}
             disabled={
               updateProfileMutation.isPending ||
-              nickname === (userProfile?.nickname ?? "")
+              trimmedNickname === "" ||
+              trimmedNickname === (userProfile?.nickname ?? "").trim()
             }
           >
             저장하기
