@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import type {
+  CommunityCommentItemData,
   CommunityDetailData,
   CommunityListCursor,
   CommunityListItemData,
@@ -140,7 +141,8 @@ function applyOptimisticLikeToInfiniteData(
     ...data,
     pages: data.pages.map((page) => ({
       ...page,
-      items: applyOptimisticLikeToItems(page.items, postId, nextLiked),
+      items:
+        applyOptimisticLikeToItems(page.items, postId, nextLiked) ?? page.items,
     })),
   };
 }
@@ -195,7 +197,8 @@ async function invalidateCommunityPostLikes(
 
 //리스트
 export function useInfiniteCommunityListQuery(
-  service?: SubscriptableBrandType
+  service?: SubscriptableBrandType,
+  initialPage?: CommunityListPage
 ) {
   return useInfiniteQuery({
     queryKey: communityKeys.list(service),
@@ -206,6 +209,14 @@ export function useInfiniteCommunityListQuery(
         cursor: pageParam,
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+
+    initialData: initialPage
+      ? {
+          pages: [initialPage],
+          pageParams: [null],
+        }
+      : undefined,
+    refetchOnMount: false,
   });
 }
 
@@ -221,7 +232,8 @@ export function useCommunityDetailQuery(postId: string) {
 //추천게시글조회
 export function useRecommendedCommunityPostsQuery(
   postId: string,
-  service?: SubscriptableBrandType
+  service?: SubscriptableBrandType,
+  initialRecommendedPosts?: CommunityListItemData[]
 ) {
   return useQuery({
     queryKey: communityKeys.recommendedPosts(postId, service),
@@ -231,6 +243,8 @@ export function useRecommendedCommunityPostsQuery(
         service: service!,
       }),
     enabled: Boolean(postId && service),
+    initialData: initialRecommendedPosts,
+    refetchOnMount: false,
   });
 }
 
@@ -290,11 +304,16 @@ export function useDeleteCommunityPostMutation() {
 }
 
 //댓글조회
-export function useCommunityCommentsQuery(postId: string) {
+export function useCommunityCommentsQuery(
+  postId: string,
+  initialComments?: CommunityCommentItemData[]
+) {
   return useQuery({
     queryKey: communityKeys.commentList(postId),
     queryFn: () => getCommunityComments(postId),
     enabled: Boolean(postId),
+    initialData: initialComments,
+    refetchOnMount: false,
   });
 }
 

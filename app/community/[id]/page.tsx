@@ -1,5 +1,10 @@
-import CommunityDetailContent from "../_components/community-detail-content";
-import CommunityAuthGuard from "../_components/community-auth-guard";
+import { notFound } from "next/navigation";
+import CommunityDetailPageClient from "./_components/community-detail-page-client";
+import {
+  getServerCommunityComments,
+  getServerCommunityDetail,
+  getServerRecommendedCommunityPosts,
+} from "../_server/community";
 
 type CommunityDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -10,9 +15,25 @@ export default async function CommunityDetailPage({
 }: CommunityDetailPageProps) {
   const { id } = await params;
 
+  const post = await getServerCommunityDetail(id);
+
+  if (!post) {
+    notFound();
+  }
+  const [recommendedPosts, initialComments] = await Promise.all([
+    getServerRecommendedCommunityPosts({
+      postId: id,
+      service: post.service,
+    }),
+    getServerCommunityComments(id),
+  ]);
+
   return (
-    <CommunityAuthGuard>
-      <CommunityDetailContent postId={id} />
-    </CommunityAuthGuard>
+    <CommunityDetailPageClient
+      postId={id}
+      initialPost={post}
+      initialRecommendedPosts={recommendedPosts}
+      initialComments={initialComments}
+    />
   );
 }

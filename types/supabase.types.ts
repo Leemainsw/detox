@@ -470,7 +470,10 @@ export type Database = {
     };
     Functions: {
       toggle_post_like: {
-        Args: { p_post_id: string; p_user_id: string };
+        Args: {
+          p_post_id: string;
+          p_user_id: string;
+        };
         Returns: boolean;
       };
     };

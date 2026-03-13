@@ -1,56 +1,86 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import FeedbackState from "@/app/components/feedback-state";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import FeedbackPage from "@/app/components/feedback-page/feedback-page";
 import Header from "@/app/components/header";
 import LoadingScreen from "@/app/components/loading-screen";
-import { useCurrentUserQuery } from "@/query/users";
+import { supabase } from "@/lib/supabase";
 import { useCommunityDetailQuery } from "@/query/community";
 import CommunityEditFormContent from "./_components/community-edit-form-content";
 
 function CommunityEditPageContent() {
   const { id } = useParams<{ id: string }>();
-  const currentUserQuery = useCurrentUserQuery();
-  const communityDetailQuery = useCommunityDetailQuery(id);
+  const router = useRouter();
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isCurrentUserPending, setIsCurrentUserPending] = useState(true);
+  const [isCurrentUserError, setIsCurrentUserError] = useState(false);
 
-  if (communityDetailQuery.isPending || currentUserQuery.isPending) {
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCurrentUser = async () => {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (error) {
+        console.error(error);
+        setIsCurrentUserError(true);
+        setIsCurrentUserPending(false);
+        return;
+      }
+
+      setCurrentUserId(user?.id ?? null);
+      setIsCurrentUserPending(false);
+    };
+
+    void loadCurrentUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const {
+    data: communityDetail,
+    isPending: isCommunityDetailPending,
+    isError: isCommunityDetailError,
+  } = useCommunityDetailQuery(id);
+
+  if (isCommunityDetailPending || isCurrentUserPending) {
     return <LoadingScreen message="게시글을 불러오는 중이에요." />;
   }
 
   if (
-    currentUserQuery.isError ||
-    !currentUserQuery.data ||
-    communityDetailQuery.isError ||
-    !communityDetailQuery.data
+    isCurrentUserError ||
+    !currentUserId ||
+    isCommunityDetailError ||
+    !communityDetail
   ) {
     return (
-      <>
-        <Header variant="back" title="게시글 수정하기" />
-        <main className="px-6 py-8">
-          <FeedbackState
-            description="게시글을 불러오지 못했어요."
-            imageSrc="/images/emoji/no-alarm.png"
-            contentClassName="gap-0"
-            descriptionClassName="body-md font-normal text-gray-400"
-          />
-        </main>
-      </>
+      <FeedbackPage
+        title="게시글을 불러오지 못했어요."
+        description="죄송하지만 나중에 다시 시도해주세요."
+        buttonLabel="커뮤니티로 가기"
+        onButtonClick={() => router.replace("/community")}
+      />
     );
   }
 
-  if (communityDetailQuery.data.userId !== currentUserQuery.data.id) {
+  if (communityDetail.userId !== currentUserId) {
     return (
-      <>
-        <Header variant="back" title="게시글 수정하기" />
-        <main className="px-6 py-8">
-          <FeedbackState
-            description="작성한 게시글만 수정할 수 있어요."
-            imageSrc="/images/emoji/no-alarm.png"
-            contentClassName="gap-0"
-            descriptionClassName="body-md font-normal text-gray-400"
-          />
-        </main>
-      </>
+      <FeedbackPage
+        title="수정 권한이 없어요."
+        description="작성한 게시글만 수정할 수 있어요."
+        buttonLabel="게시글로 가기"
+        onButtonClick={() => router.replace(`/community/${id}`)}
+      />
     );
   }
 
@@ -60,8 +90,8 @@ function CommunityEditPageContent() {
       <CommunityEditFormContent
         key={id}
         postId={id}
-        currentUserId={currentUserQuery.data.id}
-        initialPost={communityDetailQuery.data}
+        currentUserId={currentUserId}
+        initialPost={communityDetail}
       />
     </>
   );

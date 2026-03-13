@@ -1,27 +1,31 @@
 "use client";
 
 import FeedbackState from "@/app/components/feedback-state";
+import {
+  useDeleteCommunityCommentMutation,
+  useReportCommunityCommentMutation,
+} from "@/query/community";
+import { useCurrentUserQuery } from "@/query/users";
 import type { CommunityCommentItemData } from "../_types";
 import AuthorMeta from "./author-meta";
 import DetailKebab from "./detail-kebab";
 
-type CommentListProps = {
+interface CommentListProps {
   items: CommunityCommentItemData[];
-  currentUserId?: string;
-  onDeleteComment?: (comment: CommunityCommentItemData) => Promise<void> | void;
-  onReportComment?: (comment: CommunityCommentItemData) => Promise<void> | void;
-};
+}
 
-export default function CommentList({
-  items,
-  currentUserId,
-  onDeleteComment,
-  onReportComment,
-}: CommentListProps) {
+export default function CommentList({ items }: CommentListProps) {
+  const { data: currentUser } = useCurrentUserQuery();
+  const { mutateAsync: deleteCommunityComment } =
+    useDeleteCommunityCommentMutation();
+  const { mutateAsync: reportCommunityComment } =
+    useReportCommunityCommentMutation();
+  const currentUserId = currentUser?.id;
+
   if (items.length === 0) {
     return (
       <FeedbackState
-        description="첫 댓글을 남겨보세요."
+        description="남겨진 댓글이 없어요."
         className="py-8"
         imageSrc="/images/emoji/no-alarm.png"
         contentClassName="gap-0"
@@ -49,12 +53,23 @@ export default function CommentList({
                 variant={currentUserId === item.userId ? "edit" : "default"}
                 onDelete={
                   currentUserId === item.userId
-                    ? () => onDeleteComment?.(item)
+                    ? async () => {
+                        await deleteCommunityComment({
+                          commentId: item.id,
+                          postId: item.postId,
+                          userId: currentUserId,
+                        });
+                      }
                     : undefined
                 }
                 onReport={
                   currentUserId !== item.userId
-                    ? () => onReportComment?.(item)
+                    ? async () => {
+                        await reportCommunityComment({
+                          commentId: item.id,
+                          reporterUserId: currentUserId,
+                        });
+                      }
                     : undefined
                 }
               />

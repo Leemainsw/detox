@@ -36,14 +36,13 @@ export default function BrandTabs(props: BrandTabsProps) {
     >
       {brandTabs.map((tab) => {
         const isActive = value === tab.key;
-
-        if (tab.key === "all") {
+        if (tab.key === "all" && props.includeAll !== false) {
           return (
             <button
               key={tab.key}
               type="button"
               aria-pressed={isActive}
-              onClick={() => onChange("all")}
+              onClick={() => props.onChange("all")}
               className={cn(
                 "flex min-w-fit flex-col items-center gap-2 transition-opacity"
               )}
