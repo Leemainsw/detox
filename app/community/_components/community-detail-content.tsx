@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getLoginRedirectUrl } from "@/app/utils/auth/get-login-redirect-url";
+import CommunityDetailLoading from "./community-detail-loading";
 
 import FeedbackState from "@/app/components/feedback-state";
 import FeedbackPage from "@/app/components/feedback-page";
@@ -98,45 +99,7 @@ export default function CommunityDetailContent({
   );
 
   if (communityDetailQuery.isPending) {
-    return (
-      <>
-        <Header variant="back" />
-        <main>
-          <section className="px-6 py-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-              <Skeleton className="h-10 w-10 rounded-full" />
-            </div>
-
-            <div className="mt-4 space-y-3">
-              <Skeleton className="h-7 w-3/4" />
-              <Skeleton className="h-5 w-full" />
-              <Skeleton className="h-5 w-5/6" />
-              <Skeleton className="h-5 w-2/3" />
-            </div>
-          </section>
-
-          <section className="border-t-8 border-gray-50 px-6 py-5">
-            <div className="flex gap-8">
-              <Skeleton className="h-5 w-16" />
-              <Skeleton className="h-5 w-16" />
-            </div>
-          </section>
-
-          <section className="border-t border-gray-50 px-6 py-5">
-            <Skeleton className="h-5 w-10" />
-            {renderCommentsLoading()}
-
-            <div className="mt-4 flex items-center rounded-lg bg-gray-50 px-4 py-3">
-              <Skeleton className="h-5 w-full" />
-            </div>
-          </section>
-        </main>
-      </>
-    );
+    return <CommunityDetailLoading />;
   }
 
   if (communityDetailQuery.isError) {
@@ -288,7 +251,7 @@ export default function CommunityDetailContent({
               variant={isAuthor ? "edit" : "default"}
               onEdit={isAuthor ? handleEdit : undefined}
               onDelete={isAuthor ? handleDelete : undefined}
-              onReport={!isAuthor ? handleReport : undefined}
+              onReport={isLoggedIn && !isAuthor ? handleReport : undefined}
             />
           </div>
 
@@ -315,7 +278,14 @@ export default function CommunityDetailContent({
                 (likeStatusQuery.isPending || likeStatusQuery.isError))
             }
             onLikeClick={handleToggleLike}
-            onCommentClick={() => commentInputRef.current?.focus()}
+            onCommentClick={() => {
+              if (!isLoggedIn) {
+                moveToLogin();
+                return;
+              }
+
+              commentInputRef.current?.focus();
+            }}
           />
         </section>
 
@@ -354,11 +324,6 @@ export default function CommunityDetailContent({
                 setComment(event.target.value);
               }}
               onFocus={() => {
-                if (!isLoggedIn) {
-                  moveToLogin();
-                }
-              }}
-              onClick={() => {
                 if (!isLoggedIn) {
                   moveToLogin();
                 }
