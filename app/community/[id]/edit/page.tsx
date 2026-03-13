@@ -14,7 +14,6 @@ import {
   useUpdateCommunityPostMutation,
 } from "@/query/community";
 import { useState } from "react";
-import CommunityAuthGuard from "../../_components/community-auth-guard";
 
 type CommunityEditFormContentProps = {
   postId: string;
@@ -30,8 +29,9 @@ function CommunityEditFormContent({
   const router = useRouter();
   const { error } = useToast();
   const updateCommunityPostMutation = useUpdateCommunityPostMutation();
-  const [selectedService, setSelectedService] =
-    useState<CommunityServiceValue>(initialPost.service);
+  const [selectedService, setSelectedService] = useState<CommunityServiceValue>(
+    initialPost.service
+  );
   const [title, setTitle] = useState(initialPost.title);
   const [content, setContent] = useState(initialPost.content);
 
@@ -89,6 +89,9 @@ function CommunityEditFormContent({
     </>
   );
 }
+import { useCommunityDetailQuery } from "@/query/community";
+
+import CommunityEditFormContent from "./_components/community-edit-form-content";
 
 function CommunityEditPageContent() {
   const { id } = useParams<{ id: string }>();
@@ -157,9 +160,5 @@ function CommunityEditPageContent() {
 }
 
 export default function CommunityEditPage() {
-  return (
-    <CommunityAuthGuard>
-      <CommunityEditPageContent />
-    </CommunityAuthGuard>
-  );
+  return <CommunityEditPageContent />;
 }
