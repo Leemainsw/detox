@@ -5,17 +5,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import FeedbackPage from "@/app/components/feedback-page";
 import LoadingScreen from "@/app/components/loading-screen";
 import { useCurrentUserQuery } from "@/query/users";
+import { getLoginRedirectUrl } from "@/app/utils/auth/get-login-redirect-url";
 
 type CommunityAuthGuardProps = {
   children: ReactNode;
 };
-
-//커뮤니티 진입 전 로그인 페이지로 보낼 경로 생성
-function getLoginRedirectUrl(pathname: string, search: string) {
-  const currentUrl = search ? `${pathname}?${search}` : pathname;
-
-  return `/login?redirect=${encodeURIComponent(currentUrl)}`;
-}
 
 //커뮤니티 로그인 가드
 export default function CommunityAuthGuard({
@@ -25,10 +19,12 @@ export default function CommunityAuthGuard({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentUserQuery = useCurrentUserQuery();
-  const loginRedirectUrl = getLoginRedirectUrl(
-    pathname,
-    searchParams.toString()
-  );
+  const currentPath = searchParams.toString()
+    ? `${pathname}?${searchParams.toString()}`
+    : pathname;
+
+  const loginRedirectUrl = getLoginRedirectUrl(currentPath);
+
   const isUnauthenticated =
     currentUserQuery.isSuccess && !currentUserQuery.data;
 
