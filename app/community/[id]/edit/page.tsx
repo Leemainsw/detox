@@ -6,7 +6,6 @@ import Header from "@/app/components/header";
 import LoadingScreen from "@/app/components/loading-screen";
 import { useCurrentUserQuery } from "@/query/users";
 import { useCommunityDetailQuery } from "@/query/community";
-import CommunityAuthGuard from "../../_components/community-auth-guard";
 import CommunityEditFormContent from "./_components/community-edit-form-content";
 
 function CommunityEditPageContent() {
@@ -69,9 +68,5 @@ function CommunityEditPageContent() {
 }
 
 export default function CommunityEditPage() {
-  return (
-    <CommunityAuthGuard>
-      <CommunityEditPageContent />
-    </CommunityAuthGuard>
-  );
+  return <CommunityEditPageContent />;
 }
