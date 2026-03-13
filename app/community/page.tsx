@@ -29,3 +29,11 @@ export default async function CommunityListPage({
     />
   );
 }
+
+export default function CommunityListPage() {
+  return (
+    <CommunityAuthGuard>
+      <CommunityListPageContent />
+    </CommunityAuthGuard>
+  );
+}

@@ -1,7 +1,11 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import type { Tables, TablesInsert } from "@/types/supabase.types";
+import type {
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from "@/types/supabase.types";
 
 export type AuthProvider = "anonymous" | "google" | "kakao" | "naver";
 
@@ -31,4 +35,21 @@ export async function getUserProfile(userId: string) {
 
 export async function upsertUser(params: UpsertUserParams) {
   return supabase.from("users").upsert(params);
+}
+
+type UpdateUserParams = Pick<
+  TablesUpdate<"users">,
+  "nickname" | "profile_image"
+>;
+
+export async function updateUserProfile(
+  userId: string,
+  params: UpdateUserParams
+) {
+  return supabase
+    .from("users")
+    .update(params)
+    .eq("id", userId)
+    .select()
+    .single();
 }
