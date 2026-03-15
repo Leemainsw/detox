@@ -3,7 +3,6 @@ import { tavily } from "@tavily/core";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-// 1. 환경 변수 검증
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
