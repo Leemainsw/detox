@@ -3,131 +3,149 @@ import { tavily } from "@tavily/core";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+// 1. 환경 변수 검증 (보안 및 디버깅 용이)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!OPENAI_API_KEY || !TAVILY_API_KEY) {
-  throw new Error("OPENAI_API_KEY and TAVILY_API_KEY must be configured");
+if (!OPENAI_API_KEY || !TAVILY_API_KEY || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error(
+    "필수 환경 변수(OpenAI, Tavily, Supabase)가 설정되지 않았습니다."
+  );
 }
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 const tavilyClient = tavily({ apiKey: TAVILY_API_KEY });
 
+const withTimeout = async <T>(
+  promise: Promise<T>,
+  ms: number,
+  label: string
+): Promise<T> => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`${label} 타임아웃 (${ms}ms)`)),
+          ms
+        );
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
 export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
-
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
+    const supabase = createServerClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
         },
-      }
-    );
+      },
+    });
 
     const {
       data: { session },
     } = await supabase.auth.getSession();
-
     if (!session) {
-      return Response.json(
-        { error: "Unauthorized: 로그인이 필요합니다." },
-        { status: 401 }
-      );
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { subscriptions, userContext } = await req.json();
 
-    if (!Array.isArray(subscriptions) || subscriptions.length === 0) {
+    if (!Array.isArray(subscriptions) || !userContext?.categoryRatio) {
       return Response.json(
-        { error: "subscriptions 배열이 필요합니다." },
+        { error: "잘못된 데이터 형식입니다." },
         { status: 400 }
       );
     }
 
-    if (!userContext?.categoryRatio) {
-      return Response.json(
-        { error: "userContext.categoryRatio가 필요합니다." },
-        { status: 400 }
-      );
-    }
-
-    const searchResult = await tavilyClient.search(
-      "2026년 대한민국 주요 구독 서비스(OTT, 쇼핑, 음악, 통신사 결합, AI) 최신 요금제 및 프로모션 할인 혜택",
-      { searchDepth: "basic", maxResults: 3 }
+    const currentYear = new Date().getFullYear();
+    const searchResult = await withTimeout(
+      tavilyClient.search(
+        `${currentYear}년 대한민국 주요 구독 서비스(OTT, 쇼핑, 음악, 통신사 결합) 최신 요금제 및 프로모션`,
+        { searchDepth: "basic", maxResults: 3 }
+      ),
+      8000,
+      "Tavily Search"
     );
 
-    const today = new Date().toISOString().split("T")[0];
-
     const systemPrompt = `
-      당신은 전문적인 구독 자산 관리 전략가입니다. 
-      사용자의 소비 패턴을 시장 데이터와 대조하여 '자산 최적화 리포트'를 생성하세요.
+      당신은 대한민국 최고 수준의 '구독 자산 관리 전략가'이자 '가치 소비 큐레이터'입니다. 
+      단순한 비용 절감을 넘어, 사용자의 라이프스타일에 최적화된 자산 배분 리포트를 생성하는 것이 목적입니다.
 
       [분석 가이드라인]
-      1. 통계 데이터 산출: 이용 비중(${JSON.stringify(userContext.categoryRatio)})과 구독 내역을 바탕으로 월별 지출액(my_spend)과 시장 평균 지출액(avg_spend) 트렌드를 분석하세요.
-      2. 최적화 차액 추론: Tavily 검색 결과(통신사 결합, 프로모션 등)를 기반으로, 최적화 시 절감할 수 있는 금액(diff_amount)을 도출하세요.
-      3. 긍정적 자산 배분: title과 description 작성 시 '지출 낭비 지적'이 아닌 '더 현명한 가치 소비'의 관점에서 전문적이고 긍정적인 톤앤매너로 기술하세요.
+      1. 통계 데이터 분석: 
+         - 사용자의 이용 비중(${JSON.stringify(userContext.categoryRatio)})과 실제 구독 내역을 대조하세요.
+         - 특정 카테고리에 지출이 쏠려 있다면 '시장 평균(avg_spend)' 데이터를 활용해 객관적인 지표를 제시하세요.
+      2. 최적화 전략 (Tavily 검색 데이터 활용):
+         - 검색 결과에 나온 최신 통신사 결합(T우주, 유독, KT 패밀리 등)이나 카드사 프로모션을 적극 반영하세요.
+         - 'diff_amount'는 단순히 '안 쓰면 아끼는 돈'이 아니라, '혜택을 챙겼을 때 환급받거나 절감되는 실질적 이득'으로 계산하세요.
+      3. 톤앤매너:
+         - "낭비하고 있습니다"라는 부정적 표현 대신 "이 혜택을 더하면 자산 가치가 올라갑니다"라는 긍정적이고 전문적인 어조를 유지하세요.
 
-      [응답 형식 제약]
-      - 프론트엔드 타입 검증을 위해 반드시 아래 구조의 JSON으로만 응답하세요. 키(key) 이름과 구조를 절대 임의로 변경하지 마세요:
+      [응답 형식 제약 - 반드시 엄수]
+      - 반드시 아래 구조의 JSON으로만 응답하세요.
       {
         "type": "STATISTICS",
-        "title": "리포트 제목 (예: 현명한 가치 소비 통계 리포트)",
-        "description": "분석 결과에 대한 핵심 요약 및 맞춤형 조언",
-        "last_updated": "${today}",
+        "title": "리포트 제목 (예: OO님의 3월 가치 소비 최적화 리포트)",
+        "description": "사용자의 소비 강점 1가지와 개선 포인트 1가지를 포함한 3줄 요약 조언",
+        "last_updated": "${new Date().toISOString().split("T")[0]}",
         "payload": {
           "chart_data": [
-            {
-              "month": "1월",
-              "my_spend": 0,
-              "avg_spend": 0
-            },
-            {
-              "month": "2월",
-              "my_spend": 0,
-              "avg_spend": 0
-            }
+            { "month": "1월", "my_spend": 0, "avg_spend": 0 },
+            { "month": "2월", "my_spend": 0, "avg_spend": 0 },
+            { "month": "3월", "my_spend": 0, "avg_spend": 0 }
           ],
           "diff_amount": 0
         }
       }
     `;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        {
-          role: "user",
-          content: `
-              [분석 대상 데이터]
-              - 내 구독 내역: ${JSON.stringify(subscriptions)}
-              - 내 카테고리 이용 비중: ${JSON.stringify(userContext.categoryRatio)}
-              - 실시간 시장 정보: ${JSON.stringify(searchResult.results)}
-              
-              위 데이터를 바탕으로 정밀 분석 리포트를 JSON으로 생성해줘.
-            `,
-        },
-      ],
-      response_format: { type: "json_object" },
-    });
+    const response = await withTimeout(
+      openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: `데이터: ${JSON.stringify({ subscriptions, userContext, market: searchResult.results })}`,
+          },
+        ],
+        response_format: { type: "json_object" },
+      }),
+      15000,
+      "OpenAI Generation"
+    );
 
     const content = response.choices[0].message.content;
+    if (!content) throw new Error("AI 응답 생성 실패");
 
-    if (!content) {
-      throw new Error("AI 응답 생성에 실패했습니다.");
-    }
+    const parsed = JSON.parse(content);
+    const isValid =
+      parsed?.type === "STATISTICS" &&
+      Array.isArray(parsed?.payload?.chart_data) &&
+      typeof parsed?.payload?.diff_amount === "number";
 
-    return Response.json(JSON.parse(content));
+    if (!isValid) throw new Error("AI 응답 스키마가 유효하지 않습니다.");
+
+    return Response.json(parsed);
   } catch (error) {
     console.error("AI Analysis Error:", error);
-    const message = error instanceof Error ? error.message : "알 수 없는 오류";
+    const isDev = process.env.NODE_ENV !== "production";
     return Response.json(
-      { error: "분석 중 오류가 발생했습니다.", details: message },
+      {
+        error: "분석 중 오류가 발생했습니다.",
+        ...(isDev && {
+          details: error instanceof Error ? error.message : "Unknown",
+        }),
+      },
       { status: 500 }
     );
   }
