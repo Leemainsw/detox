@@ -3,20 +3,23 @@ import { tavily } from "@tavily/core";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-// 1. 환경 변수 검증 (보안 및 디버깅 용이)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!OPENAI_API_KEY || !TAVILY_API_KEY || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error(
-    "필수 환경 변수(OpenAI, Tavily, Supabase)가 설정되지 않았습니다."
-  );
+  throw new Error("필수 환경 변수가 설정되지 않았습니다.");
 }
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 const tavilyClient = tavily({ apiKey: TAVILY_API_KEY });
+
+interface ChartDataItem {
+  month: string;
+  my_spend: number;
+  avg_spend: number;
+}
 
 const withTimeout = async <T>(
   promise: Promise<T>,
@@ -50,18 +53,36 @@ export async function POST(req: Request) {
       },
     });
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    // 로그인 기능 생기면 테스트 필요
+    // const {
+    //   data: { session },
+    // } = await supabase.auth.getSession();
+    // if (!session)
+    //   return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+    // 테스트용 고정 유저 ID
+    const testUserId = "1ed76a49-9a35-4dec-a039-19d7a2f2c4ab";
+
+    const { data: subscriptions, error: dbError } = await supabase
+      .from("subscription")
+      .select("*")
+      .eq("user_id", testUserId);
+
+    const { userContext } = await req.json();
+
+    if (dbError) throw dbError;
+
+    if (!subscriptions || subscriptions.length === 0) {
+      return Response.json({
+        type: "NO_DATA",
+        message:
+          "아직 등록된 구독 서비스가 없어요! 분석을 위해 구독 내역을 먼저 입력해 주시겠어요?",
+      });
     }
 
-    const { subscriptions, userContext } = await req.json();
-
-    if (!Array.isArray(subscriptions) || !userContext?.categoryRatio) {
+    if (!userContext?.categoryRatio) {
       return Response.json(
-        { error: "잘못된 데이터 형식입니다." },
+        { error: "카테고리 비율 정보가 부족합니다." },
         { status: 400 }
       );
     }
@@ -69,7 +90,7 @@ export async function POST(req: Request) {
     const currentYear = new Date().getFullYear();
     const searchResult = await withTimeout(
       tavilyClient.search(
-        `${currentYear}년 대한민국 주요 구독 서비스(OTT, 쇼핑, 음악, 통신사 결합) 최신 요금제 및 프로모션`,
+        `${currentYear}년 대한민국 주요 구독 서비스(OTT, 쇼핑, 멤버십) 최신 요금제 및 결합 할인 혜택`,
         { searchDepth: "basic", maxResults: 3 }
       ),
       8000,
@@ -115,7 +136,7 @@ export async function POST(req: Request) {
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `데이터: ${JSON.stringify({ subscriptions, userContext, market: searchResult.results })}`,
+            content: `구독내역: ${JSON.stringify(subscriptions)}, 시장정보: ${JSON.stringify(searchResult.results)}`,
           },
         ],
         response_format: { type: "json_object" },
@@ -128,12 +149,22 @@ export async function POST(req: Request) {
     if (!content) throw new Error("AI 응답 생성 실패");
 
     const parsed = JSON.parse(content);
+
     const isValid =
       parsed?.type === "STATISTICS" &&
+      typeof parsed?.title === "string" &&
+      typeof parsed?.description === "string" &&
+      typeof parsed?.last_updated === "string" &&
       Array.isArray(parsed?.payload?.chart_data) &&
-      typeof parsed?.payload?.diff_amount === "number";
+      typeof parsed?.payload?.diff_amount === "number" &&
+      parsed.payload.chart_data.every(
+        (d: ChartDataItem) =>
+          typeof d.month === "string" &&
+          typeof d.my_spend === "number" &&
+          typeof d.avg_spend === "number"
+      );
 
-    if (!isValid) throw new Error("AI 응답 스키마가 유효하지 않습니다.");
+    if (!isValid) throw new Error("AI 응답 형식이 유효하지 않습니다.");
 
     return Response.json(parsed);
   } catch (error) {
