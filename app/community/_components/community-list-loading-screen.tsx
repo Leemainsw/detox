@@ -12,13 +12,18 @@ export default function CommunityListLoadingScreen() {
       <Header variant="text" leftText="커뮤니티" rightContent="알람" />
 
       <main>
-        <BrandTabs value="all" onChange={() => {}} />
+        <div className="pointer-events-none" aria-hidden="true">
+          <BrandTabs value="all" />
+        </div>
 
         <section className="px-6">
           <CommunityPostListSkeleton count={4} className="pt-6" />
         </section>
 
-        <div className="fixed right-0 bottom-24 z-10">
+        <div
+          className="fixed right-0 bottom-24 z-10 pointer-events-none"
+          aria-hidden="true"
+        >
           <FloatingButton variant="create" />
         </div>
       </main>
