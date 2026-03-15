@@ -1,18 +1,61 @@
 import { OpenAI } from "openai";
 import { tavily } from "@tavily/core";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-// 인스턴스 초기화
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "",
-});
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 
-const tavilyClient = tavily({ apiKey: process.env.TAVILY_API_KEY || "" });
+if (!OPENAI_API_KEY || !TAVILY_API_KEY) {
+  throw new Error("OPENAI_API_KEY and TAVILY_API_KEY must be configured");
+}
+
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+const tavilyClient = tavily({ apiKey: TAVILY_API_KEY });
 
 export async function POST(req: Request) {
   try {
+    const cookieStore = await cookies();
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value;
+          },
+        },
+      }
+    );
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      return Response.json(
+        { error: "Unauthorized: 로그인이 필요합니다." },
+        { status: 401 }
+      );
+    }
+
     const { subscriptions, userContext } = await req.json();
 
-    // 실시간 시장 데이터 수집 tavily AI
+    if (!Array.isArray(subscriptions) || subscriptions.length === 0) {
+      return Response.json(
+        { error: "subscriptions 배열이 필요합니다." },
+        { status: 400 }
+      );
+    }
+
+    if (!userContext?.categoryRatio) {
+      return Response.json(
+        { error: "userContext.categoryRatio가 필요합니다." },
+        { status: 400 }
+      );
+    }
+
     const searchResult = await tavilyClient.search(
       "2026년 대한민국 주요 구독 서비스(OTT, 쇼핑, 음악, 통신사 결합, AI) 최신 요금제 및 프로모션 할인 혜택",
       { searchDepth: "basic", maxResults: 3 }
@@ -23,30 +66,35 @@ export async function POST(req: Request) {
       사용자의 소비 패턴을 시장 데이터와 대조하여 '자산 최적화 리포트'를 생성하세요.
 
       [분석 가이드라인]
-      1. '비용 효율성(Cost-Efficiency) 점수' 산출: 이용 비중(${JSON.stringify(userContext.categoryRatio)}) 대비 지출의 적절성을 100점 만점으로 계산하세요.
-      2. 중복 및 결합 할인 추론: Tavily 검색 결과에 기반하여, 사용자가 놓치고 있는 통신사 결합(T우주, 유독 등)이나 멤버십 혜택을 찾아내세요.
-      3. 긍정적 자산 배분: 모든 제안은 '지출 낭비'가 아닌 '더 현명한 가치 소비'의 관점에서 기술하세요.
+      1. 통계 데이터 산출: 이용 비중(${JSON.stringify(userContext.categoryRatio)})과 구독 내역을 바탕으로 월별 지출액(my_spend)과 시장 평균 지출액(avg_spend) 트렌드를 분석하세요.
+      2. 최적화 차액 추론: Tavily 검색 결과(통신사 결합, 프로모션 등)를 기반으로, 최적화 시 절감할 수 있는 금액(diff_amount)을 도출하세요.
+      3. 긍정적 자산 배분: title과 description 작성 시 '지출 낭비 지적'이 아닌 '더 현명한 가치 소비'의 관점에서 전문적이고 긍정적인 톤앤매너로 기술하세요.
 
       [응답 형식 제약]
-      - 반드시 아래 구조의 JSON으로만 응답하세요:
+      - 프론트엔드 타입 검증을 위해 반드시 아래 구조의 JSON으로만 응답하세요. 키(key) 이름과 구조를 절대 임의로 변경하지 마세요:
       {
-        "type": "statistics",
-        "efficiency_score": 0,
-        "total_monthly_savings": 0,
-        "analysis_summary": "전체 분석 요약",
-        "details": [
-          {
-            "service_name": "서비스명",
-            "status": "현재 상태 분석",
-            "optimized_plan": "추천 대안 또는 유지",
-            "logic": "추천 근거(시장 데이터 기반)"
-          }
-        ],
-        "insight_tag": "사용자를 위한 한 줄 핵심 조언"
+        "type": "STATISTICS",
+        "title": "리포트 제목 (예: 현명한 가치 소비 통계 리포트)",
+        "description": "분석 결과에 대한 핵심 요약 및 맞춤형 조언",
+        "last_updated": "2026-03-16",
+        "payload": {
+          "chart_data": [
+            {
+              "month": "1월",
+              "my_spend": 0,
+              "avg_spend": 0
+            },
+            {
+              "month": "2월",
+              "my_spend": 0,
+              "avg_spend": 0
+            }
+          ],
+          "diff_amount": 0
+        }
       }
     `;
 
-    // OpenAI GPT-4o-mini 호출
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -54,13 +102,13 @@ export async function POST(req: Request) {
         {
           role: "user",
           content: `
-            [분석 대상 데이터]
-            - 내 구독 내역: ${JSON.stringify(subscriptions)}
-            - 내 카테고리 이용 비중: ${JSON.stringify(userContext.categoryRatio)}
-            - 실시간 시장 정보: ${JSON.stringify(searchResult.results)}
-            
-            위 데이터를 바탕으로 정밀 분석 리포트를 JSON으로 생성해줘.
-          `,
+              [분석 대상 데이터]
+              - 내 구독 내역: ${JSON.stringify(subscriptions)}
+              - 내 카테고리 이용 비중: ${JSON.stringify(userContext.categoryRatio)}
+              - 실시간 시장 정보: ${JSON.stringify(searchResult.results)}
+              
+              위 데이터를 바탕으로 정밀 분석 리포트를 JSON으로 생성해줘.
+            `,
         },
       ],
       response_format: { type: "json_object" },
