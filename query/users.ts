@@ -1,6 +1,6 @@
 "use client";
 
-import { isNicknameConflictError } from "@/app/utils/auth/is-nickname-conflict-error";
+import { upsertUserWithNicknameRetry } from "@/app/utils/auth/upsert-user-with-nickname-retry";
 import {
   useMutation,
   useQuery,
@@ -16,8 +16,6 @@ import {
   updateUserProfile,
   upsertUser,
 } from "@/services/users";
-
-const NICKNAME_MAX_RETRY_COUNT = 5;
 
 export const usersKeys = {
   all: ["users"],
@@ -47,31 +45,18 @@ export function useAnonymousLoginMutation() {
         is_anonymous: true,
       };
 
-      let upsertError: Awaited<ReturnType<typeof upsertUser>>["error"] = null;
-
-      for (
-        let retryCount = 0;
-        retryCount < NICKNAME_MAX_RETRY_COUNT;
-        retryCount++
-      ) {
-        const { error } = await upsertUser({
-          ...userPayload,
-          nickname: generateNickname(),
+      try {
+        await upsertUserWithNicknameRetry({
+          makeNickname: () => generateNickname(),
+          tryUpsert: (nickname) =>
+            upsertUser({
+              ...userPayload,
+              nickname,
+            }),
         });
 
-        if (!error) {
-          return user;
-        }
-
-        upsertError = error;
-
-        // 닉네임 UNIQUE 충돌일 때만 새 후보를 뽑아 다시 시도합니다.
-        if (!isNicknameConflictError(error)) {
-          break;
-        }
-      }
-
-      if (upsertError) {
+        return user;
+      } catch (upsertError) {
         const { error: signOutError } = await signOut();
 
         if (signOutError) {
@@ -80,8 +65,6 @@ export function useAnonymousLoginMutation() {
 
         throw upsertError;
       }
-
-      throw new Error("사용자 정보 저장에 실패했어요.");
     },
     onSuccess: (user) => {
       queryClient.setQueryData([...usersKeys.auth(), "current-user"], user);

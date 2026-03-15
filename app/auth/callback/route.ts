@@ -1,6 +1,6 @@
 import { getLoginRedirectUrl } from "@/app/utils/auth/get-login-redirect-url";
-import { isNicknameConflictError } from "@/app/utils/auth/is-nickname-conflict-error";
 import { getSafeRedirectPath } from "@/app/utils/auth/get-safe-redirect-path";
+import { upsertUserWithNicknameRetry } from "@/app/utils/auth/upsert-user-with-nickname-retry";
 import { generateNickname } from "@/app/utils/nickname";
 import { createServerClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
@@ -8,7 +8,6 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const NICKNAME_MAX_RETRY_COUNT = 5;
 
 function redirectWithCookies(
   path: string,
@@ -74,38 +73,29 @@ async function syncOAuthUser(
   }
 
   const socialName = getSocialName(user);
-  let nickname = existingUser?.nickname ?? socialName ?? generateNickname();
+  await upsertUserWithNicknameRetry({
+    makeNickname: (retryCount) => {
+      if (retryCount === 0) {
+        return existingUser?.nickname ?? socialName ?? generateNickname();
+      }
 
-  for (
-    let retryCount = 0;
-    retryCount < NICKNAME_MAX_RETRY_COUNT;
-    retryCount++
-  ) {
-    const { error: upsertError } = await supabase.from("users").upsert({
-      id: user.id,
-      email: user.email ?? null,
-      provider,
-      provider_id: providerId,
-      is_anonymous: false,
-      nickname,
-      profile_image: existingUser?.profile_image ?? profileImage,
-      deleted_at: null,
-    });
-
-    if (!upsertError) {
-      return;
-    }
-
-    if (!isNicknameConflictError(upsertError) || existingUser?.nickname) {
-      throw upsertError;
-    }
-
-    nickname = socialName
-      ? `${socialName}${Math.floor(1000 + Math.random() * 9000)}`
-      : generateNickname();
-  }
-
-  throw new Error("사용자 정보 저장에 실패했어요.");
+      return socialName
+        ? `${socialName}${Math.floor(1000 + Math.random() * 9000)}`
+        : generateNickname();
+    },
+    tryUpsert: (nickname) =>
+      supabase.from("users").upsert({
+        id: user.id,
+        email: user.email ?? null,
+        provider,
+        provider_id: providerId,
+        is_anonymous: false,
+        nickname,
+        profile_image: existingUser?.profile_image ?? profileImage,
+        deleted_at: null,
+      }),
+    canRetry: () => !existingUser?.nickname,
+  });
 }
 
 export async function GET(request: NextRequest) {
