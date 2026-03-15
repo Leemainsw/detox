@@ -6,15 +6,19 @@ import { Tables } from "@/types/supabase.types";
  */
 export const getNotificationSettings = async (
   userId: string
-): Promise<Tables<"notification_settings">> => {
+): Promise<Tables<"notification_settings"> | null> => {
   const { data, error } = await supabase
     .from("notification_settings")
     .select("*")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     throw error;
+  }
+
+  if (!data || data.length === 0) {
+    return null;
   }
 
   return data;

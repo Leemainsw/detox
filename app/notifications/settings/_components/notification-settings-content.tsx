@@ -8,12 +8,10 @@ interface Props {
 }
 
 export default function NotificationSettingsContent({ userId }: Props) {
-  const { data: notificationSettings } = useNotificationSettingsSuspense(userId);
+  const { data: notificationSettings } =
+    useNotificationSettingsSuspense(userId);
 
   return (
-    <NotificationSettingsForm
-      key={notificationSettings.id}
-      notificationSettings={notificationSettings}
-    />
+    <NotificationSettingsForm notificationSettings={notificationSettings} />
   );
 }
