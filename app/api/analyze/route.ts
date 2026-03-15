@@ -61,6 +61,8 @@ export async function POST(req: Request) {
       { searchDepth: "basic", maxResults: 3 }
     );
 
+    const today = new Date().toISOString().split("T")[0];
+
     const systemPrompt = `
       당신은 전문적인 구독 자산 관리 전략가입니다. 
       사용자의 소비 패턴을 시장 데이터와 대조하여 '자산 최적화 리포트'를 생성하세요.
@@ -76,7 +78,7 @@ export async function POST(req: Request) {
         "type": "STATISTICS",
         "title": "리포트 제목 (예: 현명한 가치 소비 통계 리포트)",
         "description": "분석 결과에 대한 핵심 요약 및 맞춤형 조언",
-        "last_updated": "2026-03-16",
+        "last_updated": "${today}",
         "payload": {
           "chart_data": [
             {
@@ -120,7 +122,6 @@ export async function POST(req: Request) {
       throw new Error("AI 응답 생성에 실패했습니다.");
     }
 
-    // 결과 반환
     return Response.json(JSON.parse(content));
   } catch (error) {
     console.error("AI Analysis Error:", error);
