@@ -30,7 +30,11 @@ export default function CommunityDetailCommentSection({
 }: CommunityDetailCommentSectionProps) {
   const { success, error } = useToast();
   const [comment, setComment] = useState("");
-  const { data: currentUser } = useCurrentUserQuery();
+  const {
+    data: currentUser,
+    isPending: isCurrentUserPending,
+    isError: isCurrentUserError,
+  } = useCurrentUserQuery();
   const currentUserId = currentUser?.id;
   const { redirectToLoginIfNeeded } = useLoginRedirect();
   const { mutateAsync: createCommunityComment, isPending: isCreatePending } =
@@ -39,6 +43,10 @@ export default function CommunityDetailCommentSection({
   const isLoggedIn = Boolean(currentUserId);
 
   const handleCreateComment = async () => {
+    if (isCurrentUserPending || isCurrentUserError) {
+      return;
+    }
+
     if (redirectToLoginIfNeeded(isLoggedIn) || !currentUserId) {
       return;
     }
@@ -62,6 +70,10 @@ export default function CommunityDetailCommentSection({
   };
 
   const handleCommentFocus = () => {
+    if (isCurrentUserPending || isCurrentUserError) {
+      return;
+    }
+
     redirectToLoginIfNeeded(isLoggedIn);
   };
 
@@ -110,13 +122,18 @@ export default function CommunityDetailCommentSection({
               ? "댓글을 입력하세요"
               : "댓글 작성은 로그인 후 가능해요"
           }
-          readOnly={!isLoggedIn || isCreatePending}
+          readOnly={!isLoggedIn || isCurrentUserPending || isCreatePending}
           className="flex-1 bg-transparent text-base text-gray-400 outline-none placeholder:text-gray-300"
         />
         <TextButton
           size="md"
           aria-label="댓글 전송"
-          disabled={isCreatePending || (isLoggedIn && !comment.trim())}
+          disabled={
+            isCurrentUserPending ||
+            isCreatePending ||
+            isCurrentUserError ||
+            (isLoggedIn && !comment.trim())
+          }
           onClick={handleCreateComment}
           className="disabled:cursor-not-allowed disabled:opacity-50"
         >
