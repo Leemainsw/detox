@@ -65,6 +65,7 @@ export default function NotificationsContent({ userId }: Props) {
             type="button"
             className="w-11 h-11 flex items-center justify-center text-gray-400 cursor-pointer"
             onClick={goNotificationSettings}
+            aria-label="알림 설정으로 이동"
           >
             <span className="inline-flex items-center justify-center w-[28px] h-[28px] overflow-hidden shrink-0">
               <FontAwesomeIcon
