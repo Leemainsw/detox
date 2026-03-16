@@ -10,7 +10,14 @@ import type {
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import type { Tables } from "@/types/supabase.types";
 
-type UserRow = Tables<"users">;
+type UserPreview = Pick<Tables<"users">, "id" | "nickname" | "profile_image">;
+
+type PostWithCounts = Tables<"post"> & {
+  comment: { count: number }[];
+  likes: { count: number }[];
+};
+
+const USER_PREVIEW_SELECT = "id, nickname, profile_image";
 
 //게시글리스트
 export async function getCommunityListPage(params: {
@@ -20,7 +27,16 @@ export async function getCommunityListPage(params: {
 }): Promise<CommunityListPage> {
   const pageSize = params.pageSize ?? 10;
 
-  let query = supabase.from("post").select("*").is("deleted_at", null);
+  let query = supabase
+    .from("post")
+    .select(
+      `
+    *,
+    comment(count),
+    likes(count)
+  `
+    )
+    .is("deleted_at", null);
 
   if (params.service) {
     query = query.eq("service", params.service);
@@ -32,7 +48,7 @@ export async function getCommunityListPage(params: {
     );
   }
 
-  const { data: posts, error: postsError } = await query
+  const { data, error: postsError } = await query
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .limit(pageSize + 1);
@@ -41,7 +57,9 @@ export async function getCommunityListPage(params: {
     throw postsError;
   }
 
-  if (!posts || posts.length === 0) {
+  const posts = (data ?? []) as PostWithCounts[];
+
+  if (posts.length === 0) {
     return {
       items: [],
       nextCursor: null,
@@ -51,45 +69,18 @@ export async function getCommunityListPage(params: {
   const hasNextPage = posts.length > pageSize;
   const visiblePosts = hasNextPage ? posts.slice(0, pageSize) : posts;
 
-  const postIds = visiblePosts.map((post) => post.id);
   const userIds = [...new Set(visiblePosts.map((post) => post.user_id))];
 
-  const [
-    { data: users, error: usersError },
-    { data: comments, error: commentsError },
-    { data: likes, error: likesError },
-  ] = await Promise.all([
-    supabase.from("users").select("*").in("id", userIds).is("deleted_at", null),
-    supabase
-      .from("comment")
-      .select("*")
-      .in("post_id", postIds)
-      .is("deleted_at", null),
-    supabase.from("likes").select("*").in("post_id", postIds),
-  ]);
+  const { data: users, error: usersError } = await supabase
+    .from("users")
+    .select(USER_PREVIEW_SELECT)
+    .in("id", userIds)
+    .is("deleted_at", null);
 
   if (usersError) throw usersError;
-  if (commentsError) throw commentsError;
-  if (likesError) throw likesError;
 
-  const userMap = new Map<string, UserRow>(
+  const userMap = new Map<string, UserPreview>(
     (users ?? []).map((user) => [user.id, user])
-  );
-
-  const commentCountMap = (comments ?? []).reduce<Record<string, number>>(
-    (acc, comment) => {
-      acc[comment.post_id] = (acc[comment.post_id] ?? 0) + 1;
-      return acc;
-    },
-    {}
-  );
-
-  const likeCountMap = (likes ?? []).reduce<Record<string, number>>(
-    (acc, like) => {
-      acc[like.post_id] = (acc[like.post_id] ?? 0) + 1;
-      return acc;
-    },
-    {}
   );
 
   const items = visiblePosts.map((post) => {
@@ -102,8 +93,8 @@ export async function getCommunityListPage(params: {
       timeAgo: formatRelativeTime(post.created_at),
       title: post.title,
       content: post.content,
-      likeCount: likeCountMap[post.id] ?? 0,
-      commentCount: commentCountMap[post.id] ?? 0,
+      likeCount: post.likes?.[0]?.count ?? 0,
+      commentCount: post.comment?.[0]?.count ?? 0,
       thumbUrl: user?.profile_image ?? "/images/default-user.png",
     };
   });
@@ -143,21 +134,24 @@ export async function getCommunityDetail(
 
   const [
     { data: user, error: userError },
-    { data: comments, error: commentsError },
-    { data: likes, error: likesError },
+    { count: commentCount, error: commentsError },
+    { count: likeCount, error: likesError },
   ] = await Promise.all([
     supabase
       .from("users")
-      .select("*")
+      .select(USER_PREVIEW_SELECT)
       .eq("id", post.user_id)
       .is("deleted_at", null)
       .maybeSingle(),
     supabase
       .from("comment")
-      .select("*")
+      .select("id", { count: "exact", head: true })
       .eq("post_id", post.id)
       .is("deleted_at", null),
-    supabase.from("likes").select("*").eq("post_id", post.id),
+    supabase
+      .from("likes")
+      .select("id", { count: "exact", head: true })
+      .eq("post_id", post.id),
   ]);
 
   if (userError) throw userError;
@@ -172,8 +166,8 @@ export async function getCommunityDetail(
     timeAgo: formatRelativeTime(post.created_at),
     title: post.title,
     content: post.content,
-    likeCount: likes?.length ?? 0,
-    commentCount: comments?.length ?? 0,
+    likeCount: likeCount ?? 0,
+    commentCount: commentCount ?? 0,
     thumbUrl: user?.profile_image ?? "/images/default-user.png",
     createdAt: post.created_at,
   };
@@ -339,7 +333,7 @@ export async function getCommunityComments(
   const userIds = [...new Set(comments.map((comment) => comment.user_id))];
   const { data: users, error: usersError } = await supabase
     .from("users")
-    .select("*")
+    .select(USER_PREVIEW_SELECT)
     .in("id", userIds)
     .is("deleted_at", null);
 
@@ -347,7 +341,7 @@ export async function getCommunityComments(
     throw usersError;
   }
 
-  const userMap = new Map<string, UserRow>(
+  const userMap = new Map<string, UserPreview>(
     (users ?? []).map((user) => [user.id, user])
   );
 

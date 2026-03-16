@@ -1,6 +1,9 @@
 "use client";
+
+import type { RefObject } from "react";
 import { faCommentDots, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCommunityDetailReactions } from "@/app/community/_hooks/use-community-detail-reactions";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -13,9 +16,11 @@ interface Props {
   likeDisabled?: boolean;
   onLikeClick?: () => void;
   onCommentClick?: () => void;
+  postId?: string;
+  commentInputRef?: RefObject<HTMLInputElement | null>;
 }
 
-export default function CommunityReactionStats({
+function CommunityReactionStatsView({
   likeCount,
   commentCount,
   showLabel = false,
@@ -61,4 +66,37 @@ export default function CommunityReactionStats({
       </button>
     </div>
   );
+}
+
+function InteractiveCommunityReactionStats({
+  postId,
+  commentInputRef,
+  ...props
+}: Props & {
+  postId: string;
+  commentInputRef: RefObject<HTMLInputElement | null>;
+}) {
+  const { isLiked, likeDisabled, handleToggleLike, handleCommentClick } =
+    useCommunityDetailReactions({
+      postId,
+      commentInputRef,
+    });
+
+  return (
+    <CommunityReactionStatsView
+      {...props}
+      isLiked={isLiked}
+      likeDisabled={likeDisabled}
+      onLikeClick={handleToggleLike}
+      onCommentClick={handleCommentClick}
+    />
+  );
+}
+
+export default function CommunityReactionStats(props: Props) {
+  if (props.postId && props.commentInputRef) {
+    return <InteractiveCommunityReactionStats {...props} />;
+  }
+
+  return <CommunityReactionStatsView {...props} />;
 }

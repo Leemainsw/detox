@@ -1,13 +1,27 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import type { Tables, TablesInsert } from "@/types/supabase.types";
-
-export type AuthProvider = "anonymous" | "google" | "kakao" | "naver";
+import type {
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from "@/types/supabase.types";
 
 type UpsertUserParams = TablesInsert<"users">;
 export type UserProfile = Tables<"users">;
 
+//소셜
+export async function signInWithOAuth(
+  provider: "google" | "kakao",
+  redirectTo: string
+) {
+  return supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo },
+  });
+}
+
+//익명
 export async function signInAnonymously() {
   return supabase.auth.signInAnonymously();
 }
@@ -31,4 +45,21 @@ export async function getUserProfile(userId: string) {
 
 export async function upsertUser(params: UpsertUserParams) {
   return supabase.from("users").upsert(params);
+}
+
+type UpdateUserParams = Pick<
+  TablesUpdate<"users">,
+  "nickname" | "profile_image"
+>;
+
+export async function updateUserProfile(
+  userId: string,
+  params: UpdateUserParams
+) {
+  return supabase
+    .from("users")
+    .update(params)
+    .eq("id", userId)
+    .select()
+    .single();
 }

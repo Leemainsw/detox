@@ -1,20 +1,21 @@
-import { NotificationType } from "./type";
+import type { Tables } from "@/types/supabase.types";
 
 export default function getNotificationTitle(
-  type: NotificationType
+  type: Tables<"notification">["type"],
+  title: string
 ): React.ReactNode {
   switch (type) {
-    case "payment-pending":
+    case "payment_due":
       return (
-        <span className="body-md font-bold text-state-danger">결제 예정</span>
+        <span className="body-md font-bold text-state-danger">{title}</span>
       );
-    case "trial-ending-soon":
+    case "trial_ending":
       return (
-        <span className="body-md font-bold text-brand-primary">
-          체험 종료 임박
-        </span>
+        <span className="body-md font-bold text-brand-primary">{title}</span>
       );
-    case "community":
-      return <span className="body-md font-bold text-gray-400">커뮤니티</span>;
+    case "community_comment":
+      return <span className="body-md font-bold text-gray-400">{title}</span>;
+    case "community_like":
+      return <span className="body-md font-bold text-gray-400">{title}</span>;
   }
 }

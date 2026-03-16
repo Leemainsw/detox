@@ -10,7 +10,6 @@ import { useToast } from "@/app/hooks/useToast";
 import type { CommunityServiceValue } from "../_types";
 import { useCurrentUserQuery } from "@/query/users";
 import { useCreateCommunityPostMutation } from "@/query/community";
-import CommunityAuthGuard from "../_components/community-auth-guard";
 
 function CommunityNewPageContent() {
   const router = useRouter();
@@ -21,23 +20,21 @@ function CommunityNewPageContent() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  const currentUserQuery = useCurrentUserQuery();
-  const createCommunityPostMutation = useCreateCommunityPostMutation();
+  const { data: currentUser } = useCurrentUserQuery();
+  const currentUserId = currentUser?.id;
+  const { mutateAsync: createCommunityPost, isPending: isCreatePending } =
+    useCreateCommunityPostMutation();
 
   const isFormValid = title.trim().length > 0 && content.trim().length > 0;
 
   const handleSubmit = async () => {
-    if (
-      !currentUserQuery.data?.id ||
-      !isFormValid ||
-      createCommunityPostMutation.isPending
-    ) {
+    if (!currentUserId || !isFormValid || isCreatePending) {
       return;
     }
 
     try {
-      const createdPost = await createCommunityPostMutation.mutateAsync({
-        userId: currentUserQuery.data.id,
+      const createdPost = await createCommunityPost({
+        userId: currentUserId,
         service: selectedService,
         title: title.trim(),
         content: content.trim(),
@@ -73,12 +70,8 @@ function CommunityNewPageContent() {
         <Button
           variant="primary"
           size="lg"
-          disabled={
-            !isFormValid ||
-            !currentUserQuery.data?.id ||
-            createCommunityPostMutation.isPending
-          }
-          loading={createCommunityPostMutation.isPending}
+          disabled={!isFormValid || !currentUserId}
+          loading={isCreatePending}
           onClick={handleSubmit}
         >
           작성 하기
@@ -89,9 +82,5 @@ function CommunityNewPageContent() {
 }
 
 export default function CommunityNewPage() {
-  return (
-    <CommunityAuthGuard>
-      <CommunityNewPageContent />
-    </CommunityAuthGuard>
-  );
+  return <CommunityNewPageContent />;
 }

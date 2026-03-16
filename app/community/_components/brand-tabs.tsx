@@ -8,12 +8,12 @@ import type { CommunityServiceFilter, CommunityServiceValue } from "../_types";
 type BrandTabsProps =
   | {
       value: CommunityServiceFilter;
-      onChange: (value: CommunityServiceFilter) => void;
+      onChange?: (value: CommunityServiceFilter) => void;
       includeAll?: true;
     }
   | {
       value: CommunityServiceValue;
-      onChange: (value: CommunityServiceValue) => void;
+      onChange?: (value: CommunityServiceValue) => void;
       includeAll: false;
     };
 
@@ -36,14 +36,13 @@ export default function BrandTabs(props: BrandTabsProps) {
     >
       {brandTabs.map((tab) => {
         const isActive = value === tab.key;
-
-        if (tab.key === "all") {
+        if (tab.key === "all" && props.includeAll !== false) {
           return (
             <button
               key={tab.key}
               type="button"
               aria-pressed={isActive}
-              onClick={() => onChange("all")}
+              onClick={() => props.onChange?.("all")}
               className={cn(
                 "flex min-w-fit flex-col items-center gap-2 transition-opacity"
               )}
@@ -75,7 +74,7 @@ export default function BrandTabs(props: BrandTabsProps) {
             key={tab.key}
             type="button"
             aria-pressed={isActive}
-            onClick={() => onChange(tab.key as CommunityServiceValue)}
+            onClick={() => onChange?.(tab.key as CommunityServiceValue)}
             className={cn(
               "flex min-w-fit max-w-12 flex-col items-center gap-2 transition-opacity"
             )}

@@ -1,36 +1,21 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { upsertUserWithNicknameRetry } from "@/app/utils/auth/upsert-user-with-nickname-retry";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { generateNickname } from "@/app/utils/nickname";
 import {
   getCurrentUser,
   getUserProfile,
   signInAnonymously,
   signOut,
+  updateUserProfile,
   upsertUser,
 } from "@/services/users";
-
-const NICKNAME_MAX_RETRY_COUNT = 5;
-function isNicknameConflictError(error: {
-  code?: string | null;
-  message?: string | null;
-  details?: string | null;
-  hint?: string | null;
-}) {
-  // Supabase/Postgres가 내려주는 에러 문자열 안에서 unique 제약과 nickname 컬럼명을 함께 확인합니다.
-  const errorMessage = [
-    error.message ?? "",
-    error.details ?? "",
-    error.hint ?? "",
-  ]
-    .join(" ")
-    .toLowerCase();
-
-  const isUniqueViolation =
-    error.code === "23505" || errorMessage.includes("duplicate key");
-
-  return isUniqueViolation && errorMessage.includes("nickname");
-}
 
 export const usersKeys = {
   all: ["users"],
@@ -60,31 +45,18 @@ export function useAnonymousLoginMutation() {
         is_anonymous: true,
       };
 
-      let upsertError: Awaited<ReturnType<typeof upsertUser>>["error"] = null;
-
-      for (
-        let retryCount = 0;
-        retryCount < NICKNAME_MAX_RETRY_COUNT;
-        retryCount++
-      ) {
-        const { error } = await upsertUser({
-          ...userPayload,
-          nickname: generateNickname(),
+      try {
+        await upsertUserWithNicknameRetry({
+          makeNickname: () => generateNickname(),
+          tryUpsert: (nickname) =>
+            upsertUser({
+              ...userPayload,
+              nickname,
+            }),
         });
 
-        if (!error) {
-          return user;
-        }
-
-        upsertError = error;
-
-        // 닉네임 UNIQUE 충돌일 때만 새 후보를 뽑아 다시 시도합니다.
-        if (!isNicknameConflictError(error)) {
-          break;
-        }
-      }
-
-      if (upsertError) {
+        return user;
+      } catch (upsertError) {
         const { error: signOutError } = await signOut();
 
         if (signOutError) {
@@ -93,8 +65,6 @@ export function useAnonymousLoginMutation() {
 
         throw upsertError;
       }
-
-      throw new Error("사용자 정보 저장에 실패했어요.");
     },
     onSuccess: (user) => {
       queryClient.setQueryData([...usersKeys.auth(), "current-user"], user);
@@ -115,13 +85,7 @@ export function useLogoutMutation() {
       }
     },
     onSuccess: () => {
-      queryClient.setQueryData([...usersKeys.auth(), "current-user"], null);
-      queryClient.removeQueries({
-        queryKey: [...usersKeys.auth(), "current-user"],
-      });
-      queryClient.removeQueries({
-        queryKey: usersKeys.profile(),
-      });
+      queryClient.clear();
     },
   });
 }
@@ -158,5 +122,53 @@ export function useUserProfileQuery(userId?: string) {
       return data;
     },
     enabled: Boolean(userId),
+  });
+}
+
+/**
+ * 유저 프로필을 조회합니다. (Suspense용)
+ */
+export function useUserProfileSuspenseQuery(userId: string) {
+  return useSuspenseQuery({
+    queryKey: usersKeys.profileById(userId),
+    queryFn: async () => {
+      const { data, error } = await getUserProfile(userId);
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    },
+  });
+}
+
+interface UpdateUserProfileParams {
+  nickname?: string;
+  profile_image?: string;
+}
+
+/**
+ * 유저 프로필(닉네임, 프로필 이미지)을 수정합니다.
+ */
+export function useUpdateUserProfileMutation(userId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: [...usersKeys.profile(), "update", userId],
+    mutationFn: async (params: UpdateUserProfileParams) => {
+      const { data, error } = await updateUserProfile(userId, params);
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data) {
+        queryClient.setQueryData(usersKeys.profileById(userId), data);
+      }
+    },
   });
 }
