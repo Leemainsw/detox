@@ -7,6 +7,9 @@ import UserBubble from "./_components/user-bubble";
 import AIBubble from "./_components/ai-bubble";
 import QuickQuestions from "./_components/quick-questions";
 import MyChart from "../_components/comparison-chart";
+import { useCurrentUserQuery } from "@/query/users";
+import { supabase } from "@/lib/supabase";
+import { subscriptableBrand } from "@/app/utils/brand/brand";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
 
 interface AnalysisResponse {
@@ -28,6 +31,31 @@ interface Message {
   analysisData?: AnalysisResponse;
 }
 
+function calculateCategoryRatio(
+  subscriptions: Array<{ service: string; total_amount: number }>
+) {
+  const totals: Record<string, number> = {};
+  let grandTotal = 0;
+
+  subscriptions.forEach((sub) => {
+    const category =
+      subscriptableBrand[sub.service as keyof typeof subscriptableBrand]
+        ?.category ?? "etc";
+    const amount = Number(sub.total_amount) || 0;
+    totals[category] = (totals[category] ?? 0) + amount;
+    grandTotal += amount;
+  });
+
+  if (grandTotal === 0) return {};
+
+  const ratio: Record<string, number> = {};
+  Object.entries(totals).forEach(([category, value]) => {
+    ratio[category] = Math.round((value / grandTotal) * 100);
+  });
+
+  return ratio;
+}
+
 export default function ChatPage() {
   const [aiStatus, setAiStatus] = useState<
     "text" | "analyzing" | "error" | "chart"
@@ -36,6 +64,7 @@ export default function ChatPage() {
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { setResult } = useAnalysisStore();
+  const { data: user } = useCurrentUserQuery();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -57,11 +86,22 @@ export default function ChatPage() {
     setAiStatus("analyzing");
 
     try {
+      if (!user?.id) {
+        throw new Error("로그인이 필요합니다.");
+      }
+
+      const { data: subscriptions } = await supabase
+        .from("subscription")
+        .select("service, total_amount")
+        .eq("user_id", user.id);
+
+      const categoryRatio = calculateCategoryRatio(subscriptions || []);
+
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userContext: { categoryRatio: { OTT: 40, Shopping: 30, Food: 30 } },
+          userContext: { categoryRatio },
         }),
       });
 
@@ -85,8 +125,6 @@ export default function ChatPage() {
             time: responseTime,
           },
         ]);
-      } else if (!response.ok) {
-        throw new Error("분석 실패");
       } else {
         setAiStatus("chart");
         setMessages((prev) => [

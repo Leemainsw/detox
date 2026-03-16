@@ -60,13 +60,30 @@ export async function POST(req: Request) {
     // if (!session)
     //   return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    // 테스트용 고정 유저 ID
-    const testUserId = "1ed76a49-9a35-4dec-a039-19d7a2f2c4ab";
+    // Supabase 세션에서 사용자 ID를 가져와야 합니다.
+    // (인증 구현 전에는 요청이 거부됩니다.)
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.error("Supabase 세션 조회 실패:", sessionError);
+      return Response.json(
+        { error: "세션을 확인할 수 없습니다." },
+        { status: 500 }
+      );
+    }
+
+    const userId = session?.user?.id;
+    if (!userId) {
+      return Response.json({ error: "로그인이 필요합니다." }, { status: 401 });
+    }
 
     const { data: subscriptions, error: dbError } = await supabase
       .from("subscription")
       .select("*")
-      .eq("user_id", testUserId);
+      .eq("user_id", userId);
 
     const { userContext } = await req.json();
 

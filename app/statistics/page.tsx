@@ -16,13 +16,13 @@ import { calculateMonthlyTotal } from "@/app/utils/subscriptions/calculate";
 import { useCurrentUserQuery, useUserProfileQuery } from "@/query/users";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
 
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export default function StatisticsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
 
   const { data: user } = useCurrentUserQuery();
   const { data: profile } = useUserProfileQuery(user?.id);
