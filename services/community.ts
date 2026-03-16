@@ -1,5 +1,4 @@
 import { formatRelativeTime } from "@/app/utils/date/formatRelativeTime";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { supabase } from "@/lib/supabase";
 import type {
   CommunityCommentItemData,
@@ -12,6 +11,12 @@ import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import type { Tables } from "@/types/supabase.types";
 
 type UserRow = Tables<"users">;
+
+async function getSupabaseServerClient() {
+  const { createSupabaseServerClient } = await import("@/lib/supabase-server");
+
+  return createSupabaseServerClient();
+}
 
 //게시글리스트
 export async function getCommunityListPage(params: {
@@ -218,7 +223,7 @@ export async function getServerCommunityListPage(params: {
   cursor?: CommunityListCursor | null;
   pageSize?: number;
 }): Promise<CommunityListPage> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await getSupabaseServerClient();
   const pageSize = params.pageSize ?? 10;
 
   let query = supabase
@@ -309,7 +314,7 @@ export async function getServerCommunityListPage(params: {
 export async function getServerCommunityDetail(
   postId: string
 ): Promise<CommunityDetailData | null> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await getSupabaseServerClient();
 
   const { data: post, error: postError } = await supabase
     .from("post")
@@ -409,7 +414,7 @@ export async function getServerRecommendedCommunityPosts(params: {
 export async function getServerCommunityComments(
   postId: string
 ): Promise<CommunityCommentItemData[]> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await getSupabaseServerClient();
 
   const { data: comments, error: commentsError } = await supabase
     .from("comment")
