@@ -24,14 +24,15 @@ interface Props {
 export default function NotificationItem({ notification }: Props) {
   const { error, success } = useToast();
 
-  const deleteMutation = useDeleteNotificationMutation(notification.user_id);
-  const readMutation = useReadNotificationMutation(notification.user_id);
-  const isDeleting = deleteMutation.isPending;
+  const { mutateAsync: deleteNotification, isPending: isDeleting } =
+    useDeleteNotificationMutation(notification.user_id);
+  const { mutateAsync: readNotification, isPending: isReading } =
+    useReadNotificationMutation(notification.user_id);
 
   const handleDeleteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await deleteMutation.mutateAsync(notification.id);
+      await deleteNotification(notification.id);
       success("삭제되었어요.");
     } catch (err) {
       const message = err instanceof Error ? err.message : "삭제에 실패했어요.";
@@ -41,8 +42,8 @@ export default function NotificationItem({ notification }: Props) {
 
   const handleRead = async () => {
     try {
-      if (notification.is_read) return;
-      await readMutation.mutateAsync(notification.id);
+      if (notification.is_read || isReading) return;
+      await readNotification(notification.id);
       success("읽음 처리되었어요.");
     } catch (err) {
       const message =
@@ -65,7 +66,15 @@ export default function NotificationItem({ notification }: Props) {
         "w-full flex justify-between items-center gap-2 cursor-pointer",
         notification.is_read && "opacity-50"
       )}
+      role="button"
+      tabIndex={0}
       onClick={handleRead}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleRead();
+        }
+      }}
     >
       <div className="flex items-center gap-3">
         {isCommunity ? (
