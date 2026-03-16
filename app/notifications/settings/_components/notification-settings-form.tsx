@@ -9,16 +9,20 @@ import { useState } from "react";
 import type { Tables } from "@/types/supabase.types";
 
 interface Props {
-  notificationSettings: Tables<"notification_settings">;
+  notificationSettings: Tables<"notification_settings"> | null;
 }
 
 export default function NotificationSettingsForm({
   notificationSettings,
 }: Props) {
   const [isCommunityAlertEnabled, setIsCommunityAlertEnabled] =
-    useState<boolean>(notificationSettings.is_community_alert_enabled);
+    useState<boolean>(
+      notificationSettings?.is_community_alert_enabled ?? false
+    );
   const [isSubscriptionAlertEnabled, setIsSubscriptionAlertEnabled] =
-    useState<boolean>(notificationSettings.is_subscription_alert_enabled);
+    useState<boolean>(
+      notificationSettings?.is_subscription_alert_enabled ?? false
+    );
 
   const {
     mutateAsync: updateNotificationSettings,
@@ -35,7 +39,6 @@ export default function NotificationSettingsForm({
       success("알림설정이 저장되었습니다.");
     } catch (error) {
       errorToast("알림설정 저장에 실패했습니다.");
-      console.error(error);
     }
   };
 
