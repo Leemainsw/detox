@@ -1,11 +1,7 @@
 "use client";
 
 import FeedbackState from "@/app/components/feedback-state";
-import {
-  useDeleteCommunityCommentMutation,
-  useReportCommunityCommentMutation,
-} from "@/query/community";
-import { useCurrentUserQuery } from "@/query/users";
+import { useCommunityCommentActions } from "@/app/hooks/use-community-comment-actions";
 import type { CommunityCommentItemData } from "../_types";
 import AuthorMeta from "./author-meta";
 import DetailKebab from "./detail-kebab";
@@ -15,12 +11,8 @@ interface CommentListProps {
 }
 
 export default function CommentList({ items }: CommentListProps) {
-  const { data: currentUser } = useCurrentUserQuery();
-  const { mutateAsync: deleteCommunityComment } =
-    useDeleteCommunityCommentMutation();
-  const { mutateAsync: reportCommunityComment } =
-    useReportCommunityCommentMutation();
-  const currentUserId = currentUser?.id;
+  const { currentUserId, getDeleteHandler, getReportHandler } =
+    useCommunityCommentActions();
 
   if (items.length === 0) {
     return (
@@ -51,27 +43,8 @@ export default function CommentList({ items }: CommentListProps) {
               <DetailKebab
                 entityName="댓글"
                 variant={currentUserId === item.userId ? "edit" : "default"}
-                onDelete={
-                  currentUserId === item.userId
-                    ? async () => {
-                        await deleteCommunityComment({
-                          commentId: item.id,
-                          postId: item.postId,
-                          userId: currentUserId,
-                        });
-                      }
-                    : undefined
-                }
-                onReport={
-                  currentUserId !== item.userId
-                    ? async () => {
-                        await reportCommunityComment({
-                          commentId: item.id,
-                          reporterUserId: currentUserId,
-                        });
-                      }
-                    : undefined
-                }
+                onDelete={getDeleteHandler(item)}
+                onReport={getReportHandler(item)}
               />
             ) : null}
           </div>
