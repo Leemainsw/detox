@@ -1,15 +1,12 @@
 "use client";
 
-import Header from "./components/header";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight";
-import Link from "next/link";
-import Image from "next/image";
-import SubscriptionList from "./components/subscription-list";
-import Button from "./components/button";
-import BottomNav from "./components/bottom-nav";
-import { subscriptableBrand } from "./utils/brand/brand";
-import type { SubscriptableBrandType } from "./utils/brand/type";
+import HomeSummaryCard from "./_components/home-summary-card";
+import Header from "../components/header";
+import SubscriptionList from "../components/subscription-list";
+import Button from "../components/button";
+import BottomNav from "../components/bottom-nav";
+import { subscriptableBrand } from "../utils/brand/brand";
+import type { SubscriptableBrandType } from "../utils/brand/type";
 
 interface SubscriptionItem {
   id: number;
@@ -84,51 +81,7 @@ export default function Home() {
       <Header rightContent="알람아이콘" />
       <main>
         <section className="px-6 py-5 mb-4 bg-white grid grid-cols-[1fr_100px] items-center justify-between">
-          <div className="flex flex-col gap-4">
-            <div className="title">
-              {showSubscribedUiState ? (
-                <>
-                  <h2 className="text-2xl">이번달 구독료로</h2>
-                  <h1 className="header-md">
-                    스타벅스{" "}
-                    <span className="text-brand-primary">커피 8잔</span>
-                  </h1>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-2xl">숨겨진 낭비를 줄이면</h2>
-                  <h1 className="header-md">
-                    연간 최대 <span className="text-brand-primary">???원</span>
-                  </h1>
-                </>
-              )}
-            </div>
-
-            <Link
-              href="/통계메인"
-              className="body-lg text-gray-300 inline-flex items-center gap-1 mt-2"
-            >
-              자세히 알아보기
-              <FontAwesomeIcon icon={faAngleRight} size="xs" />
-            </Link>
-          </div>
-          <div>
-            {showSubscribedUiState ? (
-              <Image
-                src="/images/emoji/main-coffee.png"
-                alt=""
-                width={100}
-                height={100}
-              />
-            ) : (
-              <Image
-                src="/images/emoji/main-nodata.png"
-                alt=""
-                width={100}
-                height={100}
-              />
-            )}
-          </div>
+          <HomeSummaryCard showSubscribedUiState={showSubscribedUiState} />
         </section>
         <section className="pt-10 bg-white border-t-gray-100 border-t-16">
           <div className="relative flex flex-col justify-center items-start gap-4 ">
