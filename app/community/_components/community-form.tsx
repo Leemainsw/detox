@@ -1,12 +1,12 @@
 import Input from "@/app/components/input";
 import TextArea from "@/app/components/textarea";
 
-type CommunityFormProps = {
+interface CommunityFormProps {
   title: string;
   content: string;
   onTitleChange: (value: string) => void;
   onContentChange: (value: string) => void;
-};
+}
 
 export default function CommunityForm({
   title,

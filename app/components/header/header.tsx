@@ -14,6 +14,7 @@ interface Props {
   leftText?: string;
   rightContent?: React.ReactNode;
   onBack?: () => void;
+  fallbackPath?: string;
 }
 
 export default function Header({
@@ -22,6 +23,7 @@ export default function Header({
   leftText,
   rightContent,
   onBack,
+  fallbackPath,
 }: Props) {
   const router = useRouter();
 
@@ -33,7 +35,19 @@ export default function Header({
             <button
               type="button"
               aria-label="뒤로 이동"
-              onClick={() => (onBack ? onBack() : router.back())}
+              onClick={() => {
+                if (onBack) {
+                  onBack();
+                  return;
+                }
+
+                if (fallbackPath && window.history.length <= 1) {
+                  router.push(fallbackPath);
+                  return;
+                }
+
+                router.back();
+              }}
               className="cursor-pointer flex items-center justify-center w-10 h-10 -ml-2"
             >
               <FontAwesomeIcon

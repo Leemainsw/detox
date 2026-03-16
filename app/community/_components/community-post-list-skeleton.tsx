@@ -2,11 +2,11 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 
-type CommunityPostListSkeletonProps = {
+interface CommunityPostListSkeletonProps {
   count?: number;
   className?: string;
   descriptionLineCount?: number;
-};
+}
 
 export default function CommunityPostListSkeleton({
   count = 3,
@@ -15,7 +15,9 @@ export default function CommunityPostListSkeleton({
 }: CommunityPostListSkeletonProps) {
   return (
     <div
-      className={["grid grid-cols-1 gap-5", className].filter(Boolean).join(" ")}
+      className={["grid grid-cols-1 gap-5", className]
+        .filter(Boolean)
+        .join(" ")}
     >
       {Array.from({ length: count }).map((_, index) => (
         <div
