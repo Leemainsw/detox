@@ -10,7 +10,9 @@ import type {
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import type { Tables } from "@/types/supabase.types";
 
-type UserRow = Tables<"users">;
+type UserPreview = Pick<Tables<"users">, "id" | "nickname" | "profile_image">;
+
+const USER_PREVIEW_SELECT = "id, nickname, profile_image";
 
 async function getSupabaseServerClient() {
   const { createSupabaseServerClient } = await import("@/lib/supabase-server");
@@ -72,13 +74,13 @@ export async function getCommunityListPage(params: {
 
   const { data: users, error: usersError } = await supabase
     .from("users")
-    .select("*")
+    .select(USER_PREVIEW_SELECT)
     .in("id", userIds)
     .is("deleted_at", null);
 
   if (usersError) throw usersError;
 
-  const userMap = new Map<string, UserRow>(
+  const userMap = new Map<string, UserPreview>(
     (users ?? []).map((user) => [user.id, user])
   );
 
@@ -138,7 +140,7 @@ export async function getCommunityDetail(
   ] = await Promise.all([
     supabase
       .from("users")
-      .select("*")
+      .select(USER_PREVIEW_SELECT)
       .eq("id", post.user_id)
       .is("deleted_at", null)
       .maybeSingle(),
@@ -272,13 +274,13 @@ export async function getServerCommunityListPage(params: {
 
   const { data: users, error: usersError } = await supabase
     .from("users")
-    .select("*")
+    .select(USER_PREVIEW_SELECT)
     .in("id", userIds)
     .is("deleted_at", null);
 
   if (usersError) throw usersError;
 
-  const userMap = new Map<string, UserRow>(
+  const userMap = new Map<string, UserPreview>(
     (users ?? []).map((user) => [user.id, user])
   );
 
@@ -338,7 +340,7 @@ export async function getServerCommunityDetail(
   ] = await Promise.all([
     supabase
       .from("users")
-      .select("*")
+      .select(USER_PREVIEW_SELECT)
       .eq("id", post.user_id)
       .is("deleted_at", null)
       .maybeSingle(),
@@ -435,7 +437,7 @@ export async function getServerCommunityComments(
 
   const { data: users, error: usersError } = await supabase
     .from("users")
-    .select("*")
+    .select(USER_PREVIEW_SELECT)
     .in("id", userIds)
     .is("deleted_at", null);
 
@@ -443,7 +445,7 @@ export async function getServerCommunityComments(
     throw usersError;
   }
 
-  const userMap = new Map<string, UserRow>(
+  const userMap = new Map<string, UserPreview>(
     (users ?? []).map((user) => [user.id, user])
   );
 
@@ -583,7 +585,7 @@ export async function getCommunityComments(
   const userIds = [...new Set(comments.map((comment) => comment.user_id))];
   const { data: users, error: usersError } = await supabase
     .from("users")
-    .select("*")
+    .select(USER_PREVIEW_SELECT)
     .in("id", userIds)
     .is("deleted_at", null);
 
@@ -591,7 +593,7 @@ export async function getCommunityComments(
     throw usersError;
   }
 
-  const userMap = new Map<string, UserRow>(
+  const userMap = new Map<string, UserPreview>(
     (users ?? []).map((user) => [user.id, user])
   );
 
