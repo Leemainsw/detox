@@ -1,14 +1,14 @@
 "use client";
 
 import Header from "@/app/components/header";
-import DateDivider from "./_components/date-divider/date-divider";
-import UserBubble from "./_components/user-bubble";
-import AIBubble from "./_components/ai-bubble";
-import QuickQuestions from "./_components/quick-questions";
-import MyChart from "../_components/comparison-chart";
-import { useAiChat } from "../../../hooks/useAiChat";
+import DateDivider from "@/app/statistics/ai/_components/date-divider/date-divider";
+import UserBubble from "@/app/statistics/ai/_components/user-bubble";
+import AIBubble from "@/app/statistics/ai/_components/ai-bubble";
+import QuickQuestions from "@/app/statistics/ai/_components/quick-questions";
+import MyChart from "@/app/statistics/_components/comparison-chart";
+import { useAiChat } from "@/hooks/useAiChat";
 
-export default function Page() {
+export default function AIChat() {
   const {
     aiStatus,
     messages,
