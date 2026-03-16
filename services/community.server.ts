@@ -1,5 +1,4 @@
 import { formatRelativeTime } from "@/app/utils/date/formatRelativeTime";
-import { supabase } from "@/lib/supabase";
 import type {
   CommunityCommentItemData,
   CommunityDetailData,
@@ -8,6 +7,7 @@ import type {
   CommunityListPage,
 } from "@/app/community/_types";
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 import type { Tables } from "@/types/supabase.types";
 
 type UserPreview = Pick<Tables<"users">, "id" | "nickname" | "profile_image">;
@@ -19,22 +19,22 @@ type PostWithCounts = Tables<"post"> & {
 
 const USER_PREVIEW_SELECT = "id, nickname, profile_image";
 
-//게시글리스트
-export async function getCommunityListPage(params: {
+export async function getServerCommunityListPage(params: {
   service?: SubscriptableBrandType;
   cursor?: CommunityListCursor | null;
   pageSize?: number;
 }): Promise<CommunityListPage> {
+  const supabase = await createSupabaseServerClient();
   const pageSize = params.pageSize ?? 10;
 
   let query = supabase
     .from("post")
     .select(
       `
-    *,
-    comment(count),
-    likes(count)
-  `
+      *,
+      comment(count),
+      likes(count)
+    `
     )
     .is("deleted_at", null);
 
@@ -68,7 +68,6 @@ export async function getCommunityListPage(params: {
 
   const hasNextPage = posts.length > pageSize;
   const visiblePosts = hasNextPage ? posts.slice(0, pageSize) : posts;
-
   const userIds = [...new Set(visiblePosts.map((post) => post.user_id))];
 
   const { data: users, error: usersError } = await supabase
@@ -77,7 +76,9 @@ export async function getCommunityListPage(params: {
     .in("id", userIds)
     .is("deleted_at", null);
 
-  if (usersError) throw usersError;
+  if (usersError) {
+    throw usersError;
+  }
 
   const userMap = new Map<string, UserPreview>(
     (users ?? []).map((user) => [user.id, user])
@@ -113,10 +114,11 @@ export async function getCommunityListPage(params: {
   };
 }
 
-//게시글상세
-export async function getCommunityDetail(
+export async function getServerCommunityDetail(
   postId: string
 ): Promise<CommunityDetailData | null> {
+  const supabase = await createSupabaseServerClient();
+
   const { data: post, error: postError } = await supabase
     .from("post")
     .select("*")
@@ -173,14 +175,13 @@ export async function getCommunityDetail(
   };
 }
 
-//추천게시글리스트
-export async function getRecommendedCommunityPosts(params: {
+export async function getServerRecommendedCommunityPosts(params: {
   postId: string;
   service: SubscriptableBrandType;
   limit?: number;
 }): Promise<CommunityListItemData[]> {
   const limit = params.limit ?? 3;
-  const sameServicePage = await getCommunityListPage({
+  const sameServicePage = await getServerCommunityListPage({
     service: params.service,
     pageSize: Math.max(limit + 1, 4),
   });
@@ -193,7 +194,7 @@ export async function getRecommendedCommunityPosts(params: {
     return recommendedPosts.slice(0, limit);
   }
 
-  const fallbackPage = await getCommunityListPage({
+  const fallbackPage = await getServerCommunityListPage({
     pageSize: Math.max(limit * 3, 10),
   });
 
@@ -213,108 +214,11 @@ export async function getRecommendedCommunityPosts(params: {
   return mergedPosts.slice(0, limit);
 }
 
-//게시글작성
-export async function createCommunityPost(params: {
-  userId: string;
-  service: SubscriptableBrandType;
-  title: string;
-  content: string;
-}) {
-  const { data, error } = await supabase
-    .from("post")
-    .insert({
-      user_id: params.userId,
-      service: params.service,
-      title: params.title,
-      content: params.content,
-    })
-    .select("id")
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data) throw new Error("게시글 작성에 실패했어요.");
-
-  return data;
-}
-//게시글수정
-export async function updateCommunityPost(params: {
-  postId: string;
-  userId: string;
-  service: SubscriptableBrandType;
-  title: string;
-  content: string;
-}) {
-  const { data, error } = await supabase
-    .from("post")
-    .update({
-      service: params.service,
-      title: params.title,
-      content: params.content,
-    })
-    .eq("id", params.postId)
-    .eq("user_id", params.userId)
-    .is("deleted_at", null)
-    .select("id")
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data) {
-    throw new Error("수정할 게시글이 없거나 권한이 없습니다.");
-  }
-
-  return data;
-}
-
-//게시글삭제
-export async function deleteCommunityPost(params: {
-  postId: string;
-  userId: string;
-}) {
-  const { data, error } = await supabase
-    .from("post")
-    .update({
-      deleted_at: new Date().toISOString(),
-    })
-    .eq("id", params.postId)
-    .eq("user_id", params.userId)
-    .is("deleted_at", null)
-    .select("id")
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data) {
-    throw new Error("삭제할 게시글이 없거나 권한이 없습니다.");
-  }
-
-  return data;
-}
-
-//게시글신고
-export async function reportCommunityPost(params: {
-  postId: string;
-  reporterUserId: string;
-}) {
-  const { data, error } = await supabase
-    .from("report")
-    .insert({
-      post_id: params.postId,
-      reporter_user_id: params.reporterUserId,
-    })
-    .select("id")
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data) {
-    throw new Error("게시글 신고에 실패했어요.");
-  }
-
-  return data;
-}
-
-//댓글리스트
-export async function getCommunityComments(
+export async function getServerCommunityComments(
   postId: string
 ): Promise<CommunityCommentItemData[]> {
+  const supabase = await createSupabaseServerClient();
+
   const { data: comments, error: commentsError } = await supabase
     .from("comment")
     .select("*")
@@ -331,6 +235,7 @@ export async function getCommunityComments(
   }
 
   const userIds = [...new Set(comments.map((comment) => comment.user_id))];
+
   const { data: users, error: usersError } = await supabase
     .from("users")
     .select(USER_PREVIEW_SELECT)
@@ -359,106 +264,4 @@ export async function getCommunityComments(
       createdAt: comment.created_at,
     };
   });
-}
-
-//댓글작성
-export async function createCommunityComment(params: {
-  postId: string;
-  userId: string;
-  content: string;
-}) {
-  const { error } = await supabase.from("comment").insert({
-    post_id: params.postId,
-    user_id: params.userId,
-    content: params.content,
-  });
-
-  if (error) throw error;
-}
-
-//댓글삭제
-export async function deleteCommunityComment(params: {
-  commentId: string;
-  postId: string;
-  userId: string;
-}) {
-  const { data, error } = await supabase
-    .from("comment")
-    .update({
-      deleted_at: new Date().toISOString(),
-    })
-    .eq("id", params.commentId)
-    .eq("post_id", params.postId)
-    .eq("user_id", params.userId)
-    .is("deleted_at", null)
-    .select("id")
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data) {
-    throw new Error("삭제할 댓글이 없거나 권한이 없습니다.");
-  }
-
-  return data;
-}
-//댓글신고
-export async function reportCommunityComment(params: {
-  commentId: string;
-  reporterUserId: string;
-}) {
-  const { data, error } = await supabase
-    .from("report")
-    .insert({
-      comment_id: params.commentId,
-      reporter_user_id: params.reporterUserId,
-    })
-    .select("id")
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data) {
-    throw new Error("댓글 신고에 실패했어요.");
-  }
-
-  return data;
-}
-
-//좋아요상태
-export async function getCommunityPostLikeStatus(params: {
-  postId: string;
-  userId: string;
-}) {
-  const { data, error } = await supabase
-    .from("likes")
-    .select("id")
-    .eq("post_id", params.postId)
-    .eq("user_id", params.userId)
-    .limit(1);
-
-  if (error) {
-    throw error;
-  }
-
-  return (data?.length ?? 0) > 0;
-}
-
-//좋아요토글
-export async function toggleCommunityPostLike(params: {
-  postId: string;
-  userId: string;
-}) {
-  const { data, error } = await supabase.rpc("toggle_post_like", {
-    p_post_id: params.postId,
-    p_user_id: params.userId,
-  });
-
-  if (error) {
-    throw error;
-  }
-
-  if (typeof data !== "boolean") {
-    throw new Error("좋아요 처리에 실패했어요.");
-  }
-
-  return { liked: data };
 }
