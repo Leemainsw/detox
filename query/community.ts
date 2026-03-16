@@ -6,6 +6,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import type {
@@ -210,6 +211,29 @@ export function useInfiniteCommunityListQuery(
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor,
 
+    initialData: initialPage
+      ? {
+          pages: [initialPage],
+          pageParams: [null],
+        }
+      : undefined,
+    refetchOnMount: false,
+  });
+}
+
+export function useSuspenseInfiniteCommunityListQuery(
+  service?: SubscriptableBrandType,
+  initialPage?: CommunityListPage
+) {
+  return useSuspenseInfiniteQuery({
+    queryKey: communityKeys.list(service),
+    initialPageParam: null as CommunityListCursor | null,
+    queryFn: ({ pageParam }) =>
+      getCommunityListPage({
+        service,
+        cursor: pageParam,
+      }),
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialData: initialPage
       ? {
           pages: [initialPage],
