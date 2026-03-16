@@ -1,51 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import FeedbackPage from "@/app/components/feedback-page/feedback-page";
 import Header from "@/app/components/header";
+import { useCurrentAuthUser } from "@/app/hooks/use-current-auth-user";
 import LoadingScreen from "@/app/components/loading-screen";
-import { supabase } from "@/lib/supabase";
 import { useCommunityDetailQuery } from "@/query/community";
 import CommunityEditFormContent from "./_components/community-edit-form-content";
 
 function CommunityEditPageContent() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [isCurrentUserPending, setIsCurrentUserPending] = useState(true);
-  const [isCurrentUserError, setIsCurrentUserError] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadCurrentUser = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-
-      if (!isMounted) {
-        return;
-      }
-
-      if (error) {
-        console.error(error);
-        setIsCurrentUserError(true);
-        setIsCurrentUserPending(false);
-        return;
-      }
-
-      setCurrentUserId(user?.id ?? null);
-      setIsCurrentUserPending(false);
-    };
-
-    void loadCurrentUser();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { currentUserId, isPending: isCurrentUserPending, isError: isCurrentUserError } =
+    useCurrentAuthUser();
 
   const {
     data: communityDetail,
