@@ -47,7 +47,7 @@ export default function CommunityDetailPageClient({
 
   return (
     <>
-      <Header variant="back" />
+      <Header variant="back" fallbackPath="/community" />
       <main>
         <section className="px-6 py-4">
           <div className="flex items-center justify-between gap-4">

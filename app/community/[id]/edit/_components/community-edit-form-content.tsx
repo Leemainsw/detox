@@ -38,10 +38,6 @@ export default function CommunityEditFormContent({
   const isFormValid = title.trim().length > 0 && content.trim().length > 0;
 
   const handleSubmit = async () => {
-    if (!isFormValid || isUpdatePending) {
-      return;
-    }
-
     try {
       await updateCommunityPost({
         postId,

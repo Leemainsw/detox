@@ -86,7 +86,11 @@ function CommunityEditPageContent() {
 
   return (
     <>
-      <Header variant="back" title="게시글 수정하기" />
+      <Header
+        variant="back"
+        title="게시글 수정하기"
+        fallbackPath={`/community/${id}`}
+      />
       <CommunityEditFormContent
         key={id}
         postId={id}
