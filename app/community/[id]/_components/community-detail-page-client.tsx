@@ -7,6 +7,7 @@ import {
   useCommunityDetailQuery,
   useRecommendedCommunityPostsQuery,
 } from "@/query/community";
+import CommunityReactionStats from "../../_components/community-reaction-stats";
 import CommunityList from "../../_components/community-list";
 import AuthorMeta from "../../_components/author-meta";
 import type {
@@ -16,7 +17,6 @@ import type {
 } from "../../_types";
 import CommunityDetailCommentSection from "./community-detail-comment-section";
 import CommunityDetailPostActions from "./community-detail-post-actions";
-import CommunityDetailReactions from "./community-detail-reactions";
 import CommunityDetailRecommendedPostsSkeleton from "./community-detail-recommended-posts-skeleton";
 
 type CommunityDetailPageClientProps = {
@@ -73,10 +73,12 @@ export default function CommunityDetailPageClient({
         </section>
 
         <section className="border-t-8 border-gray-50 py-5">
-          <CommunityDetailReactions
-            postId={postId}
+          <CommunityReactionStats
             likeCount={post.likeCount}
             commentCount={comments.length}
+            showLabel
+            className="px-6"
+            postId={postId}
             commentInputRef={commentInputRef}
           />
         </section>

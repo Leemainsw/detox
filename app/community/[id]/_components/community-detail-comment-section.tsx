@@ -114,9 +114,7 @@ export default function CommunityDetailCommentSection({
           value={comment}
           onChange={(event) => setComment(event.target.value)}
           onFocus={handleCommentFocus}
-          onKeyDown={(event) => {
-            void handleCommentKeyDown(event);
-          }}
+          onKeyDown={handleCommentKeyDown}
           placeholder={
             isLoggedIn
               ? "댓글을 입력하세요"
