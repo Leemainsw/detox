@@ -21,11 +21,7 @@ export default function ComparisonChart({
   diffAmount,
 }: Props) {
   const chartData = data
-    ? data.map((item) => ({
-        name: item.month,
-        amount: item.my_spend,
-        avg: item.avg_spend,
-      }))
+    ? data.map((item) => ({ name: item.month, amount: item.my_spend }))
     : [
         { name: userName || "나", amount: userAmount || 0 },
         { name: compareName || "평균", amount: compareAmount || 0 },
@@ -55,18 +51,20 @@ export default function ComparisonChart({
                 <Cell
                   key={`cell-${index}`}
                   fill={
-                    index === chartData.length - 1 ||
-                    (chartData.length === 2 && index === 0)
-                      ? "#2DD4BF"
-                      : "#D1D5DB"
+                    index === 0 ? "var(--brand-primary)" : "var(--gray-300)"
                   }
                 />
               ))}
+
               <LabelList
                 dataKey="amount"
                 position="top"
-                formatter={(val: number) => `${(val / 10000).toFixed(1)}만`}
-                style={{ fill: "#374151", fontSize: 12, fontWeight: 600 }}
+                formatter={(val: number) => `${val.toLocaleString()}원`}
+                style={{
+                  fill: "var(--gray-700)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
                 offset={10}
               />
             </Bar>
@@ -76,10 +74,12 @@ export default function ComparisonChart({
 
       {diffAmount !== undefined && diffAmount > 0 && (
         <div className="mx-6 px-4 py-3 bg-teal-50 border border-teal-100 rounded-xl">
-          <p className="text-sm text-teal-800 font-medium">
+          <p className="text-sm text-brand-primary font-medium leading-relaxed whitespace-pre-wrap">
             💡 지금보다{" "}
-            <span className="font-bold">{diffAmount.toLocaleString()}원</span>을
-            더 아낄 수 있어요!
+            <span className="font-bold text-brand-primary">
+              {diffAmount.toLocaleString()}원
+            </span>
+            을{"\n"}더 아낄 수 있어요!
           </p>
         </div>
       )}
