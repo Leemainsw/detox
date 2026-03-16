@@ -1,13 +1,19 @@
 "use client";
 
 import AnalysisCard from "@/app/statistics/_components/analysis-card/analysis-card";
+import { AnalysisResult } from "@/store/useAnalysisStore";
 
 interface AnalysisSummaryProps {
   hasData: boolean;
+  analysisData?: AnalysisResult;
 }
 
-export default function AnalysisSummary({ hasData }: AnalysisSummaryProps) {
-  if (!hasData) return null;
+export default function AnalysisSummary({
+  hasData,
+  analysisData,
+}: AnalysisSummaryProps) {
+  if (!hasData || !analysisData || analysisData.type !== "STATISTICS")
+    return null;
 
   return (
     <div className="w-full px-5 py-6 bg-white animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -21,26 +27,15 @@ export default function AnalysisSummary({ hasData }: AnalysisSummaryProps) {
       </div>
 
       <AnalysisCard
-        title="비슷한 콘텐츠를 구독 중이에요"
+        title={analysisData.title}
         description={
           <>
-            이 서비스 모두 <span className="underline">영화</span>와{" "}
-            <span className="underline">드라마</span>를 제공해요
+            {analysisData.description}
             <br />
-            <span className="font-bold text-gray-800">넷플릭스</span>를 해지하면
-            최소 월 4,900원 아낄 수 있어요
-          </>
-        }
-        brandType="netflix"
-      />
-
-      <AnalysisCard
-        title="1년이면 운동화 한 켤레 살 수 있어요"
-        description={
-          <>
-            넷플릭스를 해지하면 연{" "}
-            <span className="text-brand-primary body-lg">167,000원</span> 아낄
-            수 있어요
+            <span className="font-bold text-gray-800">절감 가능 금액: </span>
+            <span className="text-brand-primary body-lg">
+              {analysisData.payload.diff_amount.toLocaleString()}원
+            </span>
           </>
         }
         brandType="netflix"

@@ -7,6 +7,7 @@ import UserBubble from "./_components/user-bubble";
 import AIBubble from "./_components/ai-bubble";
 import QuickQuestions from "./_components/quick-questions";
 import MyChart from "../_components/comparison-chart";
+import { useAnalysisStore } from "@/store/useAnalysisStore";
 
 interface AnalysisResponse {
   type: string;
@@ -34,6 +35,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { setResult } = useAnalysisStore();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -97,6 +99,7 @@ export default function ChatPage() {
             analysisData: data,
           },
         ]);
+        setResult(data);
       }
     } catch (error) {
       console.error(error);

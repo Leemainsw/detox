@@ -14,6 +14,7 @@ import EmptySubscriptionOverlay from "./_components/empty-subscription-overlay";
 import AnalysisSummary from "./_components/analysis-summary/analysis-summary";
 import { calculateMonthlyTotal } from "@/app/utils/subscriptions/calculate";
 import { useCurrentUserQuery, useUserProfileQuery } from "@/query/users";
+import { useAnalysisStore } from "@/store/useAnalysisStore";
 
 export default function StatisticsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -27,6 +28,8 @@ export default function StatisticsPage() {
   const { data: profile } = useUserProfileQuery(user?.id);
   const userName = profile?.nickname || "사용자";
 
+  const { result: analysisData } = useAnalysisStore();
+
   const { data: subscriptions = [] } = useQuery({
     queryKey: ["subscriptions", user?.id],
     queryFn: async () => {
@@ -36,20 +39,6 @@ export default function StatisticsPage() {
         .select("*")
         .eq("user_id", user.id);
       return data || [];
-    },
-    enabled: !!user?.id,
-  });
-
-  const { data: hasAiData = false } = useQuery({
-    queryKey: ["hasAiData", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return false;
-      const { data } = await supabase
-        .from("AnalysisResult")
-        .select("id")
-        .eq("user_id", user.id)
-        .limit(1);
-      return !!(data && data.length > 0);
     },
     enabled: !!user?.id,
   });
@@ -120,9 +109,12 @@ export default function StatisticsPage() {
                   />
                 </div>
 
-                {hasAiData && (
+                {analysisData && (
                   <div className="mt-10 border-t-8 border-gray-50">
-                    <AnalysisSummary hasData={true} />
+                    <AnalysisSummary
+                      hasData={true}
+                      analysisData={analysisData}
+                    />
                   </div>
                 )}
               </div>
