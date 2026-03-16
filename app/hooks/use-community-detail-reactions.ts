@@ -19,7 +19,11 @@ export function useCommunityDetailReactions({
   commentInputRef,
 }: UseCommunityDetailReactionsParams) {
   const { success, error } = useToast();
-  const { data: currentUser } = useCurrentUserQuery();
+  const {
+    data: currentUser,
+    isPending: isCurrentUserPending,
+    isError: isCurrentUserError,
+  } = useCurrentUserQuery();
   const currentUserId = currentUser?.id;
   const { redirectToLoginIfNeeded } = useLoginRedirect();
   const likeStatusQuery = useCommunityPostLikeStatusQuery(postId, currentUserId);
@@ -29,10 +33,15 @@ export function useCommunityDetailReactions({
   const isLoggedIn = Boolean(currentUserId);
   const isLiked = likeStatusQuery.isSuccess ? likeStatusQuery.data : false;
   const likeDisabled =
+    isCurrentUserPending ||
     isTogglePending ||
     (isLoggedIn && (likeStatusQuery.isPending || likeStatusQuery.isError));
 
   const handleToggleLike = async () => {
+    if (isCurrentUserPending || isCurrentUserError) {
+      return;
+    }
+
     if (redirectToLoginIfNeeded(isLoggedIn)) {
       return;
     }
@@ -60,6 +69,10 @@ export function useCommunityDetailReactions({
   };
 
   const handleCommentClick = () => {
+    if (isCurrentUserPending || isCurrentUserError) {
+      return;
+    }
+
     if (redirectToLoginIfNeeded(isLoggedIn)) {
       return;
     }
