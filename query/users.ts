@@ -85,13 +85,7 @@ export function useLogoutMutation() {
       }
     },
     onSuccess: () => {
-      queryClient.setQueryData([...usersKeys.auth(), "current-user"], null);
-      queryClient.removeQueries({
-        queryKey: [...usersKeys.auth(), "current-user"],
-      });
-      queryClient.removeQueries({
-        queryKey: usersKeys.profile(),
-      });
+      queryClient.clear();
     },
   });
 }
