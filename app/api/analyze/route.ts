@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       return Response.json({
         type: "NO_DATA",
         message:
-          "아직 등록된 구독 서비스가 없어요! 분석을 위해 구독 내역을 먼저 입력해 주시겠어요?",
+          "아직 등록된 구독 서비스가 없어요!\n분석을 위해 구독 내역을 먼저 입력해 주시겠어요?",
       });
     }
 

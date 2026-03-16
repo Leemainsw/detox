@@ -41,13 +41,13 @@ export default function AIBubble({
           )}
 
           {status === "error" && (
-            <p className="body-lg text-gray-300 font-medium">
+            <p className="body-lg whitespace-pre-wrap text-gray-300 font-medium">
               분석에 실패했어요. 죄송하지만 나중에 다시 시도해주세요.
             </p>
           )}
 
           {status === "text" && (
-            <p className="body-lg font-medium text-gray-300 leading-relaxed">
+            <p className="body-lg whitespace-pre-wrap font-medium text-gray-300 leading-relaxed">
               {content}
             </p>
           )}
