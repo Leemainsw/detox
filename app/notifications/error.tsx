@@ -7,7 +7,7 @@ interface Props {
   reset: () => void;
 }
 
-export default function Error({ reset }: Props) {
+export default function ErrorPage({ reset }: Props) {
   return (
     <FeedbackPage
       title="알림을 불러오는 중 문제가 발생했어요."
