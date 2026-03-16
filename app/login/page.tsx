@@ -13,20 +13,8 @@ import {
 } from "@/components/ui/tooltip";
 import { useAnonymousLoginMutation, useCurrentUserQuery } from "@/query/users";
 import { useToast } from "../hooks/useToast";
-
-//로그인 후 이동 경로 검증
-function getSafeRedirectPath(redirectPath: string | null) {
-  if (
-    !redirectPath ||
-    !redirectPath.startsWith("/") ||
-    redirectPath.startsWith("//") ||
-    redirectPath.includes("\\")
-  ) {
-    return "/";
-  }
-
-  return redirectPath;
-}
+import { getSafeRedirectPath } from "@/app/utils/auth/get-safe-redirect-path";
+import { signInWithOAuth } from "@/services/users";
 
 export default function Page() {
   const router = useRouter();
@@ -46,6 +34,21 @@ export default function Page() {
       router.replace(nextPath);
     }
   }, [currentUser, nextPath, router]);
+
+  const handleSocialLogin = async (provider: "google" | "kakao") => {
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(nextPath)}`;
+
+      const { error: oauthError } = await signInWithOAuth(provider, redirectTo);
+
+      if (oauthError) {
+        throw oauthError;
+      }
+    } catch (loginError) {
+      console.error(loginError);
+      error("로그인에 실패했어요.");
+    }
+  };
 
   const handleAnonymousLogin = async () => {
     try {
@@ -72,9 +75,16 @@ export default function Page() {
       </header>
 
       <div className="w-full px-6 flex flex-col gap-4">
-        <SnsLoginButton type="kakao" />
-        <SnsLoginButton type="naver" />
-        <SnsLoginButton type="google" />
+        <SnsLoginButton
+          type="kakao"
+          onClick={() => handleSocialLogin("kakao")}
+        />
+        <SnsLoginButton
+          type="google"
+          onClick={() => handleSocialLogin("google")}
+        />
+
+        {/* <SnsLoginButton type="naver" /> */}
       </div>
 
       <Tooltip open>

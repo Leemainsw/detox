@@ -7,11 +7,21 @@ import type {
   TablesUpdate,
 } from "@/types/supabase.types";
 
-export type AuthProvider = "anonymous" | "google" | "kakao" | "naver";
-
 type UpsertUserParams = TablesInsert<"users">;
 export type UserProfile = Tables<"users">;
 
+//소셜
+export async function signInWithOAuth(
+  provider: "google" | "kakao",
+  redirectTo: string
+) {
+  return supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo },
+  });
+}
+
+//익명
 export async function signInAnonymously() {
   return supabase.auth.signInAnonymously();
 }

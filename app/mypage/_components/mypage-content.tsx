@@ -1,5 +1,6 @@
 "use client";
 
+import { isNicknameConflictError } from "@/app/utils/auth/is-nickname-conflict-error";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import Avatar from "@/app/components/avatar";
@@ -55,6 +56,11 @@ export default function MypageContent({ userId }: Props) {
       success("저장되었어요.");
     } catch (saveError) {
       console.error(saveError);
+      if (isNicknameConflictError(saveError)) {
+        error("중복된 닉네임이에요.");
+        return;
+      }
+
       error("저장에 실패했어요.");
     }
   };
