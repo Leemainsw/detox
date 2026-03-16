@@ -51,6 +51,7 @@ export default function NotificationItem({ notification }: Props) {
     }
   };
 
+  // TODO: 서버 정보 없을 경우, 노출되는 내용에 대한 정책 필요
   const brand = (notification.subscription?.service ??
     "netflix") as SubscriptableBrandType;
 
