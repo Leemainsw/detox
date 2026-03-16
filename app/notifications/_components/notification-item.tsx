@@ -41,6 +41,7 @@ export default function NotificationItem({ notification }: Props) {
 
   const handleRead = async () => {
     try {
+      if (notification.is_read) return;
       await readMutation.mutateAsync(notification.id);
       success("읽음 처리되었어요.");
     } catch (err) {
