@@ -17,7 +17,7 @@ export const getNotificationSettings = async (
     throw error;
   }
 
-  if (!data || data.length === 0) {
+  if (!data) {
     return null;
   }
 
