@@ -3,6 +3,8 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretLeft, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import AIAnalysisBanner from "./_components/ai-analysis-banner/ai-analysis-banner";
 import Header from "@/app/components/header";
 import BottomNav from "@/app/components/bottom-nav";
@@ -32,9 +34,8 @@ export default function StatisticsPage() {
 
   const { result: analysisData } = useAnalysisStore();
 
-  const { data: subscriptions = [] } = useQuery<
-    { service: string; total_amount: number }[]
-  >({
+  const { data: subscriptions = [], isLoading: isSubscriptionsLoading } =
+    useQuery<{ service: string; total_amount: number }[]>({
     queryKey: ["subscriptions", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -47,7 +48,7 @@ export default function StatisticsPage() {
     enabled: !!user?.id,
   });
 
-  const isAllEmpty = subscriptions.length === 0;
+  const isAllEmpty = !isSubscriptionsLoading && subscriptions.length === 0;
 
   const subscriptionSummaries = useMemo(
     () =>
@@ -63,7 +64,9 @@ export default function StatisticsPage() {
     [subscriptionSummaries]
   );
 
-  const { data: serviceAvgMap = {} } = useQuery<Record<string, number>>({
+  const { data: serviceAvgMap = {}, isLoading: isServiceAvgLoading } = useQuery<
+    Record<string, number>
+  >({
     queryKey: ["service-avg", services],
     queryFn: async () => {
       if (services.length === 0) return {};
@@ -99,7 +102,8 @@ export default function StatisticsPage() {
     [selectedDate, subscriptions]
   );
 
-  const isMonthlyEmpty = !isAllEmpty && monthlyTotalAmount === 0;
+  const isMonthlyEmpty =
+    !isSubscriptionsLoading && !isAllEmpty && monthlyTotalAmount === 0;
 
   const ageBands = ["10s", "20s", "30s", "40s", "50s", "60s"] as const;
   const ageBand = ageBands[Math.min(Math.max(ageBandIndex, 0), ageBands.length - 1)];
@@ -170,7 +174,7 @@ export default function StatisticsPage() {
               <div className="w-full animate-in fade-in duration-500">
                 <div className="mt-4">
                   <ComparisonInsight
-                    isLoading={false}
+                    isLoading={isSubscriptionsLoading}
                     title={`${ageBandLabelMap[ageBand]} 소비 비교`}
                     diffAmount={diffAmount}
                     status={status}
@@ -182,7 +186,7 @@ export default function StatisticsPage() {
                       className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                       onClick={handlePrevAgeBand}
                     >
-                      ◀
+                      <FontAwesomeIcon icon={faCaretLeft} size="lg" />
                     </button>
                     <button
                       type="button"
@@ -190,7 +194,7 @@ export default function StatisticsPage() {
                       className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                       onClick={handleNextAgeBand}
                     >
-                      ▶
+                      <FontAwesomeIcon icon={faCaretRight} size="lg" />
                     </button>
 
                     <ComparisonChart
@@ -198,6 +202,7 @@ export default function StatisticsPage() {
                       userAmount={displayAmount}
                       compareName={ageBandLabelMap[ageBand]}
                       compareAmount={ageAverage}
+                      isLoading={isSubscriptionsLoading}
                     />
                   </div>
                 </div>
@@ -219,7 +224,9 @@ export default function StatisticsPage() {
                           return (
                             <>
                               <ComparisonInsight
-                                isLoading={false}
+                                isLoading={
+                                  isSubscriptionsLoading || isServiceAvgLoading
+                                }
                                 title={`${current.service} 유저 평균 소비와 비교`}
                                 diffAmount={subDiff}
                                 status={subStatus}
@@ -231,7 +238,7 @@ export default function StatisticsPage() {
                                   className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600 "
                                   onClick={handlePrevSubscription}
                                 >
-                                  ◀
+                                  <FontAwesomeIcon icon={faCaretLeft} size="lg" />
                                 </button>
                                 <button
                                   type="button"
@@ -239,7 +246,7 @@ export default function StatisticsPage() {
                                   className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                                   onClick={handleNextSubscription}
                                 >
-                                  ▶
+                                  <FontAwesomeIcon icon={faCaretRight} size="lg" />
                                 </button>
 
                                 <ComparisonChart
@@ -248,6 +255,9 @@ export default function StatisticsPage() {
                                   compareName={`${current.service} 평균 소비`}
                                   compareAmount={serviceAvg}
                                   diffAmount={subDiff}
+                                  isLoading={
+                                    isSubscriptionsLoading || isServiceAvgLoading
+                                  }
                                 />
                               </div>
                             </>
