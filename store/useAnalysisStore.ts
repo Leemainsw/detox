@@ -12,6 +12,7 @@ interface BaseAnalysis {
 interface StatisticsPayload extends BaseAnalysis {
   type: "STATISTICS";
   payload: {
+    analysis_items: { question: string; content: string }[];
     chart_data: { month: string; my_spend: number; avg_spend: number }[];
     diff_amount: number;
   };

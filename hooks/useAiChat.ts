@@ -12,6 +12,7 @@ export interface AnalysisResponse {
   description: string;
   message?: string;
   payload: {
+    analysis_items: { question: string; content: string }[];
     chart_data: Array<{ month: string; my_spend: number; avg_spend: number }>;
     diff_amount: number;
   };
@@ -97,11 +98,16 @@ export function useAiChat(): {
 
       const categoryRatio = calculateCategoryRatio(subscriptions || []);
 
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData?.session;
+
       const response = await fetch("/api/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          userContext: { categoryRatio },
+          userContext: { categoryRatio, session },
         }),
       });
 

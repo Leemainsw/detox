@@ -2,6 +2,7 @@
 
 import { Bar, BarChart, XAxis, Cell, LabelList } from "recharts";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   userName?: string;
@@ -10,6 +11,7 @@ interface Props {
   compareAmount?: number;
   data?: { month: string; my_spend: number; avg_spend: number }[];
   diffAmount?: number;
+  isLoading?: boolean;
 }
 
 export default function ComparisonChart({
@@ -19,7 +21,30 @@ export default function ComparisonChart({
   compareAmount,
   data,
   diffAmount,
+  isLoading = false,
 }: Props) {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="mx-6 py-6 bg-gray-50 rounded-3xl h-56">
+          <div className="h-full w-full flex flex-col justify-end gap-4 px-6 pb-2">
+            <div className="flex items-end justify-between gap-6">
+              <Skeleton className="h-28 w-12 bg-gray-200/70" />
+              <Skeleton className="h-20 w-12 bg-gray-200/70" />
+              <Skeleton className="h-32 w-12 bg-gray-200/70" />
+              <Skeleton className="h-24 w-12 bg-gray-200/70" />
+            </div>
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-16 bg-gray-200/70" />
+              <Skeleton className="h-4 w-16 bg-gray-200/70" />
+            </div>
+          </div>
+        </div>
+        <Skeleton className="mx-6 h-14 rounded-xl bg-teal-100/60" />
+      </div>
+    );
+  }
+
   const chartData = data
     ? data.map((item) => ({ name: item.month, amount: item.my_spend }))
     : [
