@@ -11,6 +11,7 @@ import {
   parsePaymentDayToMonthDay,
   formatPaymentDay,
 } from "../../../utils";
+import { format, parseISO } from "date-fns";
 
 interface Values {
   billing_cycle: BillingCycle;
@@ -35,7 +36,9 @@ export default function InputPaymentInfo({ values, onNext }: Props) {
   );
 
   const [startDate, setStartDate] = useState<string | null>(
-    values?.start_date ?? new Date().toISOString()
+    values?.start_date
+      ? values.start_date.split("T")[0]
+      : format(new Date(), "yyyy-MM-dd")
   );
 
   const paymentDay = formatPaymentDay(
@@ -89,8 +92,10 @@ export default function InputPaymentInfo({ values, onNext }: Props) {
         {/* 공통 */}
         <DatePicker
           label="언제 구독을 시작하셨나요?"
-          value={startDate ? new Date(startDate) : new Date()}
-          onChange={(date) => setStartDate(date?.toISOString() ?? null)}
+          value={startDate ? parseISO(startDate) : new Date()}
+          onChange={(date) =>
+            setStartDate(date ? format(date, "yyyy-MM-dd") : null)
+          }
         />
       </div>
 
