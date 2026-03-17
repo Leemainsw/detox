@@ -96,6 +96,12 @@ export async function POST(req: Request) {
 
     if (dbError) throw dbError;
 
+    if (!subscriptions || subscriptions.length === 0) {
+      return Response.json(
+        { error: "분석할 구독 데이터가 없습니다." },
+        { status: 404 }
+      );
+    }
     const currentYear = new Date().getFullYear();
     const searchResult = await withTimeout(
       tavilyClient.search(`${currentYear}년 한국 구독 서비스 최신 혜택`, {
