@@ -2,6 +2,7 @@ import {
   createSubscription,
   deleteSubscription,
   getSubscriptionDetail,
+  getSubscriptionList,
   updateSubscription,
 } from "@/services/subscription";
 import { Tables, TablesInsert } from "@/types/supabase.types";
@@ -16,6 +17,17 @@ export const subscriptionKeys = {
   all: ["subscription"] as const,
   list: () => [...subscriptionKeys.all, "list"] as const,
   detail: (id: string) => [...subscriptionKeys.all, "detail", id] as const,
+};
+
+/**
+ * 구독 목록 조회
+ */
+export const useGetSubscriptionListQuery = (enabled = true) => {
+  return useQuery({
+    queryKey: subscriptionKeys.list(),
+    queryFn: getSubscriptionList,
+    enabled,
+  });
 };
 
 /**

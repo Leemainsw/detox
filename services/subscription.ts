@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { Tables, TablesInsert } from "@/types/supabase.types";
+import { Tables, TablesInsert, TablesUpdate } from "@/types/supabase.types";
 
 /**
  * 구독 생성
@@ -18,6 +18,22 @@ export async function createSubscription(values: TablesInsert<"subscription">) {
   }
 
   return data as Tables<"subscription">;
+}
+
+/**
+ * 구독 목록 조회 (RLS로 현재 사용자 구독만 반환)
+ */
+export async function getSubscriptionList() {
+  const { data, error } = await supabase
+    .from("subscription")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as Tables<"subscription">[];
 }
 
 /**
@@ -77,7 +93,7 @@ export async function deleteSubscription(id: string): Promise<boolean> {
  */
 export async function updateSubscription(
   id: string,
-  values: TablesInsert<"subscription">
+  values: TablesUpdate<"subscription">
 ) {
   const { error, data } = await supabase
     .from("subscription")

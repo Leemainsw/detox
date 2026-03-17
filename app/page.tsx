@@ -8,83 +8,25 @@ import Image from "next/image";
 import SubscriptionList from "./components/subscription-list";
 import Button from "./components/button";
 import BottomNav from "./components/bottom-nav";
-import { subscriptableBrand } from "./utils/brand/brand";
 import type { SubscriptableBrandType } from "./utils/brand/type";
-import { Tables } from "@/types/supabase.types";
+import { useGetSubscriptionListQuery } from "@/query/subscription";
+import { useSupabase } from "@/hooks/useSupabase";
 
 export default function Home() {
-  // 실제 데이터와 무관하게 홈 상단/빈 상태 UI만 분기하고, 목록은 목업 데이터를 유지합니다.
-  const showSubscribedUiState = true;
-  const subsList: Tables<"subscription">[] = [
-    //더미 데이터
-    {
-      start_date: "2026-03-13",
-      id: "2",
-      service: "wavve",
-      total_amount: 7900,
-      billing_cycle: "yearly",
-      created_at: "2026-03-13",
-      end_date: "2027-03-13",
-      payment_day: 1,
-      payment_type: "trial",
-      user_id: "1",
-      next_payment_date: "2026-03-13",
-      member_count: 1,
-      status: "active",
-      subscription_mode: "solo",
-      trial_months: 3,
-      updated_at: "2026-03-13",
-    },
-    {
-      start_date: "2026-03-14",
-      id: "3",
-      service: "youtube-premium",
-      total_amount: 6900,
-      billing_cycle: "monthly",
-      created_at: "2026-03-14",
-      end_date: "2027-03-14",
-      payment_day: 1,
-      payment_type: "paid",
-      user_id: "1",
-      next_payment_date: "2026-03-14",
-      member_count: 1,
-      status: "active",
-      subscription_mode: "solo",
-      trial_months: 0,
-      updated_at: "2026-03-14",
-    },
-    {
-      id: "4",
-      start_date: "2026-03-24",
-      service: "spotify",
-      total_amount: 10900,
-      billing_cycle: "monthly",
-      created_at: "2026-03-24",
-      end_date: "2027-03-24",
-      payment_day: 1,
-      payment_type: "paid",
-      user_id: "1",
-      next_payment_date: "2026-03-24",
-      member_count: 4,
-      subscription_mode: "group",
-      status: "active",
-      trial_months: 0,
-      updated_at: "2026-03-24",
-    },
-  ];
+  const { session } = useSupabase();
+  const { data: subscriptions = [] } = useGetSubscriptionListQuery(
+    !!session?.user
+  );
 
-  const subscriptionList: Tables<"subscription">[] = subsList.map((item) => ({
-    ...item,
-    name: subscriptableBrand[item.service as SubscriptableBrandType].label,
-  }));
-  const subscriptionCount = subscriptionList.length;
-  const totalPrice = subscriptionList.reduce(
+  const showSubscribedUiState = subscriptions.length > 0;
+  const subscriptionCount = subscriptions.length;
+  const totalPrice = subscriptions.reduce(
     (sum, item) =>
       sum +
       (item.payment_type === "trial"
         ? 0
         : item.total_amount / Math.max(item.member_count, 1)),
-    0 as number
+    0
   );
 
   return (
@@ -150,7 +92,7 @@ export default function Home() {
               <h6 className="header-md">{totalPrice.toLocaleString()}원</h6>
             </div>
             <ul className="px-6 w-full">
-              {subscriptionList.map((item) => (
+              {subscriptions.map((item) => (
                 <li key={item.id}>
                   <SubscriptionList
                     href={`/subscription/${item.id}`}
@@ -178,9 +120,11 @@ export default function Home() {
             )}
           </div>
           <div className="mx-6 btn-wrap">
-            <Button variant="primary" size="lg">
-              구독 추가하기
-            </Button>
+            <Link href="/subscription/add">
+              <Button variant="primary" size="lg">
+                구독 추가하기
+              </Button>
+            </Link>
           </div>
         </section>
       </main>
