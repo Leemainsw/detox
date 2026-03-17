@@ -18,6 +18,7 @@ export default function Home() {
   const subsList: Tables<"subscription">[] = [
     //더미 데이터
     {
+      start_date: "2026-03-13",
       id: "2",
       service: "wavve",
       total_amount: 7900,
@@ -35,6 +36,7 @@ export default function Home() {
       updated_at: "2026-03-13",
     },
     {
+      start_date: "2026-03-14",
       id: "3",
       service: "youtube-premium",
       total_amount: 6900,
@@ -53,6 +55,7 @@ export default function Home() {
     },
     {
       id: "4",
+      start_date: "2026-03-24",
       service: "spotify",
       total_amount: 10900,
       billing_cycle: "monthly",
