@@ -20,7 +20,11 @@ export default function EmptySubscriptionOverlay() {
       </div>
 
       <div className="w-full px-6">
-        <Button variant="primary" size="lg" onClick={() => router.push("/")}>
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={() => router.push("/subscriptions")}
+        >
           구독 추가하기
         </Button>
       </div>
