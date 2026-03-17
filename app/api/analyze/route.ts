@@ -2,7 +2,7 @@ import { OpenAI } from "openai";
 import { tavily } from "@tavily/core";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { createClient, SupabaseClient } from "@supabase/supabase-js"; // 💡 SupabaseClient 타입 추가
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
 import { getSystemPrompt } from "@/app/utils/subscriptions/constants";
 import {

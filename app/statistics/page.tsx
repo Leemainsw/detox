@@ -14,9 +14,13 @@ import ComparisonChart from "./_components/comparison-chart";
 import EmptyAnalysis from "./_components/empty-analysis";
 import EmptySubscriptionOverlay from "./_components/empty-subscription-overlay";
 import AnalysisSummary from "./_components/analysis-summary/analysis-summary";
-import { calculateMonthlyTotal } from "@/app/utils/subscriptions/calculate";
 import { useCurrentUserQuery, useUserProfileQuery } from "@/query/users";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
+// ✅ 유틸 파일 대신 타입 정의에서 필요한 인터페이스만 가져옵니다.
+import {
+  AnalysisResponse,
+  ChartDataItem,
+} from "@/app/utils/subscriptions/validation";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,17 +40,17 @@ export default function StatisticsPage() {
 
   const { data: subscriptions = [], isLoading: isSubscriptionsLoading } =
     useQuery<{ service: string; total_amount: number }[]>({
-    queryKey: ["subscriptions", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data } = await supabase
-        .from("subscription")
-        .select("*")
-        .eq("user_id", user.id);
-      return data || [];
-    },
-    enabled: !!user?.id,
-  });
+      queryKey: ["subscriptions", user?.id],
+      queryFn: async () => {
+        if (!user?.id) return [];
+        const { data } = await supabase
+          .from("subscription")
+          .select("*")
+          .eq("user_id", user.id);
+        return data || [];
+      },
+      enabled: !!user?.id,
+    });
 
   const isAllEmpty = !isSubscriptionsLoading && subscriptions.length === 0;
 
@@ -97,16 +101,30 @@ export default function StatisticsPage() {
     enabled: services.length > 0,
   });
 
-  const monthlyTotalAmount = useMemo(
-    () => calculateMonthlyTotal(subscriptions, selectedDate),
-    [selectedDate, subscriptions]
-  );
+  // ✅ 에러 해결: 삭제한 calculateMonthlyTotal 대신 AI 데이터에서 직접 가져옵니다.
+  const monthlyTotalAmount = useMemo(() => {
+    const data = analysisData as unknown as AnalysisResponse | null;
+
+    if (data?.payload?.chart_data && Array.isArray(data.payload.chart_data)) {
+      const currentMonthStr = `${selectedDate.getMonth() + 1}월`;
+      const currentMonthData = (
+        data.payload.chart_data as ChartDataItem[]
+      ).find((d) => d.month === currentMonthStr);
+      if (currentMonthData) return currentMonthData.my_spend;
+    }
+    // 데이터가 없으면 전체 구독 금액 합계로 폴백
+    return subscriptions.reduce(
+      (acc, sub) => acc + (Number(sub.total_amount) || 0),
+      0
+    );
+  }, [selectedDate, subscriptions, analysisData]);
 
   const isMonthlyEmpty =
     !isSubscriptionsLoading && !isAllEmpty && monthlyTotalAmount === 0;
 
   const ageBands = ["10s", "20s", "30s", "40s", "50s", "60s"] as const;
-  const ageBand = ageBands[Math.min(Math.max(ageBandIndex, 0), ageBands.length - 1)];
+  const ageBand =
+    ageBands[Math.min(Math.max(ageBandIndex, 0), ageBands.length - 1)];
   const ageBandLabelMap = {
     "10s": "10대 평균",
     "20s": "20대 평균",
@@ -129,28 +147,21 @@ export default function StatisticsPage() {
   const diffAmount = Math.abs(displayAmount - ageAverage);
   const status = displayAmount > ageAverage ? "over" : "under";
 
-  const handleMonthChange = (date: Date) => {
-    setSelectedDate(date);
-  };
+  const handleMonthChange = (date: Date) => setSelectedDate(date);
+  const handlePrevAgeBand = () =>
+    setAgeBandIndex((prev) => (prev === 0 ? ageBands.length - 1 : prev - 1));
+  const handleNextAgeBand = () =>
+    setAgeBandIndex((prev) => (prev === ageBands.length - 1 ? 0 : prev + 1));
 
   const handlePrevSubscription = () => {
     setCurrentSubscriptionIndex((prev) =>
       prev === 0 ? subscriptionSummaries.length - 1 : prev - 1
     );
   };
-
   const handleNextSubscription = () => {
     setCurrentSubscriptionIndex((prev) =>
       prev === subscriptionSummaries.length - 1 ? 0 : prev + 1
     );
-  };
-
-  const handlePrevAgeBand = () => {
-    setAgeBandIndex((prev) => (prev === 0 ? ageBands.length - 1 : prev - 1));
-  };
-
-  const handleNextAgeBand = () => {
-    setAgeBandIndex((prev) => (prev === ageBands.length - 1 ? 0 : prev + 1));
   };
 
   return (
@@ -181,22 +192,17 @@ export default function StatisticsPage() {
                   />
                   <div className="relative">
                     <button
-                      type="button"
-                      aria-label="이전 연령대"
-                      className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                       onClick={handlePrevAgeBand}
+                      className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                     >
                       <FontAwesomeIcon icon={faCaretLeft} size="lg" />
                     </button>
                     <button
-                      type="button"
-                      aria-label="다음 연령대"
-                      className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                       onClick={handleNextAgeBand}
+                      className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                     >
                       <FontAwesomeIcon icon={faCaretRight} size="lg" />
                     </button>
-
                     <ComparisonChart
                       userName={`${userName}님`}
                       userAmount={displayAmount}
@@ -209,62 +215,49 @@ export default function StatisticsPage() {
 
                 {subscriptionSummaries.length > 0 && (
                   <div className="mt-10">
-                    {subscriptionSummaries.length > 0 && (
-                      <>
-                        {(() => {
-                          const current =
-                            subscriptionSummaries[
-                              currentSubscriptionIndex
-                            ] || subscriptionSummaries[0];
-                          const serviceAvg = serviceAvgMap[current.service] ?? 0;
-                          const subDiff = Math.abs(serviceAvg - current.amount);
-                          const subStatus =
-                            current.amount > serviceAvg ? "over" : "under";
-
-                          return (
-                            <>
-                              <ComparisonInsight
-                                isLoading={
-                                  isSubscriptionsLoading || isServiceAvgLoading
-                                }
-                                title={`${current.service} 유저 평균 소비와 비교`}
-                                diffAmount={subDiff}
-                                status={subStatus}
-                              />
-                              <div className="relative">
-                                <button
-                                  type="button"
-                                  aria-label="이전 구독 서비스"
-                                  className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600 "
-                                  onClick={handlePrevSubscription}
-                                >
-                                  <FontAwesomeIcon icon={faCaretLeft} size="lg" />
-                                </button>
-                                <button
-                                  type="button"
-                                  aria-label="다음 구독 서비스"
-                                  className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
-                                  onClick={handleNextSubscription}
-                                >
-                                  <FontAwesomeIcon icon={faCaretRight} size="lg" />
-                                </button>
-
-                                <ComparisonChart
-                                  userName={current.service}
-                                  userAmount={current.amount}
-                                  compareName={`${current.service} 평균 소비`}
-                                  compareAmount={serviceAvg}
-                                  diffAmount={subDiff}
-                                  isLoading={
-                                    isSubscriptionsLoading || isServiceAvgLoading
-                                  }
-                                />
-                              </div>
-                            </>
-                          );
-                        })()}
-                      </>
-                    )}
+                    {(() => {
+                      const current =
+                        subscriptionSummaries[currentSubscriptionIndex] ||
+                        subscriptionSummaries[0];
+                      const serviceAvg = serviceAvgMap[current.service] ?? 0;
+                      return (
+                        <>
+                          <ComparisonInsight
+                            isLoading={
+                              isSubscriptionsLoading || isServiceAvgLoading
+                            }
+                            title={`${current.service} 유저 평균 소비와 비교`}
+                            diffAmount={Math.abs(serviceAvg - current.amount)}
+                            status={
+                              current.amount > serviceAvg ? "over" : "under"
+                            }
+                          />
+                          <div className="relative">
+                            <button
+                              onClick={handlePrevSubscription}
+                              className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
+                            >
+                              <FontAwesomeIcon icon={faCaretLeft} size="lg" />
+                            </button>
+                            <button
+                              onClick={handleNextSubscription}
+                              className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
+                            >
+                              <FontAwesomeIcon icon={faCaretRight} size="lg" />
+                            </button>
+                            <ComparisonChart
+                              userName={current.service}
+                              userAmount={current.amount}
+                              compareName={`${current.service} 평균 소비`}
+                              compareAmount={serviceAvg}
+                              isLoading={
+                                isSubscriptionsLoading || isServiceAvgLoading
+                              }
+                            />
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 
@@ -272,20 +265,17 @@ export default function StatisticsPage() {
                   <div className="mt-10 border-t-8 border-gray-50">
                     <AnalysisSummary
                       hasData={true}
-                      analysisData={analysisData}
+                      analysisData={analysisData as unknown as AnalysisResponse}
                     />
                   </div>
                 )}
               </div>
             )}
-
             {!isAllEmpty && isMonthlyEmpty && <EmptyAnalysis />}
           </div>
-
           {isAllEmpty && <EmptySubscriptionOverlay />}
         </div>
       </div>
-
       <BottomNav />
     </main>
   );
