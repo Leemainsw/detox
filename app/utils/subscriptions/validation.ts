@@ -14,7 +14,6 @@ export interface AnalysisResponse {
   type: string;
   title: string;
   description: string;
-  last_updated: string;
   payload: {
     analysis_items: AnalysisItem[];
     chart_data: ChartDataItem[];
@@ -23,9 +22,6 @@ export interface AnalysisResponse {
   };
 }
 
-/**
- * AI 응답 데이터의 유효성을 검증하는 제네릭 함수
- */
 export const validateAnalysisResponse = <T extends AnalysisResponse>(
   data: unknown
 ): data is T => {
@@ -35,7 +31,6 @@ export const validateAnalysisResponse = <T extends AnalysisResponse>(
     target?.type === "STATISTICS" &&
     typeof target?.title === "string" &&
     typeof target?.description === "string" &&
-    typeof target?.last_updated === "string" &&
     Array.isArray(target?.payload?.analysis_items) &&
     target.payload.analysis_items.every(
       (item) =>

@@ -5,10 +5,9 @@ import DateDivider from "./_components/date-divider/date-divider";
 import UserBubble from "./_components/user-bubble";
 import AIBubble from "./_components/ai-bubble";
 import QuickQuestions from "./_components/quick-questions";
-import MyChart from "../_components/comparison-chart";
-import { useAiChat } from "../../../hooks/useAiChat";
+import { useAiChat } from "@/hooks/useAiChat";
 
-export default function Page() {
+export default function AIChat() {
   const {
     aiStatus,
     messages,
@@ -37,28 +36,14 @@ export default function Page() {
           ) : (
             <AIBubble
               key={idx}
-              status={msg.type === "chart" ? "chart" : "text"}
+              status="text"
               content={msg.content}
               time={msg.time}
-              chartComponent={
-                msg.type === "chart" && msg.analysisData ? (
-                  <div className="mt-4 w-full">
-                    <h4 className="text-sm font-bold mb-2">
-                      {msg.analysisData.title}
-                    </h4>
-                    <MyChart
-                      data={msg.analysisData.payload.chart_data}
-                      diffAmount={msg.analysisData.payload.diff_amount}
-                      diffMessage={msg.analysisData.payload.diff_message}
-                    />
-                  </div>
-                ) : null
-              }
             />
           )
         )}
-
         {aiStatus === "analyzing" && <AIBubble status="analyzing" />}
+
         {showQuickQuestions && aiStatus !== "analyzing" && (
           <QuickQuestions onSelect={handleQuestionSelect} />
         )}

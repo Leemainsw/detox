@@ -14,7 +14,6 @@ export default function AnalysisSummary({
   hasData,
   analysisData,
 }: AnalysisSummaryProps) {
-  // ✅ 데이터가 없거나 형식이 다를 경우 가드
   if (!hasData || !analysisData || !analysisData.payload) return null;
 
   const analysisItems = analysisData.payload.analysis_items || [];
@@ -22,7 +21,6 @@ export default function AnalysisSummary({
     subscriptableBrand
   ) as SubscriptableBrandType[];
 
-  // 브랜치 타입 변환 유틸
   const toBrandType = (brandName?: string): SubscriptableBrandType | null => {
     if (!brandName) return null;
     const found = brandTypes.find(
@@ -44,30 +42,24 @@ export default function AnalysisSummary({
 
       <div className="flex flex-col gap-4">
         {analysisItems.map((item, index) => {
-          // ✅ brand 필드를 기반으로 BrandBox에 넣을 타입 결정
           const brandType = toBrandType(item.brand);
-          // 해당하는 브랜드가 없으면 순차적으로 돌아가며 보여줌 (UI 깨짐 방지)
           const displayBrand =
             brandType ?? brandTypes[index % brandTypes.length];
 
-          // 문구에 따른 타입 판별
           const isSubscribe = item.question.includes("추천");
           const isCancel = item.question.includes("해지");
 
           return (
             <div key={index} className="flex flex-col gap-6 mb-10 last:mb-0">
               <div className="flex flex-col gap-2">
-                {/* 질문 (Title) */}
                 <h3 className="title-md font-bold text-gray-900 leading-tight">
                   {item.question}
                 </h3>
-                {/* 내용 (Content) */}
                 <div className="body-lg text-gray-600 leading-relaxed whitespace-pre-line">
                   {item.content}
                 </div>
               </div>
 
-              {/* 브랜드 박스 및 버튼 영역 */}
               <div className="w-full bg-gray-50 rounded-2xl py-8 flex flex-col items-center justify-center gap-4 border border-gray-100">
                 <BrandBox brandType={displayBrand} size="lg" />
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { AnalysisResponse } from "@/app/utils/subscriptions/validation";
 
 type AIStatus = "text" | "analyzing" | "error" | "chart";
 
@@ -8,14 +9,14 @@ interface AIBubbleProps {
   content?: string;
   time?: string;
   status?: AIStatus;
-  chartComponent?: React.ReactNode;
+  analysisData?: AnalysisResponse;
 }
 
 export default function AIBubble({
   content,
   time,
   status = "text",
-  chartComponent,
+  analysisData,
 }: AIBubbleProps) {
   return (
     <div className="flex flex-col mb-6 px-6 animate-in fade-in">
@@ -29,33 +30,56 @@ export default function AIBubble({
             className="w-full h-full object-cover"
           />
         </div>
-        <span className="font-bold body-lg text-gray-300">AI디톡이</span>
+        <span className="font-bold body-lg text-gray-900">AI디톡이</span>
       </div>
 
       <div className="flex flex-col items-start max-w-[90%]">
-        <div className="bg-white border border-gray-50 px-4 py-3 rounded-lg w-full">
+        <div className="bg-white border border-gray-100 px-4 py-3 rounded-2xl w-full">
           {status === "analyzing" && (
-            <div className="flex items-center gap-3 py-1 text-gray-300 font-medium body-lg">
-              분석 중이니 잠시만 기다려 주세요
+            <div className="flex items-center gap-3 py-1 text-brand-primary font-medium body-lg">
+              분석 중이니 잠시만 기다려주세요
             </div>
           )}
 
           {status === "error" && (
-            <p className="body-lg whitespace-pre-wrap text-gray-300 font-medium">
-              분석에 실패했어요. 죄송하지만 나중에 다시 시도해주세요.
+            <p className="body-lg text-red-500 font-medium">
+              분석에 실패했어요. 다시 시도해주세요.
             </p>
           )}
 
-          {status === "text" && (
-            <p className="body-lg whitespace-pre-wrap font-medium text-gray-300 leading-relaxed">
+          {content && status !== "chart" && (
+            <p className="body-lg whitespace-pre-wrap font-medium text-gray-700 leading-relaxed">
               {content}
             </p>
           )}
 
-          {status === "chart" && (
-            <div className="flex flex-col gap-3">
-              {content && <p className="body-lg text-gray-300">{content}</p>}
-              <div className="w-full mt-1 pt-2">{chartComponent}</div>
+          {analysisData?.payload?.analysis_items && (
+            <div className="mt-3 flex flex-col gap-4">
+              <div className="py-2 border-b border-gray-50">
+                <p className="title-sm text-brand-primary font-bold">
+                  {analysisData.title}
+                </p>
+                <p className="body-sm text-gray-400">
+                  {analysisData.description}
+                </p>
+              </div>
+
+              {analysisData.payload.analysis_items.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-gray-50 p-3 rounded-xl flex flex-col gap-1 border border-gray-100"
+                >
+                  <span className="text-xs font-bold text-brand-secondary bg-brand-secondary/10 w-fit px-2 py-0.5 rounded">
+                    {item.brand} 분석
+                  </span>
+                  <p className="body-md font-bold text-gray-800">
+                    {item.question}
+                  </p>
+                  <p className="body-sm text-gray-500 leading-snug">
+                    {item.content}
+                  </p>
+                </div>
+              ))}
             </div>
           )}
         </div>
