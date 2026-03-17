@@ -57,6 +57,42 @@ export default function StatisticsPage() {
     [subscriptions]
   );
 
+  const services = useMemo(
+    () => Array.from(new Set(subscriptionSummaries.map((s) => s.service))),
+    [subscriptionSummaries]
+  );
+
+  const { data: serviceAvgMap = {} } = useQuery<Record<string, number>>({
+    queryKey: ["service-avg", services],
+    queryFn: async () => {
+      if (services.length === 0) return {};
+
+      const { data, error } = await supabase
+        .from("subscription")
+        .select("service, total_amount")
+        .in("service", services);
+
+      if (error) throw error;
+
+      const sums: Record<string, { sum: number; count: number }> = {};
+      (data ?? []).forEach((row) => {
+        const r = row as { service: string; total_amount: number };
+        const amount = Number(r.total_amount) || 0;
+        if (!r.service) return;
+        const prev = sums[r.service] ?? { sum: 0, count: 0 };
+        sums[r.service] = { sum: prev.sum + amount, count: prev.count + 1 };
+      });
+
+      const avg: Record<string, number> = {};
+      Object.entries(sums).forEach(([service, { sum, count }]) => {
+        avg[service] = count > 0 ? Math.round(sum / count) : 0;
+      });
+
+      return avg;
+    },
+    enabled: services.length > 0,
+  });
+
   const monthlyTotalAmount = useMemo(
     () => calculateMonthlyTotal(subscriptions, selectedDate),
     [selectedDate, subscriptions]
@@ -127,17 +163,16 @@ export default function StatisticsPage() {
                             subscriptionSummaries[
                               currentSubscriptionIndex
                             ] || subscriptionSummaries[0];
-                          const subDiff = Math.abs(
-                            displayAmount - current.amount
-                          );
+                          const serviceAvg = serviceAvgMap[current.service] ?? 0;
+                          const subDiff = Math.abs(serviceAvg - current.amount);
                           const subStatus =
-                            displayAmount > current.amount ? "over" : "under";
+                            current.amount > serviceAvg ? "over" : "under";
 
                           return (
                             <>
                               <ComparisonInsight
                                 isLoading={false}
-                                title={`${current.service} 유저들과 평균 소비 비교`}
+                                title={`${current.service} 유저 평균 소비와 비교`}
                                 diffAmount={subDiff}
                                 status={subStatus}
                               />
@@ -163,7 +198,7 @@ export default function StatisticsPage() {
                                   userName={current.service}
                                   userAmount={current.amount}
                                   compareName={`${current.service} 평균 소비`}
-                                  compareAmount={displayAmount}
+                                  compareAmount={serviceAvg}
                                   diffAmount={subDiff}
                                 />
                               </div>
