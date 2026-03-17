@@ -12,9 +12,9 @@ import {
 import { useToast } from "@/app/hooks/useToast";
 import formatSubscriptionEndDateLabel from "@/app/utils/date/formatSubscriptionEndDateLabel";
 import calculateTotalAccumulatedAmount from "@/app/utils/subscriptions/calculateTotalAccumulatedAmount";
+import getNextPaymentDateForSubscription from "@/app/utils/subscriptions/getNextPaymentDateForSubscription";
 import SubscriptionList from "@/app/components/subscription-list";
 import { SubscriptableBrandType } from "@/app/utils/brand/type";
-import { subscriptableBrand } from "@/app/utils/brand/brand";
 import calculateTrial from "@/app/utils/subscriptions/calculateTrial";
 
 export default function SubscriptionDetailContent() {
@@ -50,6 +50,8 @@ export default function SubscriptionDetailContent() {
     }
   };
 
+  const nextPaymentDate = getNextPaymentDateForSubscription(subscription);
+
   return (
     <>
       <div className="w-full mt-5 px-6 flex flex-col gap-5">
@@ -65,7 +67,7 @@ export default function SubscriptionDetailContent() {
           isFreeTrial={
             subscription.payment_type === "trial" &&
             calculateTrial(
-              subscription.created_at!,
+              subscription.start_date!,
               subscription.trial_months ?? 0
             )
           }
@@ -85,7 +87,7 @@ export default function SubscriptionDetailContent() {
           }
           totalAccumulatedAmount={calculateTotalAccumulatedAmount(
             subscription.billing_cycle,
-            subscription.created_at!,
+            subscription.start_date ?? new Date().toISOString(),
             subscription.total_amount,
             subscription.member_count
           )}
@@ -94,14 +96,8 @@ export default function SubscriptionDetailContent() {
         <SubscriptionMetaList
           items={[
             {
-              label: "구독 종료일",
-              value: formatSubscriptionEndDateLabel(subscription.end_date),
-            },
-            {
               label: "결제 예정일",
-              value: formatSubscriptionEndDateLabel(
-                subscription.next_payment_date ?? new Date().toISOString()
-              ),
+              value: formatSubscriptionEndDateLabel(nextPaymentDate) || "-",
             },
           ]}
         />
