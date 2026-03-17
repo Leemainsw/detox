@@ -151,7 +151,7 @@ export type Database = {
           created_at?: string;
           deleted_at?: string | null;
           id?: string;
-          is_read: boolean;
+          is_read?: boolean;
           message: string;
           post_id?: string | null;
           read_at?: string | null;
@@ -374,6 +374,7 @@ export type Database = {
           payment_day: number | null;
           payment_type: Database["public"]["Enums"]["PAYMENT_TYPE"];
           service: string;
+          start_date: string | null;
           status: Database["public"]["Enums"]["SUBSCRIPTION_STATUS"];
           subscription_mode: Database["public"]["Enums"]["SUBSCRIPTION_MODE"];
           total_amount: number;
@@ -391,6 +392,7 @@ export type Database = {
           payment_day?: number | null;
           payment_type: Database["public"]["Enums"]["PAYMENT_TYPE"];
           service: string;
+          start_date?: string | null;
           status: Database["public"]["Enums"]["SUBSCRIPTION_STATUS"];
           subscription_mode: Database["public"]["Enums"]["SUBSCRIPTION_MODE"];
           total_amount: number;
@@ -408,6 +410,7 @@ export type Database = {
           payment_day?: number | null;
           payment_type?: Database["public"]["Enums"]["PAYMENT_TYPE"];
           service?: string;
+          start_date?: string | null;
           status?: Database["public"]["Enums"]["SUBSCRIPTION_STATUS"];
           subscription_mode?: Database["public"]["Enums"]["SUBSCRIPTION_MODE"];
           total_amount?: number;
@@ -469,7 +472,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      toggle_post_like: {
+        Args: { p_post_id: string; p_user_id: string };
+        Returns: boolean;
+      };
     };
     Enums: {
       BILLING_CYCLE: "monthly" | "yearly";
