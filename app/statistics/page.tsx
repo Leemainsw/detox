@@ -24,6 +24,7 @@ const supabase = createBrowserClient(
 export default function StatisticsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentSubscriptionIndex, setCurrentSubscriptionIndex] = useState(0);
+  const [ageBandIndex, setAgeBandIndex] = useState(0);
 
   const { data: user } = useCurrentUserQuery();
   const { data: profile } = useUserProfileQuery(user?.id);
@@ -99,10 +100,30 @@ export default function StatisticsPage() {
   );
 
   const isMonthlyEmpty = !isAllEmpty && monthlyTotalAmount === 0;
-  const average30s = 25000;
+
+  const ageBands = ["10s", "20s", "30s", "40s", "50s", "60s"] as const;
+  const ageBand = ageBands[Math.min(Math.max(ageBandIndex, 0), ageBands.length - 1)];
+  const ageBandLabelMap = {
+    "10s": "10대 평균",
+    "20s": "20대 평균",
+    "30s": "30대 평균",
+    "40s": "40대 평균",
+    "50s": "50대 평균",
+    "60s": "60대 평균",
+  } as const;
+  const ageBandAverageMap = {
+    "10s": 12000,
+    "20s": 22000,
+    "30s": 31000,
+    "40s": 36000,
+    "50s": 39000,
+    "60s": 41000,
+  } as const;
+  const ageAverage = ageBandAverageMap[ageBand];
+
   const displayAmount = isAllEmpty || isMonthlyEmpty ? 0 : monthlyTotalAmount;
-  const diffAmount = Math.abs(displayAmount - average30s);
-  const status = displayAmount > average30s ? "over" : "under";
+  const diffAmount = Math.abs(displayAmount - ageAverage);
+  const status = displayAmount > ageAverage ? "over" : "under";
 
   const handleMonthChange = (date: Date) => {
     setSelectedDate(date);
@@ -118,6 +139,14 @@ export default function StatisticsPage() {
     setCurrentSubscriptionIndex((prev) =>
       prev === subscriptionSummaries.length - 1 ? 0 : prev + 1
     );
+  };
+
+  const handlePrevAgeBand = () => {
+    setAgeBandIndex((prev) => (prev === 0 ? ageBands.length - 1 : prev - 1));
+  };
+
+  const handleNextAgeBand = () => {
+    setAgeBandIndex((prev) => (prev === ageBands.length - 1 ? 0 : prev + 1));
   };
 
   return (
@@ -142,16 +171,35 @@ export default function StatisticsPage() {
                 <div className="mt-4">
                   <ComparisonInsight
                     isLoading={false}
-                    title="30대의 평균 소비 비교"
+                    title={`${ageBandLabelMap[ageBand]} 소비 비교`}
                     diffAmount={diffAmount}
                     status={status}
                   />
-                  <ComparisonChart
-                    userName={`${userName}님`}
-                    userAmount={displayAmount}
-                    compareName="30대 평균"
-                    compareAmount={average30s}
-                  />
+                  <div className="relative">
+                    <button
+                      type="button"
+                      aria-label="이전 연령대"
+                      className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
+                      onClick={handlePrevAgeBand}
+                    >
+                      ◀
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="다음 연령대"
+                      className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
+                      onClick={handleNextAgeBand}
+                    >
+                      ▶
+                    </button>
+
+                    <ComparisonChart
+                      userName={`${userName}님`}
+                      userAmount={displayAmount}
+                      compareName={ageBandLabelMap[ageBand]}
+                      compareAmount={ageAverage}
+                    />
+                  </div>
                 </div>
 
                 {subscriptionSummaries.length > 0 && (
