@@ -45,10 +45,10 @@ export default function getNextPaymentDate(
   }
 
   // yearly: payment_day = month*100 + day (예: 315 = 3월 15일, 301 = 3월 1일)
-  // 3011 등 30XX 형태로 잘못 저장된 3월 1일(301) 보정: 30월은 유효하지 않으므로 3월 1일로 해석
+  // 3011 등 3000-3099 범위 legacy: 잘못 저장된 3월 1일(301) 보정
   let month = Math.floor(paymentDay / 100);
   let day = paymentDay % 100;
-  if (month > 12 && paymentDay >= 1000) {
+  if (paymentDay >= 3000 && paymentDay < 3100) {
     month = Math.floor(paymentDay / 1000);
     day = paymentDay % 10 || 10; // 3011→1일, 3010→10일
     if (month < 1 || month > 12 || day < 1 || day > 31) return null;

@@ -13,8 +13,8 @@ function formatPaymentDayForForm(
   if (billingCycle === "yearly" && paymentDay >= 100) {
     let month = Math.floor(paymentDay / 100);
     let day = paymentDay % 100;
-    // 3011 등 30XX → 3월 1일 등으로 보정 (getNextPaymentDate와 동일)
-    if (month > 12 && paymentDay >= 1000) {
+    // 3011 등 3000-3099 legacy 보정 (getNextPaymentDate와 동일)
+    if (paymentDay >= 3000 && paymentDay < 3100) {
       month = Math.floor(paymentDay / 1000);
       day = paymentDay % 10 || 10;
     }
