@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import Header from "@/app/components/header";
 import DateDivider from "./_components/date-divider/date-divider";
 import UserBubble from "./_components/user-bubble";
