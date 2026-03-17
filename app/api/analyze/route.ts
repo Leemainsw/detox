@@ -2,8 +2,6 @@ import { OpenAI } from "openai";
 import { tavily } from "@tavily/core";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-
 import { getSystemPrompt } from "@/app/utils/subscriptions/constants";
 import {
   validateAnalysisResponse,
@@ -46,7 +44,8 @@ const withTimeout = async <T>(
 
 export async function POST(req: Request) {
   try {
-    const { userContext } = await req.json();
+    // ✅ question을 본문에서 함께 받습니다.
+    const { userContext, question } = await req.json();
 
     if (!userContext?.categoryRatio) {
       return Response.json(
@@ -55,43 +54,34 @@ export async function POST(req: Request) {
       );
     }
 
-    const availableBrands = Object.keys(subscriptableBrand).join(", ");
     const cookieStore = await cookies();
+    const availableBrands = Object.keys(subscriptableBrand).join(", ");
 
-    let supabase: SupabaseClient = createServerClient(
-      SUPABASE_URL!,
-      SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
+    // ✅ 서버 사이드 쿠키 기반 Supabase 클라이언트 설정
+    const supabase = createServerClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
         },
-      }
-    );
+      },
+    });
 
-    let userId: string | undefined;
+    // ✅ 보안 수정: 클라이언트가 보낸 세션 대신 서버 쿠키 세션 사용
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    userId = session?.user?.id;
+    const userId = session?.user?.id;
 
-    if (!userId && userContext?.session) {
-      const tokenClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!);
-      await tokenClient.auth.setSession(userContext.session);
-      const {
-        data: { user },
-      } = await tokenClient.auth.getUser();
-      userId = user?.id;
-      supabase = tokenClient;
+    if (!userId) {
+      return Response.json(
+        { error: "Unauthorized - 로그인이 필요합니다." },
+        { status: 401 }
+      );
     }
-
-    if (!userId)
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const { data: subscriptions, error: dbError } = await supabase
       .from("subscription")
-      .select("*")
+      .select("service, total_amount")
       .eq("user_id", userId);
 
     if (dbError) throw dbError;
@@ -102,11 +92,15 @@ export async function POST(req: Request) {
         { status: 404 }
       );
     }
+
     const currentYear = new Date().getFullYear();
     const searchResult = await withTimeout(
-      tavilyClient.search(`${currentYear}년 한국 구독 서비스 최신 혜택`, {
-        maxResults: 5,
-      }),
+      tavilyClient.search(
+        `${currentYear}년 한국 구독 서비스 최신 혜택 및 ${question || "통신사 결합"}`,
+        {
+          maxResults: 5,
+        }
+      ),
       10000,
       "Tavily Search"
     ).catch(() => ({ results: [] }));
@@ -125,7 +119,7 @@ export async function POST(req: Request) {
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `구독내역: ${JSON.stringify(subscriptions)}, 시장정보: ${JSON.stringify(searchResult.results)}`,
+            content: `질문: ${question || "전반적인 소비 분석"}, 구독내역: ${JSON.stringify(subscriptions)}, 시장정보: ${JSON.stringify(searchResult.results)}`,
           },
         ],
         response_format: { type: "json_object" },
@@ -138,7 +132,6 @@ export async function POST(req: Request) {
     if (!content) throw new Error("AI 응답 생성 실패");
 
     const parsed = JSON.parse(content);
-
     if (!validateAnalysisResponse<AnalysisResponse>(parsed)) {
       throw new Error("AI 응답 형식이 유효하지 않습니다.");
     }

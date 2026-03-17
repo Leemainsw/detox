@@ -120,6 +120,7 @@ export function useAiChat(): {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          question,
           userContext: { categoryRatio, session },
         }),
       });

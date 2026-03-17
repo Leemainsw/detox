@@ -66,6 +66,22 @@ export type AnalysisResult =
 
 export type AnalysisType = AnalysisResult["type"];
 
+// ✅ 1. STATISTICS 내부 아이템의 유효성을 검사하는 헬퍼 함수 (코드래빗 권장)
+const isStatisticsItem = (
+  value: unknown
+): value is StatisticsPayload["payload"]["analysis_items"][number] => {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+
+  return (
+    (item.kind === "SUBSCRIBE_RECOMMENDATION" ||
+      item.kind === "CANCEL_RECOMMENDATION" ||
+      item.kind === "PAYMENT_WEEK_ALERT") &&
+    typeof item.title === "string" &&
+    typeof item.description === "string"
+  );
+};
+
 const isAnalysisType = (value: unknown): value is AnalysisType => {
   return (
     value === "STATISTICS" ||
@@ -75,24 +91,38 @@ const isAnalysisType = (value: unknown): value is AnalysisType => {
   );
 };
 
+// ✅ 2. 런타임 데이터 검증 로직 강화
 const isAnalysisResult = (value: unknown): value is AnalysisResult => {
   if (!value || typeof value !== "object") return false;
   const data = value as Record<string, unknown>;
 
-  return (
+  // 공통 기본 필드 검사
+  const baseValid =
     isAnalysisType(data.type) &&
     typeof data.title === "string" &&
     typeof data.description === "string" &&
     typeof data.last_updated === "string" &&
     typeof data.payload === "object" &&
-    data.payload !== null
-  );
+    data.payload !== null;
+
+  if (!baseValid) return false;
+
+  // ✅ 3. STATISTICS 타입일 경우 내부 페이로드(items, message)까지 딥 체크
+  if (data.type === "STATISTICS") {
+    const payload = data.payload as Record<string, unknown>;
+    return (
+      Array.isArray(payload.analysis_items) &&
+      payload.analysis_items.every(isStatisticsItem) &&
+      typeof payload.diff_message === "string"
+    );
+  }
+
+  return true;
 };
 
 interface AnalysisState {
   result: AnalysisResult | null;
   isLoading: boolean;
-
   setResult: (newResult: unknown) => void;
   setIsLoading: (status: boolean) => void;
   clearResult: () => void;
@@ -105,9 +135,10 @@ export const useAnalysisStore = create<AnalysisState>()(
       isLoading: false,
 
       setResult: (newResult) => {
+        // ✅ 4. 데이터 저장 전 검증 단계 거치기
         if (!isAnalysisResult(newResult)) {
           console.error(
-            "[AnalysisStore] 유효하지 않은 데이터 형식입니다:",
+            "[AnalysisStore] 유효하지 않은 데이터 형식입니다. 저장이 차단되었습니다:",
             newResult
           );
           return;

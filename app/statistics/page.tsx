@@ -16,7 +16,6 @@ import EmptySubscriptionOverlay from "./_components/empty-subscription-overlay";
 import AnalysisSummary from "./_components/analysis-summary/analysis-summary";
 import { useCurrentUserQuery, useUserProfileQuery } from "@/query/users";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
-// ✅ 유틸 파일 대신 타입 정의에서 필요한 인터페이스만 가져옵니다.
 import {
   AnalysisResponse,
   ChartDataItem,
@@ -38,21 +37,27 @@ export default function StatisticsPage() {
 
   const { result: analysisData } = useAnalysisStore();
 
-  const { data: subscriptions = [], isLoading: isSubscriptionsLoading } =
-    useQuery<{ service: string; total_amount: number }[]>({
-      queryKey: ["subscriptions", user?.id],
-      queryFn: async () => {
-        if (!user?.id) return [];
-        const { data } = await supabase
-          .from("subscription")
-          .select("*")
-          .eq("user_id", user.id);
-        return data || [];
-      },
-      enabled: !!user?.id,
-    });
+  const {
+    data: subscriptions = [],
+    isLoading: isSubscriptionsLoading,
+    isError,
+  } = useQuery<{ service: string; total_amount: number }[]>({
+    queryKey: ["subscriptions", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from("subscription")
+        .select("*")
+        .eq("user_id", user.id);
 
-  const isAllEmpty = !isSubscriptionsLoading && subscriptions.length === 0;
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
+  const isAllEmpty =
+    !isSubscriptionsLoading && !isError && subscriptions.length === 0;
 
   const subscriptionSummaries = useMemo(
     () =>
@@ -74,14 +79,12 @@ export default function StatisticsPage() {
     queryKey: ["service-avg", services],
     queryFn: async () => {
       if (services.length === 0) return {};
-
       const { data, error } = await supabase
         .from("subscription")
         .select("service, total_amount")
         .in("service", services);
 
       if (error) throw error;
-
       const sums: Record<string, { sum: number; count: number }> = {};
       (data ?? []).forEach((row) => {
         const r = row as { service: string; total_amount: number };
@@ -95,16 +98,13 @@ export default function StatisticsPage() {
       Object.entries(sums).forEach(([service, { sum, count }]) => {
         avg[service] = count > 0 ? Math.round(sum / count) : 0;
       });
-
       return avg;
     },
     enabled: services.length > 0,
   });
 
-  // ✅ 에러 해결: 삭제한 calculateMonthlyTotal 대신 AI 데이터에서 직접 가져옵니다.
   const monthlyTotalAmount = useMemo(() => {
     const data = analysisData as unknown as AnalysisResponse | null;
-
     if (data?.payload?.chart_data && Array.isArray(data.payload.chart_data)) {
       const currentMonthStr = `${selectedDate.getMonth() + 1}월`;
       const currentMonthData = (
@@ -112,7 +112,6 @@ export default function StatisticsPage() {
       ).find((d) => d.month === currentMonthStr);
       if (currentMonthData) return currentMonthData.my_spend;
     }
-    // 데이터가 없으면 전체 구독 금액 합계로 폴백
     return subscriptions.reduce(
       (acc, sub) => acc + (Number(sub.total_amount) || 0),
       0
@@ -147,23 +146,6 @@ export default function StatisticsPage() {
   const diffAmount = Math.abs(displayAmount - ageAverage);
   const status = displayAmount > ageAverage ? "over" : "under";
 
-  const handleMonthChange = (date: Date) => setSelectedDate(date);
-  const handlePrevAgeBand = () =>
-    setAgeBandIndex((prev) => (prev === 0 ? ageBands.length - 1 : prev - 1));
-  const handleNextAgeBand = () =>
-    setAgeBandIndex((prev) => (prev === ageBands.length - 1 ? 0 : prev + 1));
-
-  const handlePrevSubscription = () => {
-    setCurrentSubscriptionIndex((prev) =>
-      prev === 0 ? subscriptionSummaries.length - 1 : prev - 1
-    );
-  };
-  const handleNextSubscription = () => {
-    setCurrentSubscriptionIndex((prev) =>
-      prev === subscriptionSummaries.length - 1 ? 0 : prev + 1
-    );
-  };
-
   return (
     <main
       className={`relative flex flex-col w-full min-h-screen bg-white ${isAllEmpty ? "overflow-hidden h-screen" : ""}`}
@@ -177,7 +159,7 @@ export default function StatisticsPage() {
           <MonthExpenseSelector
             selectedDate={selectedDate}
             groupCount={displayAmount}
-            onChangeDate={handleMonthChange}
+            onChangeDate={setSelectedDate}
           />
 
           <div className="relative flex-1 w-full">
@@ -192,13 +174,21 @@ export default function StatisticsPage() {
                   />
                   <div className="relative">
                     <button
-                      onClick={handlePrevAgeBand}
+                      onClick={() =>
+                        setAgeBandIndex((prev) =>
+                          prev === 0 ? ageBands.length - 1 : prev - 1
+                        )
+                      }
                       className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                     >
                       <FontAwesomeIcon icon={faCaretLeft} size="lg" />
                     </button>
                     <button
-                      onClick={handleNextAgeBand}
+                      onClick={() =>
+                        setAgeBandIndex((prev) =>
+                          prev === ageBands.length - 1 ? 0 : prev + 1
+                        )
+                      }
                       className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                     >
                       <FontAwesomeIcon icon={faCaretRight} size="lg" />
@@ -234,13 +224,25 @@ export default function StatisticsPage() {
                           />
                           <div className="relative">
                             <button
-                              onClick={handlePrevSubscription}
+                              onClick={() =>
+                                setCurrentSubscriptionIndex((prev) =>
+                                  prev === 0
+                                    ? subscriptionSummaries.length - 1
+                                    : prev - 1
+                                )
+                              }
                               className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                             >
                               <FontAwesomeIcon icon={faCaretLeft} size="lg" />
                             </button>
                             <button
-                              onClick={handleNextSubscription}
+                              onClick={() =>
+                                setCurrentSubscriptionIndex((prev) =>
+                                  prev === subscriptionSummaries.length - 1
+                                    ? 0
+                                    : prev + 1
+                                )
+                              }
                               className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
                             >
                               <FontAwesomeIcon icon={faCaretRight} size="lg" />
@@ -272,6 +274,11 @@ export default function StatisticsPage() {
               </div>
             )}
             {!isAllEmpty && isMonthlyEmpty && <EmptyAnalysis />}
+            {isError && (
+              <div className="p-10 text-center text-gray-400 body-md">
+                데이터를 불러오지 못했습니다.
+              </div>
+            )}
           </div>
           {isAllEmpty && <EmptySubscriptionOverlay />}
         </div>
