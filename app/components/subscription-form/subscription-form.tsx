@@ -6,7 +6,6 @@ import InputPaymentInfo from "./_components/_steps/input-payment-info";
 import SelectBrand from "./_components/_steps/select-brand";
 import SelectPaymentType from "./_components/_steps/select-payment-type";
 import ProgressBar from "./_components/progress-bar/progress-bar";
-import { Tables } from "@/types/supabase.types";
 
 const SUBSCRIPTION_FUNNEL_BASE = "subscription-form";
 
@@ -76,7 +75,7 @@ export default function SubscriptionForm({
       )}
       {currentStep === "select-payment-type" && (
         <SelectPaymentType
-          values={state as Partial<Tables<"subscription">>}
+          values={state}
           onNext={(values) => {
             const merged = { ...state, ...values };
             setState(merged);

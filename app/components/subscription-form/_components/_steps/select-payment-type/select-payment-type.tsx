@@ -3,12 +3,15 @@ import Button from "@/app/components/button";
 import Input from "@/app/components/input";
 import SegmentedControl from "@/app/components/segmented-control";
 import { useState } from "react";
-import { PaymentType, SubscriptionMode } from "../../../types/type";
+import {
+  PaymentType,
+  SubscriptionMode,
+  type SubscriptionFormData,
+} from "../../../types/type";
 import {
   clampTrialMonths,
   isSelectPaymentTypeValid,
 } from "@/app/components/subscription-form/utils";
-import { Tables } from "@/types/supabase.types";
 
 interface Values {
   subscription_mode: SubscriptionMode;
@@ -19,7 +22,7 @@ interface Values {
 }
 
 interface Props {
-  values?: Partial<Tables<"subscription">>;
+  values?: Partial<SubscriptionFormData>;
   onNext: (values: Values) => void;
   loading?: boolean;
   /** 이전 step 필수 필드 누락 시 true (syncWithQuery URL 직접 접근 대비) */

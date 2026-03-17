@@ -5,7 +5,7 @@ import {
   getSubscriptionList,
   updateSubscription,
 } from "@/services/subscription";
-import { Tables, TablesInsert } from "@/types/supabase.types";
+import { Tables, TablesInsert, TablesUpdate } from "@/types/supabase.types";
 import {
   useMutation,
   useQuery,
@@ -93,7 +93,7 @@ export const useUpdateSubscriptionMutation = () => {
       values,
     }: {
       id: string;
-      values: TablesInsert<"subscription">;
+      values: TablesUpdate<"subscription">;
     }) => updateSubscription(id, values),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: subscriptionKeys.list() });
