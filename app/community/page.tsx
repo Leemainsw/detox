@@ -1,21 +1,31 @@
-"use client";
-import CommunityList from "./_components/community-list";
-import BrandTabs from "./_components/brand-tabs";
-import Header from "../components/header";
-import BottomNav from "../components/bottom-nav";
-import { mockCommunityItems } from "./_data/mock-community";
+import { subscriptableBrand } from "@/app/utils/brand/brand";
+import { getServerCommunityListPage } from "@/services/community.server";
+import type { CommunityServiceFilter } from "./_types";
+import CommunityListPageClient from "./_components/community-list-page-client";
 
-export default function CommunityListPage() {
+type CommunityListPageProps = {
+  searchParams: Promise<{ service?: string }>;
+};
+
+export default async function CommunityListPage({
+  searchParams,
+}: CommunityListPageProps) {
+  const { service } = await searchParams;
+
+  const selectedService: CommunityServiceFilter =
+    service && Object.prototype.hasOwnProperty.call(subscriptableBrand, service)
+      ? (service as CommunityServiceFilter)
+      : "all";
+
+  const queryService = selectedService === "all" ? undefined : selectedService;
+  const initialPage = await getServerCommunityListPage({
+    service: queryService,
+  });
+
   return (
-    <div className="bg-gray-100 pb-15">
-      <Header variant="text" leftText="커뮤니티" rightContent="알람" />
-      <main className="">
-        <BrandTabs />
-        <section className="px-6">
-          <CommunityList items={mockCommunityItems} />
-        </section>
-      </main>
-      <BottomNav />
-    </div>
+    <CommunityListPageClient
+      initialService={selectedService}
+      initialPage={initialPage}
+    />
   );
 }

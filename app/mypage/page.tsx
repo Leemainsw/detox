@@ -1,25 +1,8 @@
-"use client";
-
-import Image from "next/image";
-import { useEffect } from "react";
-import Avatar from "../components/avatar";
-import Header from "../components/header";
-import Input from "../components/input";
-import Button from "../components/button";
-import BottomNav from "../components/bottom-nav";
-import LoadingScreen from "../components/loading-screen";
-import TextButton from "../components/text-button";
-import { useRouter } from "next/navigation";
-import {
-  useCurrentUserQuery,
-  useLogoutMutation,
-  useUserProfileQuery,
-} from "@/query/users";
-import { useToast } from "../hooks/useToast";
+import MypagePage from "./_components/mypage-page";
 
 export default function Page() {
   const router = useRouter();
-  const { errorToast } = useToast();
+  const { error } = useToast();
   const logoutMutation = useLogoutMutation();
   const currentUserQuery = useCurrentUserQuery();
   const userProfileQuery = useUserProfileQuery(currentUserQuery.data?.id);
@@ -34,9 +17,9 @@ export default function Page() {
     try {
       await logoutMutation.mutateAsync();
       router.push("/login");
-    } catch (error) {
-      console.error(error);
-      errorToast("로그아웃에 실패했어요.");
+    } catch (logoutError) {
+      console.error(logoutError);
+      error("로그아웃에 실패했어요.");
     }
   };
 
