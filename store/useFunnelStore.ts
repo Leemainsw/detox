@@ -67,6 +67,10 @@ export const useFunnelStore = create<FunnelStore>((set, get) => ({
         funnel.steps.length - 1
       );
 
+      if (nextIndex === funnel.currentStepIndex) {
+        return state;
+      }
+
       return {
         funnels: {
           ...state.funnels,
@@ -107,6 +111,15 @@ export const useFunnelStore = create<FunnelStore>((set, get) => ({
     set((state) => {
       const funnel = state.funnels[key];
       if (!funnel) return state;
+
+      const nextIndex = Math.max(
+        0,
+        Math.min(stepIndex, funnel.steps.length - 1)
+      );
+
+      if (nextIndex === funnel.currentStepIndex) {
+        return state;
+      }
 
       return {
         funnels: {
