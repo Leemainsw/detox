@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "@/app/components/button";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function EmptySubscriptionOverlay() {
@@ -21,11 +20,7 @@ export default function EmptySubscriptionOverlay() {
       </div>
 
       <div className="w-full px-6">
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={() => router.push("/statistics/ai")}
-        >
+        <Button variant="primary" size="lg" onClick={() => router.push("/")}>
           구독 추가하기
         </Button>
       </div>
