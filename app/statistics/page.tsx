@@ -23,6 +23,7 @@ const supabase = createBrowserClient(
 
 export default function StatisticsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentSubscriptionIndex, setCurrentSubscriptionIndex] = useState(0);
 
   const { data: user } = useCurrentUserQuery();
   const { data: profile } = useUserProfileQuery(user?.id);
@@ -30,7 +31,9 @@ export default function StatisticsPage() {
 
   const { result: analysisData } = useAnalysisStore();
 
-  const { data: subscriptions = [] } = useQuery({
+  const { data: subscriptions = [] } = useQuery<
+    { service: string; total_amount: number }[]
+  >({
     queryKey: ["subscriptions", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -45,6 +48,15 @@ export default function StatisticsPage() {
 
   const isAllEmpty = subscriptions.length === 0;
 
+  const subscriptionSummaries = useMemo(
+    () =>
+      subscriptions.map((sub) => ({
+        service: sub.service,
+        amount: Number(sub.total_amount) || 0,
+      })),
+    [subscriptions]
+  );
+
   const monthlyTotalAmount = useMemo(
     () => calculateMonthlyTotal(subscriptions, selectedDate),
     [selectedDate, subscriptions]
@@ -58,6 +70,18 @@ export default function StatisticsPage() {
 
   const handleMonthChange = (date: Date) => {
     setSelectedDate(date);
+  };
+
+  const handlePrevSubscription = () => {
+    setCurrentSubscriptionIndex((prev) =>
+      prev === 0 ? subscriptionSummaries.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextSubscription = () => {
+    setCurrentSubscriptionIndex((prev) =>
+      prev === subscriptionSummaries.length - 1 ? 0 : prev + 1
+    );
   };
 
   return (
@@ -94,20 +118,62 @@ export default function StatisticsPage() {
                   />
                 </div>
 
-                <div className="mt-10">
-                  <ComparisonInsight
-                    isLoading={false}
-                    title="넷플릭스 유저들과 평균 소비 비교"
-                    diffAmount={8500}
-                    status="under"
-                  />
-                  <ComparisonChart
-                    userName={`${userName}님`}
-                    userAmount={displayAmount}
-                    compareName="넷플릭스 평균"
-                    compareAmount={displayAmount + 8500}
-                  />
-                </div>
+                {subscriptionSummaries.length > 0 && (
+                  <div className="mt-10">
+                    {subscriptionSummaries.length > 0 && (
+                      <>
+                        {(() => {
+                          const current =
+                            subscriptionSummaries[
+                              currentSubscriptionIndex
+                            ] || subscriptionSummaries[0];
+                          const subDiff = Math.abs(
+                            displayAmount - current.amount
+                          );
+                          const subStatus =
+                            displayAmount > current.amount ? "over" : "under";
+
+                          return (
+                            <>
+                              <ComparisonInsight
+                                isLoading={false}
+                                title={`${current.service} 유저들과 평균 소비 비교`}
+                                diffAmount={subDiff}
+                                status={subStatus}
+                              />
+                              <div className="relative">
+                                <button
+                                  type="button"
+                                  aria-label="이전 구독 서비스"
+                                  className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600 "
+                                  onClick={handlePrevSubscription}
+                                >
+                                  ◀
+                                </button>
+                                <button
+                                  type="button"
+                                  aria-label="다음 구독 서비스"
+                                  className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
+                                  onClick={handleNextSubscription}
+                                >
+                                  ▶
+                                </button>
+
+                                <ComparisonChart
+                                  userName={current.service}
+                                  userAmount={current.amount}
+                                  compareName={`${current.service} 평균 소비`}
+                                  compareAmount={displayAmount}
+                                  diffAmount={subDiff}
+                                />
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </>
+                    )}
+                  </div>
+                )}
 
                 {analysisData && (
                   <div className="mt-10 border-t-8 border-gray-50">
