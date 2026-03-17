@@ -47,11 +47,16 @@ export const MIN_FOOD_PRICE = Math.min(
 );
 
 export function getFoodCount(totalPrice: number, foodPrice: number) {
-  if (foodPrice <= 0) {
+  if (
+    !Number.isFinite(totalPrice) ||
+    !Number.isFinite(foodPrice) ||
+    totalPrice <= 0 ||
+    foodPrice <= 0
+  ) {
     return 0;
   }
 
-  return Math.max(0, Math.floor(totalPrice / foodPrice));
+  return Math.floor(totalPrice / foodPrice);
 }
 
 export function makeFoodResult(
