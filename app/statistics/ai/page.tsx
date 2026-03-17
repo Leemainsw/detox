@@ -49,6 +49,7 @@ export default function Page() {
                     <MyChart
                       data={msg.analysisData.payload.chart_data}
                       diffAmount={msg.analysisData.payload.diff_amount}
+                      diffMessage={msg.analysisData.payload.diff_message}
                     />
                   </div>
                 ) : null

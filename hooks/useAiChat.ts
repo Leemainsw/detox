@@ -12,9 +12,22 @@ export interface AnalysisResponse {
   description: string;
   message?: string;
   payload: {
-    analysis_items: { question: string; content: string }[];
+    analysis_items: Array<{
+      kind:
+        | "SUBSCRIBE_RECOMMENDATION"
+        | "CANCEL_RECOMMENDATION"
+        | "PAYMENT_WEEK_ALERT";
+      title: string;
+      description: string;
+      brands?: string[];
+      cta_label?: string;
+      savings_amount?: number;
+      week_range?: string;
+      expected_amount?: number;
+    }>;
     chart_data: Array<{ month: string; my_spend: number; avg_spend: number }>;
     diff_amount: number;
+    diff_message: string;
   };
 }
 

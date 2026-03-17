@@ -11,6 +11,7 @@ interface Props {
   compareAmount?: number;
   data?: { month: string; my_spend: number; avg_spend: number }[];
   diffAmount?: number;
+  diffMessage?: string;
   isLoading?: boolean;
 }
 
@@ -21,6 +22,7 @@ export default function ComparisonChart({
   compareAmount,
   data,
   diffAmount,
+  diffMessage,
   isLoading = false,
 }: Props) {
   if (isLoading) {
@@ -97,7 +99,13 @@ export default function ComparisonChart({
         </ChartContainer>
       </div>
 
-      {diffAmount !== undefined && diffAmount > 0 && (
+      {diffMessage ? (
+        <div className="mx-6 px-4 py-3 bg-teal-50 border border-teal-100 rounded-xl">
+          <p className="text-sm text-brand-primary font-medium leading-relaxed whitespace-pre-wrap">
+            {diffMessage}
+          </p>
+        </div>
+      ) : diffAmount !== undefined && diffAmount > 0 ? (
         <div className="mx-6 px-4 py-3 bg-teal-50 border border-teal-100 rounded-xl">
           <p className="text-sm text-brand-primary font-medium leading-relaxed whitespace-pre-wrap">
             💡 지금보다{" "}
@@ -107,7 +115,7 @@ export default function ComparisonChart({
             을{"\n"}더 아낄 수 있어요!
           </p>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
