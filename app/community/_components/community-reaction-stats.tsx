@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import type { RefObject } from "react";
 import { faCommentDots, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCommunityDetailReactions } from "@/app/community/_hooks/use-community-detail-reactions";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -10,22 +11,33 @@ interface Props {
   commentCount: number;
   showLabel?: boolean;
   className?: string;
+  readOnly?: boolean;
+  isLiked?: boolean;
+  likeDisabled?: boolean;
+  onLikeClick?: () => void;
+  onCommentClick?: () => void;
+  postId?: string;
+  commentInputRef?: RefObject<HTMLInputElement | null>;
 }
 
-export default function CommunityReactionStats({
+function CommunityReactionStatsView({
   likeCount,
   commentCount,
   showLabel = false,
   className,
+  readOnly = false,
+  isLiked = false,
+  likeDisabled = false,
+  onLikeClick,
+  onCommentClick,
 }: Props) {
-  const [isLiked, setIsLiked] = useState(false);
-
   return (
     <div className={cn("flex gap-4", className)}>
       <button
         type="button"
-        onClick={() => setIsLiked((prev) => !prev)}
-        className="text-sm flex items-center gap-1 cursor-pointer"
+        className="text-sm flex items-center gap-1 cursor-pointer disabled:cursor-default"
+        onClick={readOnly ? undefined : onLikeClick}
+        disabled={readOnly || likeDisabled}
       >
         <FontAwesomeIcon
           icon={faThumbsUp}
@@ -39,7 +51,9 @@ export default function CommunityReactionStats({
 
       <button
         type="button"
-        className="text-sm flex items-center gap-1 cursor-pointer"
+        className="text-sm flex items-center gap-1 cursor-pointer disabled:cursor-default"
+        onClick={readOnly ? undefined : onCommentClick}
+        disabled={readOnly}
       >
         <FontAwesomeIcon
           icon={faCommentDots}
@@ -52,4 +66,37 @@ export default function CommunityReactionStats({
       </button>
     </div>
   );
+}
+
+function InteractiveCommunityReactionStats({
+  postId,
+  commentInputRef,
+  ...props
+}: Props & {
+  postId: string;
+  commentInputRef: RefObject<HTMLInputElement | null>;
+}) {
+  const { isLiked, likeDisabled, handleToggleLike, handleCommentClick } =
+    useCommunityDetailReactions({
+      postId,
+      commentInputRef,
+    });
+
+  return (
+    <CommunityReactionStatsView
+      {...props}
+      isLiked={isLiked}
+      likeDisabled={likeDisabled}
+      onLikeClick={handleToggleLike}
+      onCommentClick={handleCommentClick}
+    />
+  );
+}
+
+export default function CommunityReactionStats(props: Props) {
+  if (props.postId && props.commentInputRef) {
+    return <InteractiveCommunityReactionStats {...props} />;
+  }
+
+  return <CommunityReactionStatsView {...props} />;
 }

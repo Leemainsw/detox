@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import Button from "../components/button";
 import LoadingScreen from "../components/loading-screen";
@@ -13,10 +13,15 @@ import {
 } from "@/components/ui/tooltip";
 import { useAnonymousLoginMutation, useCurrentUserQuery } from "@/query/users";
 import { useToast } from "../hooks/useToast";
+import { getSafeRedirectPath } from "@/app/utils/auth/get-safe-redirect-path";
+import { signInWithOAuth } from "@/services/users";
 
 export default function Page() {
   const router = useRouter();
-  const { errorToast } = useToast();
+  const searchParams = useSearchParams();
+  const { error } = useToast();
+  const redirectPath = searchParams.get("redirect");
+  const nextPath = getSafeRedirectPath(redirectPath);
 
   const { mutateAsync: anonymousLogin, isPending: isAnonymousLoginPending } =
     useAnonymousLoginMutation();
@@ -26,17 +31,32 @@ export default function Page() {
 
   useEffect(() => {
     if (currentUser) {
-      router.replace("/");
+      router.replace(nextPath);
     }
-  }, [currentUser, router]);
+  }, [currentUser, nextPath, router]);
+
+  const handleSocialLogin = async (provider: "google" | "kakao") => {
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(nextPath)}`;
+
+      const { error: oauthError } = await signInWithOAuth(provider, redirectTo);
+
+      if (oauthError) {
+        throw oauthError;
+      }
+    } catch (loginError) {
+      console.error(loginError);
+      error("로그인에 실패했어요.");
+    }
+  };
 
   const handleAnonymousLogin = async () => {
     try {
       await anonymousLogin();
-      router.push("/");
-    } catch (error) {
-      console.error(error);
-      errorToast("로그인에 실패했어요.");
+      router.replace(nextPath);
+    } catch (loginError) {
+      console.error(loginError);
+      error("로그인에 실패했어요.");
     }
   };
 
@@ -55,9 +75,16 @@ export default function Page() {
       </header>
 
       <div className="w-full px-6 flex flex-col gap-4">
-        <SnsLoginButton type="kakao" />
-        <SnsLoginButton type="naver" />
-        <SnsLoginButton type="google" />
+        <SnsLoginButton
+          type="kakao"
+          onClick={() => handleSocialLogin("kakao")}
+        />
+        <SnsLoginButton
+          type="google"
+          onClick={() => handleSocialLogin("google")}
+        />
+
+        {/* <SnsLoginButton type="naver" /> */}
       </div>
 
       <Tooltip open>
