@@ -16,7 +16,7 @@ export default function SelectDay({ value, onValueChange }: Props) {
       <SelectBox.Wrapper>
         <SelectBox.Label>매월 몇 일에 결제하나요?</SelectBox.Label>
         <SelectBox.Trigger>
-          <SelectBox.Value placeholder={today.toString() + "일"} />
+          <SelectBox.Value placeholder="선택해주세요" />
         </SelectBox.Trigger>
         <SelectBox.Content>
           {Array.from({ length: 31 }, (_, index) => (

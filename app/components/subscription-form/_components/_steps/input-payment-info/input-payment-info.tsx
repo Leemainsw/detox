@@ -15,7 +15,7 @@ import {
 interface Values {
   billing_cycle: BillingCycle;
   payment_day: string;
-  end_date: string;
+  start_date: string;
 }
 interface Props {
   values?: Partial<Values>;
@@ -34,8 +34,8 @@ export default function InputPaymentInfo({ values, onNext }: Props) {
     parsePaymentDayToMonthDay(values?.payment_day)
   );
 
-  const [endDate, setEndDate] = useState<string | null>(
-    values?.end_date ?? new Date().toISOString()
+  const [startDate, setStartDate] = useState<string | null>(
+    values?.start_date ?? new Date().toISOString()
   );
 
   const paymentDay = formatPaymentDay(
@@ -45,11 +45,11 @@ export default function InputPaymentInfo({ values, onNext }: Props) {
   );
 
   const handleNext = () => {
-    if (!paymentDay || !endDate) return;
+    if (!paymentDay || !startDate) return;
     onNext({
       billing_cycle: billingCycle,
       payment_day: paymentDay,
-      end_date: endDate,
+      start_date: startDate,
     });
   };
 
@@ -88,9 +88,9 @@ export default function InputPaymentInfo({ values, onNext }: Props) {
 
         {/* 공통 */}
         <DatePicker
-          label="언제 구독이 끝나나요?"
-          value={endDate ? new Date(endDate) : new Date()}
-          onChange={(date) => setEndDate(date?.toISOString() ?? null)}
+          label="언제 구독을 시작하셨나요?"
+          value={startDate ? new Date(startDate) : new Date()}
+          onChange={(date) => setStartDate(date?.toISOString() ?? null)}
         />
       </div>
 
@@ -99,7 +99,7 @@ export default function InputPaymentInfo({ values, onNext }: Props) {
           variant="primary"
           size="lg"
           onClick={handleNext}
-          disabled={!paymentDay || !endDate}
+          disabled={!paymentDay || !startDate}
         >
           다음
         </Button>

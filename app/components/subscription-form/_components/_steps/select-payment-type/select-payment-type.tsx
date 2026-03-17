@@ -8,6 +8,7 @@ import {
   clampTrialMonths,
   isSelectPaymentTypeValid,
 } from "@/app/components/subscription-form/utils";
+import { Tables } from "@/types/supabase.types";
 
 interface Values {
   subscription_mode: SubscriptionMode;
@@ -18,7 +19,7 @@ interface Values {
 }
 
 interface Props {
-  values?: Partial<Values>;
+  values?: Partial<Tables<"subscription">>;
   onNext: (values: Values) => void;
   loading?: boolean;
 }
@@ -94,8 +95,8 @@ export default function SelectPaymentType({ values, onNext, loading }: Props) {
 
         {paymentType === "paid" && (
           <Input
-            prefix="매월"
-            label="매월 얼마를 내고 있나요?"
+            prefix={values?.billing_cycle === "monthly" ? "매월" : "매년"}
+            label={`${values?.billing_cycle === "monthly" ? "매월" : "매년"} 얼마를 내고 있나요?`}
             placeholder="총 금액을 입력하세요"
             suffix="원"
             onChange={(e) => {
@@ -104,22 +105,35 @@ export default function SelectPaymentType({ values, onNext, loading }: Props) {
             value={totalAmount ? totalAmount.toString() : ""}
           />
         )}
+
         {paymentType === "trial" && (
-          <Input
-            label="무료체험은 얼마나 이용할 수 있나요?"
-            placeholder="개월수를 입력해주세요"
-            suffix="개월"
-            type="number"
-            onChange={(e) => {
-              setTrialMonthCount(Number(e.target.value));
-            }}
-            value={trialMonthCount ? trialMonthCount.toString() : ""}
-            onBlur={(e) => {
-              if (e.target.value === "" || e.target.value === "0") return;
-              const value = clampTrialMonths(Number(e.target.value));
-              setTrialMonthCount(value);
-            }}
-          />
+          <>
+            <Input
+              label="무료체험은 얼마나 이용할 수 있나요?"
+              placeholder="개월수를 입력해주세요"
+              suffix="개월"
+              type="number"
+              onChange={(e) => {
+                setTrialMonthCount(Number(e.target.value));
+              }}
+              value={trialMonthCount ? trialMonthCount.toString() : ""}
+              onBlur={(e) => {
+                if (e.target.value === "" || e.target.value === "0") return;
+                const value = clampTrialMonths(Number(e.target.value));
+                setTrialMonthCount(value);
+              }}
+            />
+            <Input
+              prefix={values?.billing_cycle === "monthly" ? "매월" : "매년"}
+              label={`무료체험이 끝난뒤 ${values?.billing_cycle === "monthly" ? "매월" : "매년"} 얼마를 내야 하나요?`}
+              placeholder="총 금액을 입력하세요"
+              suffix="원"
+              onChange={(e) => {
+                setTotalAmount(Number(e.target.value));
+              }}
+              value={totalAmount ? totalAmount.toString() : ""}
+            />
+          </>
         )}
       </div>
 

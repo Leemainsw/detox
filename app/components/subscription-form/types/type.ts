@@ -12,6 +12,7 @@ export interface SubscriptionFormData {
   billing_cycle: BillingCycle; // 결제 유형 선택 (월간/연간)
   payment_day: string; // 결제일 선택
   next_payment_date: string; // 다음 결제일
+  start_date: string;
   end_date: string; // 구독 종료일
   subscription_mode: SubscriptionMode; // 결제 유형 (혼자서/여럿이서)
   payment_type: PaymentType; // 결제 타입 (유료인지/무료인지)
