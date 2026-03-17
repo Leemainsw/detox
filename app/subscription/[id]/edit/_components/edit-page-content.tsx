@@ -28,6 +28,8 @@ export default function EditPageContent() {
 
   const toast = useToast();
 
+  const SUBSCRIPTION_EDIT_PERSIST_KEY = `subscription-edit-${id}`;
+
   const {
     currentStep,
     currentStepIndex,
@@ -35,6 +37,7 @@ export default function EditPageContent() {
     back,
     setState,
     state,
+    clearPersistedDraft,
   } = useFunnel<Partial<SubscriptionFormData>, typeof SUBSCRIPTION_STEPS>({
     key: getSubscriptionFunnelKey(`edit-${id}`),
     steps: SUBSCRIPTION_STEPS,
@@ -45,6 +48,7 @@ export default function EditPageContent() {
     syncWithQuery: true,
     queryKey: "subscription-step",
     destroyOnUnmount: false,
+    persistKey: SUBSCRIPTION_EDIT_PERSIST_KEY,
   });
 
   const handleSubmit = async (data: Partial<SubscriptionFormData>) => {
@@ -53,6 +57,7 @@ export default function EditPageContent() {
         id: id!,
         values: parseSubscriptionFormData(data, subscription.user_id),
       });
+      clearPersistedDraft?.();
       toast.success("구독이 수정되었습니다.");
     } catch (error) {
       console.error(error);
@@ -66,7 +71,16 @@ export default function EditPageContent() {
         variant="back"
         title="구독 수정"
         onBack={() => back(router.back)}
-        rightContent={<TextButton>취소</TextButton>}
+        rightContent={
+          <TextButton
+            onClick={() => {
+              clearPersistedDraft?.();
+              router.back();
+            }}
+          >
+            취소
+          </TextButton>
+        }
       />
       <SubscriptionForm
         currentStep={currentStep}

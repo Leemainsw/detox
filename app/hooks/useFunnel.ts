@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useFunnelStore } from "@/store/useFunnelStore";
+import {
+  getDraftSync,
+  useFunnelPersistStore,
+} from "@/store/useFunnelPersistStore";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,6 +30,16 @@ export interface UseFunnelOptions<T, S extends readonly string[]> {
    * false로 설정하면 페이지 이동 후 돌아와도 상태 유지
    */
   destroyOnUnmount?: boolean;
+  /**
+   * URL 쿼리에 step이 없을 때 사용할 초기 step index
+   * (예: localStorage에서 복원한 draft의 step)
+   */
+  initialStepIndex?: number;
+  /**
+   * 이 키로 Zustand persist에 draft 저장 (새로고침/이탈 시 복원)
+   * 설정 시 clearPersistedDraft가 반환됨
+   */
+  persistKey?: string;
 }
 
 export type StepType<S extends readonly string[]> = S[number];
@@ -45,6 +59,8 @@ export interface UseFunnelReturn<T, S extends readonly string[]> {
   reset: () => void;
   /** step index 대신 step 이름으로 직접 이동 */
   setStep: (step: StepType<S>) => void;
+  /** persistKey 설정 시: draft 삭제 (제출 성공 후 호출) */
+  clearPersistedDraft?: () => void;
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
@@ -56,6 +72,8 @@ export function useFunnel<T, S extends readonly string[]>({
   syncWithQuery = false,
   queryKey,
   destroyOnUnmount = true,
+  initialStepIndex,
+  persistKey,
 }: UseFunnelOptions<T, S>): UseFunnelReturn<T, S> {
   const router = useRouter();
   const pathname = usePathname();
@@ -91,24 +109,43 @@ export function useFunnel<T, S extends readonly string[]>({
   // steps와 initialState를 ref로 고정하는 이유:
   // 컴포넌트가 렌더될 때마다 steps/initialState는 새로운 객체로 생성됨 (참조값 변경)
   // useEffect 의존성에 넣으면 렌더마다 initFunnel이 호출되어 퍼널이 계속 초기화됨
-  // ref에 저장하면 최초 값이 고정되어 key만 의존성에 넣어도 안전하게 한 번만 초기화됨
-  const initialStateRef = useRef(initialState);
   const stepsRef = useRef(steps);
+  const initialStateRef = useRef(initialState);
 
+  // draft 로드는 useEffect에서만 (localStorage는 클라이언트 전용 → 렌더 중 읽으면 hydration mismatch)
   useEffect(() => {
-    // syncWithQuery가 true면 URL 쿼리에서 초기 step 복원
-    // ex) 새로고침 시 /signup?signup=password → password step부터 시작
-    const queryStep = syncWithQuery ? searchParams.get(resolvedQueryKey) : null;
-    const queryStepIndex = queryStep ? stepsRef.current.indexOf(queryStep) : -1;
-    const resolvedInitialIndex = queryStepIndex >= 0 ? queryStepIndex : 0;
+    const draft = persistKey ? getDraftSync(persistKey) : null;
+    const resolvedState =
+      draft?.state && Object.keys(draft.state).length > 0
+        ? { ...initialStateRef.current, ...draft.state }
+        : initialStateRef.current;
+    const resolvedStepIndex =
+      draft && draft.stepIndex >= 0 && draft.stepIndex < stepsRef.current.length
+        ? draft.stepIndex
+        : initialStepIndex ?? 0;
 
-    initFunnel(
-      key,
-      stepsRef.current,
-      initialStateRef.current,
-      resolvedInitialIndex
-    );
-  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+    const queryStep = syncWithQuery ? searchParams.get(resolvedQueryKey) : null;
+    const queryStepIndex = queryStep
+      ? stepsRef.current.indexOf(queryStep)
+      : -1;
+    const resolvedIndex =
+      queryStepIndex >= 0 ? queryStepIndex : resolvedStepIndex;
+
+    initFunnel(key, stepsRef.current, resolvedState, resolvedIndex);
+
+    if (
+      syncWithQuery &&
+      queryStepIndex < 0 &&
+      resolvedStepIndex > 0
+    ) {
+      const stepName = stepsRef.current[resolvedIndex];
+      if (stepName) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set(resolvedQueryKey, stepName);
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      }
+    }
+  }, [key, persistKey, initialStepIndex, syncWithQuery, resolvedQueryKey, searchParams, pathname, router, initFunnel]);
 
   // ─── destroyOnUnmount ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -120,9 +157,14 @@ export function useFunnel<T, S extends readonly string[]>({
   }, [key, destroyOnUnmount, destroy]);
 
   // ─── Derived state ──────────────────────────────────────────────────────────
-  const currentStepIndex = funnel?.currentStepIndex ?? 0;
+  // funnel 초기화 전(첫 렌더)에는 initialState 사용 (SSR/클라이언트 동일 → hydration 안전)
+  const currentStepIndex =
+    funnel?.currentStepIndex ?? initialStepIndex ?? 0;
   const state = funnel?.state ?? initialState;
-  const stepHistory = funnel?.stepHistory ?? [];
+  const stepHistory = useMemo(
+    () => funnel?.stepHistory ?? [],
+    [funnel?.stepHistory]
+  );
   const canGoPrev = stepHistory.length > 0;
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === steps.length - 1;
@@ -206,11 +248,27 @@ export function useFunnel<T, S extends readonly string[]>({
     [key, setStoreState]
   );
 
+  // persistKey 있으면 state/step 변경 시 자동으로 zustand persist (별도 draft 저장 없음)
+  useEffect(() => {
+    if (!persistKey || !funnel) return;
+    useFunnelPersistStore
+      .getState()
+      .setDraft(
+        persistKey,
+        funnel.state as Record<string, unknown>,
+        funnel.currentStepIndex
+      );
+  }, [persistKey, funnel]);
+
   const handleReset = useCallback(() => {
     reset(key);
     // reset 시 URL도 첫 step으로 복귀
     updateQuery(0);
   }, [key, reset, updateQuery]);
+
+  const clearPersistedDraft = useCallback(() => {
+    if (persistKey) useFunnelPersistStore.getState().clearDraft(persistKey);
+  }, [persistKey]);
 
   // ─── Return ─────────────────────────────────────────────────────────────────
   return {
@@ -226,5 +284,6 @@ export function useFunnel<T, S extends readonly string[]>({
     back: handleBack,
     reset: handleReset,
     setStep: handleSetStep,
+    ...(persistKey && { clearPersistedDraft }),
   };
 }

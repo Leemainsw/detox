@@ -15,6 +15,8 @@ import { useCreateSubscriptionMutation } from "@/query/subscription";
 import { useToast } from "@/app/hooks/useToast";
 import parseSubscriptionFormData from "@/app/utils/subscriptions/parseSubscriptionFormData";
 
+const SUBSCRIPTION_ADD_PERSIST_KEY = "subscription-add";
+
 export default function AddPageContent() {
   const router = useRouter();
   const { session } = useSupabase();
@@ -26,6 +28,7 @@ export default function AddPageContent() {
     back,
     setState,
     state,
+    clearPersistedDraft,
   } = useFunnel<Partial<SubscriptionFormData>, typeof SUBSCRIPTION_STEPS>({
     key: getSubscriptionFunnelKey("add"),
     steps: SUBSCRIPTION_STEPS,
@@ -33,6 +36,7 @@ export default function AddPageContent() {
     syncWithQuery: true,
     queryKey: "subscription-step",
     destroyOnUnmount: false,
+    persistKey: SUBSCRIPTION_ADD_PERSIST_KEY,
   });
 
   const { mutateAsync: createSubscription, isPending } =
@@ -46,6 +50,9 @@ export default function AddPageContent() {
 
     try {
       await createSubscription(parseSubscriptionFormData(data, user.id));
+      if (clearPersistedDraft) {
+        clearPersistedDraft();
+      }
       success("구독이 추가되었습니다");
     } catch (err) {
       console.error(err);
@@ -59,7 +66,16 @@ export default function AddPageContent() {
         variant="back"
         title="구독 추가"
         onBack={() => back(router.back)}
-        rightContent={<TextButton>취소</TextButton>}
+        rightContent={
+          <TextButton
+            onClick={() => {
+              clearPersistedDraft?.();
+              router.back();
+            }}
+          >
+            취소
+          </TextButton>
+        }
       />
       <SubscriptionForm
         currentStep={currentStep}
