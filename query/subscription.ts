@@ -5,7 +5,7 @@ import {
   getSubscriptionList,
   updateSubscription,
 } from "@/services/subscription";
-import { Tables, TablesInsert, TablesUpdate } from "@/types/supabase.types";
+import { Tables, TablesUpdate } from "@/types/supabase.types";
 import {
   useMutation,
   useQuery,
