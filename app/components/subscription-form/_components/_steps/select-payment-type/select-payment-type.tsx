@@ -22,17 +22,25 @@ interface Props {
   values?: Partial<Tables<"subscription">>;
   onNext: (values: Values) => void;
   loading?: boolean;
+  /** 이전 step 필수 필드 누락 시 true (syncWithQuery URL 직접 접근 대비) */
+  submitDisabled?: boolean;
 }
-export default function SelectPaymentType({ values, onNext, loading }: Props) {
+export default function SelectPaymentType({
+  values,
+  onNext,
+  loading,
+  submitDisabled = false,
+}: Props) {
   const [subscriptionMode, setSubscriptionMode] = useState<SubscriptionMode>(
     values?.subscription_mode ?? "solo"
   );
   const [paymentType, setPaymentType] = useState<PaymentType>(
     values?.payment_type ?? "paid"
   );
-  const [memberCount, setMemberCount] = useState<number | null>(
-    values?.member_count ?? null
-  );
+  const [memberCount, setMemberCount] = useState<number | null>(() => {
+    const mode = values?.subscription_mode ?? "solo";
+    return mode === "solo" ? 1 : (values?.member_count ?? null);
+  });
   const [trialMonthCount, setTrialMonthCount] = useState<number | null>(
     values?.trial_months ?? null
   );
@@ -145,12 +153,13 @@ export default function SelectPaymentType({ values, onNext, loading }: Props) {
             onNext({
               subscription_mode: subscriptionMode,
               payment_type: paymentType,
-              member_count: memberCount ?? 0,
+              member_count: subscriptionMode === "solo" ? 1 : (memberCount ?? 0),
               total_amount: totalAmount ?? 0,
               trial_months: trialMonthCount ?? 0,
             })
           }
           disabled={
+            submitDisabled ||
             !isSelectPaymentTypeValid(
               subscriptionMode,
               paymentType,

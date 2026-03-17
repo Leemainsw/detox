@@ -14,6 +14,10 @@ import { useSupabase } from "@/hooks/useSupabase";
 import { useCreateSubscriptionMutation } from "@/query/subscription";
 import { useToast } from "@/app/hooks/useToast";
 import parseSubscriptionFormData from "@/app/utils/subscriptions/parseSubscriptionFormData";
+import {
+  getFirstMissingSubscriptionStep,
+  isPreviousStepsComplete,
+} from "@/app/components/subscription-form/utils/validateSubscriptionForm";
 
 const SUBSCRIPTION_ADD_PERSIST_KEY = "subscription-add";
 
@@ -28,6 +32,7 @@ export default function AddPageContent() {
     back,
     setState,
     state,
+    setStep,
     clearPersistedDraft,
   } = useFunnel<Partial<SubscriptionFormData>, typeof SUBSCRIPTION_STEPS>({
     key: getSubscriptionFunnelKey("add"),
@@ -47,6 +52,12 @@ export default function AddPageContent() {
   const handleSubmit = async (data: Partial<SubscriptionFormData>) => {
     const user = session?.user;
     if (!user) return;
+
+    const firstMissingStep = getFirstMissingSubscriptionStep(data);
+    if (firstMissingStep) {
+      setStep(firstMissingStep);
+      return;
+    }
 
     try {
       await createSubscription(parseSubscriptionFormData(data, user.id));
@@ -85,6 +96,7 @@ export default function AddPageContent() {
         setState={setState}
         onSubmit={handleSubmit}
         loading={isPending}
+        submitDisabled={!isPreviousStepsComplete(state)}
       />
     </main>
   );

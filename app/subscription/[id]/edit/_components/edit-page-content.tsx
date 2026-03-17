@@ -17,6 +17,10 @@ import {
 } from "@/query/subscription";
 import { useToast } from "@/app/hooks/useToast";
 import parseSubscriptionFormData from "@/app/utils/subscriptions/parseSubscriptionFormData";
+import {
+  getFirstMissingSubscriptionStep,
+  isPreviousStepsComplete,
+} from "@/app/components/subscription-form/utils/validateSubscriptionForm";
 
 export default function EditPageContent() {
   const router = useRouter();
@@ -37,6 +41,7 @@ export default function EditPageContent() {
     back,
     setState,
     state,
+    setStep,
     clearPersistedDraft,
   } = useFunnel<Partial<SubscriptionFormData>, typeof SUBSCRIPTION_STEPS>({
     key: getSubscriptionFunnelKey(`edit-${id}`),
@@ -52,6 +57,12 @@ export default function EditPageContent() {
   });
 
   const handleSubmit = async (data: Partial<SubscriptionFormData>) => {
+    const firstMissingStep = getFirstMissingSubscriptionStep(data);
+    if (firstMissingStep) {
+      setStep(firstMissingStep);
+      return;
+    }
+
     try {
       await updateSubscription({
         id: id!,
@@ -90,6 +101,7 @@ export default function EditPageContent() {
         setState={setState}
         onSubmit={handleSubmit}
         loading={isUpdatePending}
+        submitDisabled={!isPreviousStepsComplete(state)}
       />
     </main>
   );

@@ -65,7 +65,8 @@ export default function parseSubscriptionFormData(
     next_payment_date: nextPaymentDate,
     subscription_mode: data.subscription_mode,
     payment_type: data.payment_type,
-    member_count: data.member_count ?? 1,
+    member_count:
+      data.subscription_mode === "solo" ? 1 : (data.member_count ?? 1),
     total_amount: data.total_amount ?? 0,
     trial_months: data.trial_months ?? null,
     status: data.status ?? "active",

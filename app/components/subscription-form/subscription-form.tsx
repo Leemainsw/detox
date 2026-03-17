@@ -34,6 +34,8 @@ interface Props {
   ) => void;
   onSubmit: (data: Partial<SubscriptionFormData>) => void;
   loading?: boolean;
+  /** syncWithQuery로 URL 직접 접근 시 이전 step 누락 시 true */
+  submitDisabled?: boolean;
 }
 
 export default function SubscriptionForm({
@@ -44,6 +46,7 @@ export default function SubscriptionForm({
   setState,
   onSubmit,
   loading,
+  submitDisabled = false,
 }: Props) {
   return (
     <>
@@ -63,6 +66,7 @@ export default function SubscriptionForm({
       )}
       {currentStep === "input-payment-info" && (
         <InputPaymentInfo
+          key={`input-payment-${state.billing_cycle ?? ""}-${state.payment_day ?? ""}-${state.start_date ?? ""}`}
           values={state}
           onNext={(values) => {
             setState((prev) => ({ ...prev, ...values }));
@@ -79,6 +83,7 @@ export default function SubscriptionForm({
             onSubmit(merged);
           }}
           loading={loading}
+          submitDisabled={submitDisabled}
         />
       )}
     </>
