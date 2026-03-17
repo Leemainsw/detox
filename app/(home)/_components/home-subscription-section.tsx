@@ -1,5 +1,3 @@
-"use client";
-
 import SubscriptionList from "@/app/components/subscription-list";
 import Button from "@/app/components/button";
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";

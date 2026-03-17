@@ -19,7 +19,7 @@ export default function HomeSummarySkeleton({ type }: Props) {
           <Skeleton className="h-8 w-24 rounded-md bg-gray-100" />
           <div className="flex items-center gap-2 mt-1">
             <Skeleton className="h-8 w-28 rounded-md bg-gray-100" />
-            <Skeleton className="h-8 w-16 rounded-md bg-gary-100" />
+            <Skeleton className="h-8 w-16 rounded-md bg-gray-100" />
             {isSaved && (
               <Skeleton className="h-8 w-20 rounded-md bg-gray-100" />
             )}
