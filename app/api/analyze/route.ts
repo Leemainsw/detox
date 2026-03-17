@@ -45,23 +45,27 @@ const withTimeout = async <T>(
 export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
+
+    type CookieMethods = {
+      getAll: () => { name: string; value: string }[];
+      set: (name: string, value: string, options?: unknown) => void;
+    };
+    const cookieMethods = cookieStore as unknown as CookieMethods;
+
     const supabase = createServerClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieMethods.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieMethods.set(name, value, options);
+          });
         },
       },
     });
 
-    // 로그인 기능 생기면 테스트 필요
-    // const {
-    //   data: { session },
-    // } = await supabase.auth.getSession();
-    // if (!session)
-    //   return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Supabase 세션에서 사용자 ID를 가져와야 합니다.
-    // (인증 구현 전에는 요청이 거부됩니다.)
     const {
       data: { session },
       error: sessionError,
