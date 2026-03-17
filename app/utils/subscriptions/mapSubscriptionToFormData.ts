@@ -11,8 +11,13 @@ function formatPaymentDayForForm(
 ): string {
   if (paymentDay == null) return "";
   if (billingCycle === "yearly" && paymentDay >= 100) {
-    const month = Math.floor(paymentDay / 100);
-    const day = paymentDay % 100;
+    let month = Math.floor(paymentDay / 100);
+    let day = paymentDay % 100;
+    // 3011 등 30XX → 3월 1일 등으로 보정 (getNextPaymentDate와 동일)
+    if (month > 12 && paymentDay >= 1000) {
+      month = Math.floor(paymentDay / 1000);
+      day = paymentDay % 10 || 10;
+    }
     return `${month}-${day}`;
   }
   return paymentDay.toString();
@@ -28,6 +33,7 @@ export default function mapSubscriptionToFormData(
       subscription.payment_day,
       subscription.billing_cycle
     ),
+    start_date: subscription.start_date ?? "",
     next_payment_date: subscription.next_payment_date ?? "",
     end_date: subscription.end_date ?? "",
     subscription_mode: subscription.subscription_mode,
