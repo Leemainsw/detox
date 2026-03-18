@@ -30,12 +30,8 @@ function CommunityListContent({
 }: CommunityListContentProps) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const queryService = initialService === "all" ? undefined : initialService;
-  const {
-    data,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  } = useSuspenseInfiniteCommunityListQuery(queryService, initialPage);
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useSuspenseInfiniteCommunityListQuery(queryService, initialPage);
 
   const items = data?.pages.flatMap((page) => page.items) ?? [];
 
@@ -111,7 +107,7 @@ export default function CommunityListPageClient({
 
   return (
     <div className="bg-gray-100 pb-15 min-h-screen">
-      <Header variant="text" leftText="커뮤니티" rightContent="알람" />
+      <Header variant="text" leftText="커뮤니티" hasNotification />
 
       <main>
         <BrandTabs value={initialService} onChange={handleChangeService} />
@@ -119,10 +115,7 @@ export default function CommunityListPageClient({
         <section className="px-6">
           <QueryErrorResetBoundary>
             {({ reset }) => (
-              <CommunityListErrorBoundary
-                onReset={reset}
-                resetKey={resetKey}
-              >
+              <CommunityListErrorBoundary onReset={reset} resetKey={resetKey}>
                 <Suspense
                   fallback={
                     <CommunityPostListSkeleton count={4} className="pt-6" />
