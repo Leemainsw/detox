@@ -31,7 +31,11 @@ export const validateAnalysisResponse = <T extends AnalysisResponse>(
 
   const target = data as Record<string, unknown>;
 
-  if (typeof target.type !== "string" || typeof target.title !== "string")
+  if (target.type !== "STATISTICS") return false;
+  if (
+    typeof target.title !== "string" ||
+    typeof target.description !== "string"
+  )
     return false;
 
   const payload = target.payload as Record<string, unknown> | undefined;
