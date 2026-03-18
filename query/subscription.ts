@@ -22,11 +22,11 @@ export const subscriptionKeys = {
 /**
  * 구독 목록 조회
  */
-export const useGetSubscriptionListQuery = (enabled = true) => {
+export const useGetSubscriptionListQuery = (userId: string) => {
   return useQuery({
     queryKey: subscriptionKeys.list(),
-    queryFn: getSubscriptionList,
-    enabled,
+    queryFn: () => getSubscriptionList(userId),
+    enabled: !!userId,
   });
 };
 

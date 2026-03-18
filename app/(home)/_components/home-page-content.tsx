@@ -10,7 +10,7 @@ import { useSupabase } from "@/hooks/useSupabase";
 export default function HomePageContent() {
   const { session } = useSupabase();
   const { data: subscriptions = [] } = useGetSubscriptionListQuery(
-    !!session?.user
+    session?.user?.id ?? ""
   );
 
   const hasSubscription = subscriptions.length > 0;
