@@ -23,7 +23,7 @@ export default function EmptySubscriptionOverlay() {
         <Button
           variant="primary"
           size="lg"
-          onClick={() => router.push("/subscriptions")}
+          onClick={() => router.push("/subscription/add")}
         >
           구독 추가하기
         </Button>
