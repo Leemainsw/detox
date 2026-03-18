@@ -30,12 +30,8 @@ function CommunityListContent({
 }: CommunityListContentProps) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const queryService = initialService === "all" ? undefined : initialService;
-  const {
-    data,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  } = useSuspenseInfiniteCommunityListQuery(queryService, initialPage);
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useSuspenseInfiniteCommunityListQuery(queryService, initialPage);
 
   const items = data?.pages.flatMap((page) => page.items) ?? [];
 
@@ -119,10 +115,7 @@ export default function CommunityListPageClient({
         <section className="px-6">
           <QueryErrorResetBoundary>
             {({ reset }) => (
-              <CommunityListErrorBoundary
-                onReset={reset}
-                resetKey={resetKey}
-              >
+              <CommunityListErrorBoundary onReset={reset} resetKey={resetKey}>
                 <Suspense
                   fallback={
                     <CommunityPostListSkeleton count={4} className="pt-6" />
@@ -138,9 +131,9 @@ export default function CommunityListPageClient({
           </QueryErrorResetBoundary>
         </section>
 
-        <div className="fixed right-0 bottom-24 z-10">
+        {/* <div className="fixed right-0 bottom-24 z-10">
           <CommunityCreateFloatingButton />
-        </div>
+        </div> */}
       </main>
 
       <BottomNav />
