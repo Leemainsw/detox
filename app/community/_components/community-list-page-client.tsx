@@ -131,9 +131,9 @@ export default function CommunityListPageClient({
           </QueryErrorResetBoundary>
         </section>
 
-        {/* <div className="fixed right-0 bottom-24 z-10">
+        <div className="fixed right-0 bottom-24 z-10">
           <CommunityCreateFloatingButton />
-        </div> */}
+        </div>
       </main>
 
       <BottomNav />
