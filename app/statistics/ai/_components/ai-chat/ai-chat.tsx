@@ -5,7 +5,6 @@ import DateDivider from "@/app/statistics/ai/_components/date-divider/date-divid
 import UserBubble from "@/app/statistics/ai/_components/user-bubble";
 import AIBubble from "@/app/statistics/ai/_components/ai-bubble";
 import QuickQuestions from "@/app/statistics/ai/_components/quick-questions";
-import MyChart from "@/app/statistics/_components/comparison-chart";
 import { useAiChat } from "@/hooks/useAiChat";
 
 export default function AIChat() {
@@ -28,7 +27,13 @@ export default function AIChat() {
         <DateDivider />
         <AIBubble
           status="text"
-          content="어떤 서비스 기준으로 분석해드릴까요?"
+          content="
+            안녕하세요
+            \n저는 ${username}님의
+            \n소비분석을 도와드리는 AI디톡이에요.
+            \n아래 질문 중 하나를 선택해주시면
+            \n제가 알잘딱깔센하게 분석해드릴게요
+          "
         />
 
         {messages.map((msg, idx) =>
@@ -40,19 +45,7 @@ export default function AIChat() {
               status={msg.type === "chart" ? "chart" : "text"}
               content={msg.content}
               time={msg.time}
-              chartComponent={
-                msg.type === "chart" && msg.analysisData ? (
-                  <div className="mt-4 w-full">
-                    <h4 className="text-sm font-bold mb-2">
-                      {msg.analysisData.title}
-                    </h4>
-                    <MyChart
-                      data={msg.analysisData.payload.chart_data}
-                      diffAmount={msg.analysisData.payload.diff_amount}
-                    />
-                  </div>
-                ) : null
-              }
+              analysisData={msg.analysisData}
             />
           )
         )}

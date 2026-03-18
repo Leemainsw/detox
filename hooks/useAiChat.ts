@@ -5,37 +5,13 @@ import { useCurrentUserQuery } from "@/query/users";
 import { supabase } from "@/lib/supabase";
 import { subscriptableBrand } from "@/app/utils/brand/brand";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
-
-export interface AnalysisResponse {
-  type: string;
-  title: string;
-  description: string;
-  message?: string;
-  payload: {
-    analysis_items: Array<{
-      kind:
-        | "SUBSCRIBE_RECOMMENDATION"
-        | "CANCEL_RECOMMENDATION"
-        | "PAYMENT_WEEK_ALERT";
-      title: string;
-      description: string;
-      brands?: string[];
-      cta_label?: string;
-      savings_amount?: number;
-      week_range?: string;
-      expected_amount?: number;
-    }>;
-    chart_data: Array<{ month: string; my_spend: number; avg_spend: number }>;
-    diff_amount: number;
-    diff_message: string;
-  };
-}
+import { AnalysisResponse } from "@/app/utils/subscriptions/validation";
 
 export interface Message {
   role: "user" | "ai";
   content: string;
   time: string;
-  type?: "text" | "chart";
+  type?: "text" | "chart" | "error";
   analysisData?: AnalysisResponse;
 }
 
@@ -64,19 +40,14 @@ const calculateCategoryRatio = (
   return ratio;
 };
 
-export function useAiChat(): {
-  aiStatus: "text" | "analyzing" | "error" | "chart";
-  messages: Message[];
-  showQuickQuestions: boolean;
-  scrollRef: React.RefObject<HTMLDivElement | null>;
-  handleQuestionSelect: (question: string) => Promise<void>;
-} {
+export function useAiChat() {
   const [aiStatus, setAiStatus] = useState<
     "text" | "analyzing" | "error" | "chart"
   >("text");
   const [messages, setMessages] = useState<Message[]>([]);
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+
   const { setResult } = useAnalysisStore();
   const { data: user } = useCurrentUserQuery();
 
@@ -100,9 +71,7 @@ export function useAiChat(): {
     setAiStatus("analyzing");
 
     try {
-      if (!user?.id) {
-        throw new Error("로그인이 필요합니다.");
-      }
+      if (!user?.id) throw new Error("로그인이 필요합니다.");
 
       const { data: subscriptions } = await supabase
         .from("subscription")
@@ -111,23 +80,19 @@ export function useAiChat(): {
 
       const categoryRatio = calculateCategoryRatio(subscriptions || []);
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      const session = sessionData?.session;
-
       const response = await fetch("/api/analyze", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question,
-          userContext: { categoryRatio, session },
+          userContext: { categoryRatio },
         }),
       });
 
       if (!response.ok) throw new Error("분석 실패");
 
       const data: AnalysisResponse = await response.json();
+
       const responseTime = new Date().toLocaleTimeString("ko-KR", {
         hour: "2-digit",
         minute: "2-digit",
@@ -140,7 +105,7 @@ export function useAiChat(): {
           {
             role: "ai",
             type: "text",
-            content: data.message || "분석할 데이터가 없습니다.",
+            content: data.description || "분석할 데이터가 충분하지 않아요.",
             time: responseTime,
           },
         ]);
@@ -156,17 +121,20 @@ export function useAiChat(): {
             analysisData: data,
           },
         ]);
+
         setResult(data);
       }
     } catch (error) {
-      console.error(error);
+      console.error("AI Chat Error:", error);
       setAiStatus("error");
       setMessages((prev) => [
         ...prev,
         {
           role: "ai",
-          content: "앗, 분석 중에 오류가 생겼어요. 다시 시도해 주시겠어요?",
+          content:
+            "앗, 분석 중에 오류가 생겼어요. 잠시 후 다시 시도해 주시겠어요?",
           time: now,
+          type: "error",
         },
       ]);
     } finally {

@@ -3,10 +3,7 @@ import { tavily } from "@tavily/core";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { getSystemPrompt } from "@/app/utils/subscriptions/constants";
-import {
-  validateAnalysisResponse,
-  AnalysisResponse,
-} from "@/app/utils/subscriptions/validation";
+import { validateAnalysisResponse } from "@/app/utils/subscriptions/validation";
 import { subscriptableBrand } from "@/app/utils/brand/brand";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -44,7 +41,6 @@ const withTimeout = async <T>(
 
 export async function POST(req: Request) {
   try {
-    // ✅ question을 본문에서 함께 받습니다.
     const { userContext, question } = await req.json();
 
     if (!userContext?.categoryRatio) {
@@ -57,7 +53,6 @@ export async function POST(req: Request) {
     const cookieStore = await cookies();
     const availableBrands = Object.keys(subscriptableBrand).join(", ");
 
-    // ✅ 서버 사이드 쿠키 기반 Supabase 클라이언트 설정
     const supabase = createServerClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       cookies: {
         get(name: string) {
@@ -66,7 +61,6 @@ export async function POST(req: Request) {
       },
     });
 
-    // ✅ 보안 수정: 클라이언트가 보낸 세션 대신 서버 쿠키 세션 사용
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -94,13 +88,15 @@ export async function POST(req: Request) {
     }
 
     const currentYear = new Date().getFullYear();
+    const searchQuery = question
+      ? `${currentYear}년 ${question} 할인 혜택 및 최저가로 이용하는 꿀팁`
+      : `${currentYear}년 한국 인기 구독 서비스(OTT, 쇼핑) 결합 할인 및 통신사 제휴 최신 정보`;
+
     const searchResult = await withTimeout(
-      tavilyClient.search(
-        `${currentYear}년 한국 구독 서비스 최신 혜택 및 ${question || "통신사 결합"}`,
-        {
-          maxResults: 5,
-        }
-      ),
+      tavilyClient.search(searchQuery, {
+        maxResults: 5,
+        searchDepth: "advanced",
+      }),
       10000,
       "Tavily Search"
     ).catch(() => ({ results: [] }));
@@ -109,7 +105,8 @@ export async function POST(req: Request) {
     const systemPrompt = getSystemPrompt(
       userContext.categoryRatio,
       lastUpdated,
-      availableBrands
+      availableBrands,
+      question
     );
 
     const response = await withTimeout(
@@ -119,12 +116,22 @@ export async function POST(req: Request) {
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `질문: ${question || "전반적인 소비 분석"}, 구독내역: ${JSON.stringify(subscriptions)}, 시장정보: ${JSON.stringify(searchResult.results)}`,
+            content: `
+              사용자 질문: "${question || "전반적인 소비 분석"}"
+              보유 구독 리스트: ${JSON.stringify(subscriptions)}
+              최신 시장 할인 정보: ${JSON.stringify(searchResult.results)}
+              
+              위 데이터를 분석하여 아래 규칙을 지켜 답변하세요:
+              1. 사용자가 질문한 내용에 대해 즉시 실행 가능한 '최저가 대안'을 제시하세요.
+              2. "방안을 찾아보세요"라고 하지 말고, "A를 B로 바꾸면 월 0,000원이 절약됩니다"라고 확정적으로 말하세요.
+              3. 'analysis_items' 배열에 최소 2개 이상의 구체적인 해결책을 담으세요.
+              4. 각 해결책의 'content'는 가독성을 위해 불렛포인트(•)와 줄바꿈(\\n)을 필수로 사용하세요.
+            `,
           },
         ],
         response_format: { type: "json_object" },
       }),
-      20000,
+      25000,
       "OpenAI Generation"
     );
 
@@ -132,13 +139,15 @@ export async function POST(req: Request) {
     if (!content) throw new Error("AI 응답 생성 실패");
 
     const parsed = JSON.parse(content);
-    if (!validateAnalysisResponse<AnalysisResponse>(parsed)) {
+
+    if (!validateAnalysisResponse(parsed)) {
+      console.error("AI 응답 구조 오류:", parsed);
       throw new Error("AI 응답 형식이 유효하지 않습니다.");
     }
 
     return Response.json(parsed);
   } catch (error) {
-    console.error("Analysis API Error:", error);
+    console.error("🔥🔥 [API 에러 추적]:", error);
     return Response.json(
       { error: error instanceof Error ? error.message : "분석 중 오류 발생" },
       { status: 500 }

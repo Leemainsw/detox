@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { AnalysisResponse } from "@/app/utils/subscriptions/validation";
+import BrandBox from "@/app/components/brand-box";
+import { SubscriptableBrandType } from "@/app/utils/brand/type";
 
 type AIStatus = "text" | "analyzing" | "error" | "chart";
 
@@ -33,11 +35,12 @@ export default function AIBubble({
         <span className="font-bold body-lg text-gray-900">AI디톡이</span>
       </div>
 
-      <div className="flex flex-col items-start max-w-[90%]">
+      <div className="flex flex-col items-start max-w-[80%]">
         <div className="bg-white border border-gray-100 px-4 py-3 rounded-2xl w-full">
           {status === "analyzing" && (
             <div className="flex items-center gap-3 py-1 text-brand-primary font-medium body-lg">
-              분석 중이니 잠시만 기다려주세요
+              <span className="animate-pulse">●</span> 분석 중이니 잠시만
+              기다려주세요
             </div>
           )}
 
@@ -47,20 +50,20 @@ export default function AIBubble({
             </p>
           )}
 
-          {content && status !== "chart" && (
+          {!analysisData && content && (
             <p className="body-lg whitespace-pre-wrap font-medium text-gray-700 leading-relaxed">
               {content}
             </p>
           )}
 
           {analysisData?.payload?.analysis_items && (
-            <div className="mt-3 flex flex-col gap-4">
+            <div className="mt-1 flex flex-col gap-4">
               <div className="py-2 border-b border-gray-50">
                 <p className="title-sm text-brand-primary font-bold">
                   {analysisData.title}
                 </p>
-                <p className="body-sm text-gray-400">
-                  {analysisData.description}
+                <p className="body-sm text-gray-400 whitespace-pre-line mt-1">
+                  {content}
                 </p>
               </div>
 
@@ -69,17 +72,25 @@ export default function AIBubble({
                   key={idx}
                   className="bg-gray-50 p-3 rounded-xl flex flex-col gap-1 border border-gray-100"
                 >
-                  <span className="text-xs font-bold text-brand-secondary bg-brand-secondary/10 w-fit px-2 py-0.5 rounded">
-                    {item.brand} 분석
-                  </span>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[10px] font-bold text-white bg-brand-primary px-2 py-0.5 rounded-full uppercase">
+                      AI Insight
+                    </span>
+                  </div>
                   <p className="body-md font-bold text-gray-800">
-                    {item.question}
+                    Q. {item.question}
                   </p>
-                  <p className="body-sm text-gray-500 leading-snug">
+                  <p className="body-sm text-gray-600 leading-snug whitespace-pre-line">
                     {item.content}
                   </p>
                 </div>
               ))}
+
+              {analysisData.payload.diff_message && (
+                <div className="bg-brand-primary/5 p-3 rounded-lg text-center mt-1 font-bold text-brand-primary text-xs">
+                  💡 {analysisData.payload.diff_message}
+                </div>
+              )}
             </div>
           )}
         </div>
