@@ -173,7 +173,7 @@ export default function StatisticsPage() {
     <main
       className={`relative flex flex-col w-full min-h-screen bg-white ${isAllEmpty ? "overflow-hidden h-screen" : ""}`}
     >
-      <Header variant="text" leftText="통계" />
+      <Header variant="text" leftText="통계" hasNotification />
 
       <div className="flex flex-col w-full flex-1 pb-32">
         <AIAnalysisBanner isAllEmpty={isAllEmpty} />

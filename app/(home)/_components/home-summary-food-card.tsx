@@ -13,11 +13,7 @@ interface Props {
   isLoading: boolean;
 }
 
-export default function HomeSummaryFoodCard({
-  type,
-  food,
-  isLoading,
-}: Props) {
+export default function HomeSummaryFoodCard({ type, food, isLoading }: Props) {
   const isSaved = type === "saved";
 
   if (isLoading || !food) {
@@ -42,7 +38,7 @@ export default function HomeSummaryFoodCard({
         </div>
 
         <Link
-          href="/통계메인"
+          href="/statistics"
           className="body-lg text-gray-300 inline-flex items-center gap-1 mt-2"
         >
           자세히 알아보기
@@ -50,12 +46,7 @@ export default function HomeSummaryFoodCard({
         </Link>
       </div>
       <div>
-        <Image
-          src={food.imageSrc}
-          alt={food.label}
-          width={100}
-          height={100}
-        />
+        <Image src={food.imageSrc} alt={food.label} width={100} height={100} />
       </div>
     </>
   );
