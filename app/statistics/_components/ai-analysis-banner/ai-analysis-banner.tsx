@@ -1,6 +1,6 @@
 "use client";
 
-import Robot from "@/public/images/emoji/Robot.png";
+import Robot from "@/public/images/emoji/ai-bot.png";
 import Image from "next/image";
 import Button from "@/app/components/button";
 import { useRouter } from "next/navigation";
@@ -29,7 +29,7 @@ export default function AIAnalysisBanner({ isAllEmpty }: Props) {
       <div className="mt-5 transition-transform hover:scale-105 duration-300">
         <Image
           src={Robot}
-          alt="Robot Emoji"
+          alt="AI 디톡이 Emoji"
           width={100}
           height={100}
           className="w-24 h-24 md:w-32 md:h-32 object-contain"
