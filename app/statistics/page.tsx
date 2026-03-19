@@ -141,145 +141,149 @@ export default function StatisticsPage() {
   const status = displayAmount > ageAverage ? "over" : "under";
 
   return (
-    <main
-      className={`relative flex flex-col w-full min-h-screen bg-white ${isAllEmpty ? "overflow-hidden h-screen" : ""}`}
-    >
-      <Header variant="text" leftText="통계" />
+    <>
+      <main
+        className={`relative flex flex-col w-full min-h-screen bg-white ${isAllEmpty ? "overflow-hidden h-screen" : ""}`}
+      >
+        <Header variant="text" leftText="통계" />
 
-      <div className="flex flex-col w-full flex-1 pb-32">
-        <AIAnalysisBanner isAllEmpty={isAllEmpty} />
+        <div className="flex flex-col w-full flex-1 pb-32">
+          <AIAnalysisBanner isAllEmpty={isAllEmpty} />
 
-        <div className="relative flex-1 flex flex-col">
-          <MonthExpenseSelector
-            selectedDate={selectedDate}
-            groupCount={displayAmount}
-            onChangeDate={setSelectedDate}
-          />
+          <div className="relative flex-1 flex flex-col">
+            <MonthExpenseSelector
+              selectedDate={selectedDate}
+              groupCount={displayAmount}
+              onChangeDate={setSelectedDate}
+            />
 
-          <div className="relative flex-1 w-full">
-            {/* 1. 구독 정보가 아예 없는 경우 */}
-            {isAllEmpty && <EmptySubscriptionOverlay />}
+            <div className="relative flex-1 w-full">
+              {/* 1. 구독 정보가 아예 없는 경우 */}
+              {isAllEmpty && <EmptySubscriptionOverlay />}
 
-            {/* 2. 구독 정보는 있는데 이번 달 지출이 없는 경우 (차트 대신 표시) */}
-            {!isAllEmpty && isMonthlyEmpty && <EmptyAnalysis />}
+              {/* 2. 구독 정보는 있는데 이번 달 지출이 없는 경우 (차트 대신 표시) */}
+              {!isAllEmpty && isMonthlyEmpty && <EmptyAnalysis />}
 
-            {/* 3. 이번 달 지출이 있는 경우 (차트 표시) */}
-            {!isAllEmpty && !isMonthlyEmpty && (
-              <div className="w-full animate-in fade-in duration-500">
-                <div className="mt-4">
-                  <ComparisonInsight
-                    isLoading={isSubscriptionsLoading}
-                    title={`${ageBandLabelMap[ageBand]} 소비 비교`}
-                    diffAmount={diffAmount}
-                    status={status}
-                  />
-                  <div className="relative">
-                    <button
-                      onClick={() =>
-                        setAgeBandIndex((prev) =>
-                          prev === 0 ? ageBands.length - 1 : prev - 1
-                        )
-                      }
-                      className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
-                    >
-                      <FontAwesomeIcon icon={faCaretLeft} size="lg" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        setAgeBandIndex((prev) =>
-                          prev === ageBands.length - 1 ? 0 : prev + 1
-                        )
-                      }
-                      className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
-                    >
-                      <FontAwesomeIcon icon={faCaretRight} size="lg" />
-                    </button>
-                    <ComparisonChart
-                      userName={`${userName}님`}
-                      userAmount={displayAmount}
-                      compareName={ageBandLabelMap[ageBand]}
-                      compareAmount={ageAverage}
+              {/* 3. 이번 달 지출이 있는 경우 (차트 표시) */}
+              {!isAllEmpty && !isMonthlyEmpty && (
+                <div className="w-full animate-in fade-in duration-500">
+                  <div className="mt-4">
+                    <ComparisonInsight
                       isLoading={isSubscriptionsLoading}
+                      title={`${ageBandLabelMap[ageBand]} 소비 비교`}
+                      diffAmount={diffAmount}
+                      status={status}
                     />
+                    <div className="relative">
+                      <button
+                        onClick={() =>
+                          setAgeBandIndex((prev) =>
+                            prev === 0 ? ageBands.length - 1 : prev - 1
+                          )
+                        }
+                        className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
+                      >
+                        <FontAwesomeIcon icon={faCaretLeft} size="lg" />
+                      </button>
+                      <button
+                        onClick={() =>
+                          setAgeBandIndex((prev) =>
+                            prev === ageBands.length - 1 ? 0 : prev + 1
+                          )
+                        }
+                        className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
+                      >
+                        <FontAwesomeIcon icon={faCaretRight} size="lg" />
+                      </button>
+                      <ComparisonChart
+                        userName={`${userName}님`}
+                        userAmount={displayAmount}
+                        compareName={ageBandLabelMap[ageBand]}
+                        compareAmount={ageAverage}
+                        isLoading={isSubscriptionsLoading}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                {subscriptionSummaries.length > 0 && (
-                  <div className="mt-10">
-                    {(() => {
-                      const current =
-                        subscriptionSummaries[currentSubscriptionIndex] ||
-                        subscriptionSummaries[0];
-                      const serviceAvg = serviceAvgMap[current.service] ?? 0;
-                      return (
-                        <>
-                          <ComparisonInsight
-                            isLoading={
-                              isSubscriptionsLoading || isServiceAvgLoading
-                            }
-                            title={`${current.service} 유저 평균 소비와 비교`}
-                            diffAmount={Math.abs(serviceAvg - current.amount)}
-                            status={
-                              current.amount > serviceAvg ? "over" : "under"
-                            }
-                          />
-                          <div className="relative">
-                            <button
-                              onClick={() =>
-                                setCurrentSubscriptionIndex((prev) =>
-                                  prev === 0
-                                    ? subscriptionSummaries.length - 1
-                                    : prev - 1
-                                )
-                              }
-                              className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
-                            >
-                              <FontAwesomeIcon icon={faCaretLeft} size="lg" />
-                            </button>
-                            <button
-                              onClick={() =>
-                                setCurrentSubscriptionIndex((prev) =>
-                                  prev === subscriptionSummaries.length - 1
-                                    ? 0
-                                    : prev + 1
-                                )
-                              }
-                              className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
-                            >
-                              <FontAwesomeIcon icon={faCaretRight} size="lg" />
-                            </button>
-                            <ComparisonChart
-                              userName={current.service}
-                              userAmount={current.amount}
-                              compareName={`${current.service} 평균 소비`}
-                              compareAmount={serviceAvg}
+                  {subscriptionSummaries.length > 0 && (
+                    <div className="mt-10">
+                      {(() => {
+                        const current =
+                          subscriptionSummaries[currentSubscriptionIndex] ||
+                          subscriptionSummaries[0];
+                        const serviceAvg = serviceAvgMap[current.service] ?? 0;
+                        return (
+                          <>
+                            <ComparisonInsight
                               isLoading={
                                 isSubscriptionsLoading || isServiceAvgLoading
                               }
+                              title={`${current.service} 유저 평균 소비와 비교`}
+                              diffAmount={Math.abs(
+                                serviceAvg - current.amount
+                              )}
+                              status={
+                                current.amount > serviceAvg ? "over" : "under"
+                              }
                             />
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
-              </div>
-            )}
+                            <div className="relative">
+                              <button
+                                onClick={() =>
+                                  setCurrentSubscriptionIndex((prev) =>
+                                    prev === 0
+                                      ? subscriptionSummaries.length - 1
+                                      : prev - 1
+                                  )
+                                }
+                                className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
+                              >
+                                <FontAwesomeIcon icon={faCaretLeft} size="lg" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setCurrentSubscriptionIndex((prev) =>
+                                    prev === subscriptionSummaries.length - 1
+                                      ? 0
+                                      : prev + 1
+                                  )
+                                }
+                                className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
+                              >
+                                <FontAwesomeIcon icon={faCaretRight} size="lg" />
+                              </button>
+                              <ComparisonChart
+                                userName={current.service}
+                                userAmount={current.amount}
+                                compareName={`${current.service} 평균 소비`}
+                                compareAmount={serviceAvg}
+                                isLoading={
+                                  isSubscriptionsLoading || isServiceAvgLoading
+                                }
+                              />
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              )}
 
-            {/* ✅ [수정 핵심] 어떤 상황에서도 리포트 영역은 무조건 렌더링 */}
-            {/* isAllEmpty가 아닐 때(구독 데이터가 하나라도 있을 때)는 무조건 보여줍니다. */}
-            {!isAllEmpty && (
-              <div className="mt-10 border-t-8 border-gray-50 bg-white min-h-[400px]">
-                <AnalysisSummary
-                  hasData={!!analysisData}
-                  analysisData={analysisData as unknown as AnalysisResponse}
-                />
-              </div>
-            )}
+              {/* ✅ [수정 핵심] 어떤 상황에서도 리포트 영역은 무조건 렌더링 */}
+              {/* isAllEmpty가 아닐 때(구독 데이터가 하나라도 있을 때)는 무조건 보여줍니다. */}
+              {!isAllEmpty && (
+                <div className="mt-10 border-t-8 border-gray-50 bg-white min-h-[400px]">
+                  <AnalysisSummary
+                    hasData={!!analysisData}
+                    analysisData={analysisData as unknown as AnalysisResponse}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </main>
       <BottomNav />
-    </main>
+    </>
   );
 }

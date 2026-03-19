@@ -117,51 +117,56 @@ export default function CommunityListPageClient({
   };
 
   return (
-    <div className="bg-gray-100 pb-15 min-h-screen">
-      <Header variant="text" leftText="커뮤니티" rightContent="알람" />
+    <>
+      <div className="bg-gray-100 pb-15 min-h-screen">
+        <Header variant="text" leftText="커뮤니티" rightContent="알람" />
 
-      <main>
-        <BrandTabs value={initialService} onChange={handleChangeService} />
+        <main>
+          <BrandTabs value={initialService} onChange={handleChangeService} />
 
-        <section className="px-6">
-          <QueryErrorResetBoundary>
-            {({ reset }) => (
-              <CommunityListErrorBoundary onReset={reset} resetKey={resetKey}>
-                <Suspense
-                  fallback={
-                    <CommunityPostListSkeleton count={4} className="pt-6" />
-                  }
-                >
-                  <CommunityListContent
-                    initialService={initialService}
-                    initialPage={initialPage}
-                  />
-                </Suspense>
-              </CommunityListErrorBoundary>
-            )}
-          </QueryErrorResetBoundary>
-        </section>
+          <section className="px-6">
+            <QueryErrorResetBoundary>
+              {({ reset }) => (
+                <CommunityListErrorBoundary onReset={reset} resetKey={resetKey}>
+                  <Suspense
+                    fallback={
+                      <CommunityPostListSkeleton count={4} className="pt-6" />
+                    }
+                  >
+                    <CommunityListContent
+                      initialService={initialService}
+                      initialPage={initialPage}
+                    />
+                  </Suspense>
+                </CommunityListErrorBoundary>
+              )}
+            </QueryErrorResetBoundary>
+          </section>
 
-        <div className="fixed right-0 bottom-24 z-10">
-          <div className="relative">
-            <div
-              className={`absolute right-0 transition-opacity duration-200 ease-out ${
-                showCreateFloatingButton ? "bottom-[calc(100%+0.75rem)]" : "bottom-0"
-              } ${
-                showTopFloatingButton
-                  ? "visible opacity-100"
-                  : "pointer-events-none invisible opacity-0"
-              }`}
-              aria-hidden={!showTopFloatingButton}
-            >
-              <FloatingButton variant="top" />
+          <div className="fixed right-0 bottom-24 z-10">
+            <div className="relative">
+              <div
+                className={`absolute right-0 transition-opacity duration-200 ease-out ${
+                  showCreateFloatingButton
+                    ? "bottom-[calc(100%+0.75rem)]"
+                    : "bottom-0"
+                } ${
+                  showTopFloatingButton
+                    ? "visible opacity-100"
+                    : "pointer-events-none invisible opacity-0"
+                }`}
+                aria-hidden={!showTopFloatingButton}
+              >
+                <FloatingButton variant="top" />
+              </div>
+              {showCreateFloatingButton ? (
+                <CommunityCreateFloatingButton />
+              ) : null}
             </div>
-            {showCreateFloatingButton ? <CommunityCreateFloatingButton /> : null}
           </div>
-        </div>
-      </main>
-
+        </main>
+      </div>
       <BottomNav />
-    </div>
+    </>
   );
 }
