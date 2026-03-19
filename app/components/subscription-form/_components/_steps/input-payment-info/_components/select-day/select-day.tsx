@@ -5,8 +5,6 @@ interface Props {
   onValueChange: (value: number | null) => void;
 }
 
-const today = new Date().getDate();
-
 export default function SelectDay({ value, onValueChange }: Props) {
   return (
     <SelectBox
