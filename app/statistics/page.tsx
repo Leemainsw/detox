@@ -224,71 +224,62 @@ export default function StatisticsPage() {
                 </div>
 
                 {/* 구독 데이터가 없는 경우 */}
-                {subscriptionSummaries.length === 0 && (
+                {subscriptionSummaries.length > 0 && (
                   <div className="mt-10">
-                    {subscriptionSummaries.length > 0 && (
-                      <>
-                        {(() => {
-                          const current =
-                            subscriptionSummaries[currentSubscriptionIndex] ||
-                            subscriptionSummaries[0];
-                          const serviceAvg =
-                            serviceAvgMap[current.service] ?? 0;
-                          const subDiff = Math.abs(serviceAvg - current.amount);
-                          const subStatus =
-                            current.amount > serviceAvg ? "over" : "under";
+                    {(() => {
+                      const current =
+                        subscriptionSummaries[currentSubscriptionIndex] ||
+                        subscriptionSummaries[0];
+                      const serviceAvg = serviceAvgMap[current.service] ?? 0;
+                      const subDiff = Math.abs(serviceAvg - current.amount);
+                      const subStatus =
+                        current.amount > serviceAvg ? "over" : "under";
 
-                          return (
-                            <>
-                              <ComparisonInsight
-                                isLoading={
-                                  isSubscriptionsLoading || isServiceAvgLoading
-                                }
-                                title={`${current.service} 유저 평균 소비와 비교`}
-                                diffAmount={subDiff}
-                                status={subStatus}
-                              />
-                              <div className="relative">
-                                <button
-                                  type="button"
-                                  aria-label="이전 구독 서비스"
-                                  className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600 "
-                                  onClick={handlePrevSubscription}
-                                >
-                                  <FontAwesomeIcon
-                                    icon={faCaretLeft}
-                                    size="lg"
-                                  />
-                                </button>
-                                <button
-                                  type="button"
-                                  aria-label="다음 구독 서비스"
-                                  className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
-                                  onClick={handleNextSubscription}
-                                >
-                                  <FontAwesomeIcon
-                                    icon={faCaretRight}
-                                    size="lg"
-                                  />
-                                </button>
+                      return (
+                        <>
+                          <ComparisonInsight
+                            isLoading={
+                              isSubscriptionsLoading || isServiceAvgLoading
+                            }
+                            title={`${current.service} 유저 평균 소비와 비교`}
+                            diffAmount={subDiff}
+                            status={subStatus}
+                          />
+                          <div className="relative">
+                            {/* 이전 버튼 */}
+                            <button
+                              type="button"
+                              aria-label="이전 구독 서비스"
+                              className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600 shadow-sm"
+                              onClick={handlePrevSubscription}
+                            >
+                              <FontAwesomeIcon icon={faCaretLeft} size="lg" />
+                            </button>
 
-                                <ComparisonChart
-                                  userName={current.service}
-                                  userAmount={current.amount}
-                                  compareName={`${current.service} 평균 소비`}
-                                  compareAmount={serviceAvg}
-                                  diffAmount={subDiff}
-                                  isLoading={
-                                    isSubscriptionsLoading ||
-                                    isServiceAvgLoading
-                                  }
-                                />
-                              </div>
-                            </>
-                          );
-                        })()}
-                      </>
-                    )}
+                            {/* 다음 버튼 */}
+                            <button
+                              type="button"
+                              aria-label="다음 구독 서비스"
+                              className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600 shadow-sm"
+                              onClick={handleNextSubscription}
+                            >
+                              <FontAwesomeIcon icon={faCaretRight} size="lg" />
+                            </button>
+
+                            <ComparisonChart
+                              userName={current.service}
+                              userAmount={current.amount}
+                              compareName={`${current.service} 평균 소비`}
+                              compareAmount={serviceAvg}
+                              diffAmount={subDiff}
+                              isLoading={
+                                isSubscriptionsLoading || isServiceAvgLoading
+                              }
+                            />
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 
