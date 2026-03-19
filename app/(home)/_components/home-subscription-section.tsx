@@ -20,7 +20,7 @@ export default function HomeSubscriptionSection({
 }: Props) {
   return (
     <section className="pt-10 bg-white border-t-gray-100 border-t-16">
-      <div className="relative flex flex-col justify-center items-start gap-4 ">
+      <div className="relative flex flex-col justify-start items-start gap-4  h-[calc(100vh_-_56px_-_148px_-_16px_-_148px)]">
         <div className="px-6 w-full flex justify-between items-center">
           <h6 className="title-md text-black">
             나의 구독{" "}
