@@ -181,6 +181,7 @@ export default function StatisticsPage() {
                             prev === 0 ? ageBands.length - 1 : prev - 1
                           )
                         }
+                        aria-label="이전 연령대 비교 보기"
                         className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
                       >
                         <FontAwesomeIcon icon={faCaretLeft} size="lg" />
@@ -191,6 +192,7 @@ export default function StatisticsPage() {
                             prev === ageBands.length - 1 ? 0 : prev + 1
                           )
                         }
+                        aria-label="다음 연령대 비교 보기"
                         className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
                       >
                         <FontAwesomeIcon icon={faCaretRight} size="lg" />
@@ -235,6 +237,7 @@ export default function StatisticsPage() {
                                       : prev - 1
                                   )
                                 }
+                                aria-label="이전 서비스 비교 보기"
                                 className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
                               >
                                 <FontAwesomeIcon icon={faCaretLeft} size="lg" />
@@ -247,6 +250,7 @@ export default function StatisticsPage() {
                                       : prev + 1
                                   )
                                 }
+                                aria-label="다음 서비스 비교 보기"
                                 className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm text-gray-600 flex items-center justify-center"
                               >
                                 <FontAwesomeIcon icon={faCaretRight} size="lg" />
