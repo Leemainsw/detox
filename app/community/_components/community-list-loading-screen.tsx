@@ -8,7 +8,7 @@ import CommunityPostListSkeleton from "./community-post-list-skeleton";
 export default function CommunityListLoadingScreen() {
   return (
     <div className="bg-gray-100 pb-15 min-h-screen">
-      <Header variant="text" leftText="커뮤니티" rightContent="알람" />
+      <Header variant="text" leftText="커뮤니티" />
 
       <main>
         <div className="pointer-events-none" aria-hidden="true">

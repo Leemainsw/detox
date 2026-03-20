@@ -74,7 +74,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${pretendard.variable} antialiased`}>
       <body className={pretendard.className}>
-        <div className="mx-auto min-h-screen w-full max-w-(--max-width)">
+        <div className="mx-auto min-h-screen w-full max-w-(--max-width) bg-white shadow-2xl">
           <SupabaseLockErrorHandler />
           <SupabaseAuthListener />
           <QueryProvider>
