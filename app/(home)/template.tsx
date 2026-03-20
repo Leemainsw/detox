@@ -7,8 +7,9 @@ export default function HomeTemplate({ children }: { children: ReactNode }) {
   return (
     <div className="overflow-x-hidden">
       <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
       >
         {children}
       </motion.div>
