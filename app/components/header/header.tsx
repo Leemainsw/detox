@@ -103,6 +103,7 @@ export default function Header({
                 <FontAwesomeIcon
                   icon={faBell}
                   className="w-8 h-8 text-gray-300"
+                  size="lg"
                 />
                 {hasUnreadNotifications && (
                   <span className="absolute top-2/6 right-1/6 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] bg-brand-primary rounded-full" />
