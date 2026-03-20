@@ -8,6 +8,7 @@ config.autoAddCss = false; // 자동으로 CSS 추가하는 기능 끄기
 
 import "../styles/globals.css";
 import { AlertProvider } from "./components/alert";
+import SupabaseLockErrorHandler from "./components/supabase-lock-error-handler";
 import GlobalTopFloatingButton from "./components/floating-button/global-top-floating-button";
 import { Toaster } from "./components/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -74,6 +75,7 @@ export default function RootLayout({
     <html lang="ko" className={`${pretendard.variable} antialiased`}>
       <body className={pretendard.className}>
         <div className="mx-auto min-h-screen w-full max-w-(--max-width)">
+          <SupabaseLockErrorHandler />
           <SupabaseAuthListener />
           <QueryProvider>
             <TooltipProvider>

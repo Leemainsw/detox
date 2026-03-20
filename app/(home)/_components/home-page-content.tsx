@@ -39,6 +39,7 @@ export default function HomePageContent() {
           subscriptions={subscriptions}
           subscriptionCount={subscriptionCount}
           thisMonthTotal={thisMonthTotal}
+          isLoggedIn={Boolean(session?.user)}
         />
       </main>
       <BottomNav />

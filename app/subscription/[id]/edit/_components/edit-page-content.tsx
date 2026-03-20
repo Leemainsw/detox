@@ -70,6 +70,7 @@ export default function EditPageContent() {
       });
       clearPersistedDraft?.();
       toast.success("구독이 수정되었습니다.");
+      router.back();
     } catch (error) {
       console.error(error);
       toast.error("구독 수정에 실패했습니다.");

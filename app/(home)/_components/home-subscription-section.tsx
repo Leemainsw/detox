@@ -1,6 +1,5 @@
 import Link from "next/link";
 import SubscriptionList from "@/app/components/subscription-list";
-import Button from "@/app/components/button";
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import type { Tables } from "@/types/supabase.types";
 import BottomCTA from "@/app/components/bottom-cta";
@@ -10,6 +9,7 @@ interface Props {
   subscriptions: Tables<"subscription">[];
   subscriptionCount: number;
   thisMonthTotal: number;
+  isLoggedIn: boolean;
 }
 
 export default function HomeSubscriptionSection({
@@ -17,6 +17,7 @@ export default function HomeSubscriptionSection({
   subscriptions,
   subscriptionCount,
   thisMonthTotal,
+  isLoggedIn,
 }: Props) {
   return (
     <section className="pt-10 bg-white border-t-gray-100 border-t-16">
@@ -55,11 +56,18 @@ export default function HomeSubscriptionSection({
         )}
       </div>
       <BottomCTA hasBottomNav>
-        <Link href="/subscription/add">
-          <Button variant="primary" size="lg">
+        {isLoggedIn ? (
+          <Link href="/subscription/add" className="btn btn-primary btn-lg">
             구독 추가하기
-          </Button>
-        </Link>
+          </Link>
+        ) : (
+          <Link
+            href="/login?redirect=/subscription/add"
+            className="btn btn-primary btn-lg"
+          >
+            로그인하고 구독 추가하기
+          </Link>
+        )}
       </BottomCTA>
     </section>
   );
