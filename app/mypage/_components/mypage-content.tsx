@@ -20,9 +20,13 @@ import { useRouter } from "next/navigation";
 
 interface Props {
   userId: string;
+  onLogoutStateChange?: (isLoggingOut: boolean) => void;
 }
 
-export default function MypageContent({ userId }: Props) {
+export default function MypageContent({
+  userId,
+  onLogoutStateChange,
+}: Props) {
   const router = useRouter();
   const { success, error } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,10 +41,13 @@ export default function MypageContent({ userId }: Props) {
   );
 
   const handleLogout = async () => {
+    onLogoutStateChange?.(true);
+
     try {
       await logoutMutation.mutateAsync();
-      router.push("/login");
+      router.replace("/");
     } catch (logoutError) {
+      onLogoutStateChange?.(false);
       console.error(logoutError);
       error("로그아웃에 실패했어요.");
     }
