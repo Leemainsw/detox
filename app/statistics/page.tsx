@@ -1,7 +1,7 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCaretLeft, faCaretRight } from "@fortawesome/free-solid-svg-icons";
@@ -18,43 +18,47 @@ import { calculateMonthlyTotal } from "@/app/utils/subscriptions/calculate";
 import { useCurrentUserQuery, useUserProfileQuery } from "@/query/users";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
 import { Database } from "@/types/supabase.types";
+import { AnalysisResponse } from "@/app/utils/subscriptions/validation";
+import { Tables } from "@/types/supabase.types";
 
-// Supabase 클라이언트 생성
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+type SubscriptionRow = Database["public"]["Tables"]["subscription"]["Row"];
+
 export default function StatisticsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentSubscriptionIndex, setCurrentSubscriptionIndex] = useState(0);
   const [ageBandIndex, setAgeBandIndex] = useState(0);
+
   const { data: user } = useCurrentUserQuery();
   const { data: profile } = useUserProfileQuery(user?.id);
-  const userName = profile?.nickname || "사용자";
+  const metadata = user?.user_metadata as
+    | Record<string, string | undefined>
+    | undefined;
+  const userName = metadata?.nickname || profile?.nickname || "사용자";
   const { result: analysisData } = useAnalysisStore();
 
-  type SubscriptionRow = Database["public"]["Tables"]["subscription"]["Row"];
-
-  // 구독 데이터 쿼리
   const { data: subscriptions = [], isLoading: isSubscriptionsLoading } =
     useQuery<SubscriptionRow[]>({
       queryKey: ["subscriptions", user?.id],
       queryFn: async () => {
         if (!user?.id) return [];
+
         const { data } = await supabase
           .from("subscription")
           .select("*")
           .eq("user_id", user.id);
+
         return data || [];
       },
       enabled: !!user?.id,
     });
 
-  // 구독 서비스가 하나도 없는 경우
   const isAllEmpty = !isSubscriptionsLoading && subscriptions.length === 0;
 
-  // 구독 서비스별 금액 요약 계산
   const subscriptionSummaries = useMemo(
     () =>
       subscriptions.map((sub) => ({
@@ -64,13 +68,14 @@ export default function StatisticsPage() {
     [subscriptions]
   );
 
-  // 구독 서비스 목록 추출
   const services = useMemo(
-    () => Array.from(new Set(subscriptionSummaries.map((s) => s.service))),
+    () =>
+      Array.from(
+        new Set(subscriptionSummaries.map((summary) => summary.service))
+      ).filter((service): service is string => Boolean(service)),
     [subscriptionSummaries]
   );
 
-  // 각 서비스별 평균 금액 계산 쿼리
   const { data: serviceAvgMap = {}, isLoading: isServiceAvgLoading } = useQuery<
     Record<string, number>
   >({
@@ -88,34 +93,32 @@ export default function StatisticsPage() {
       const sums: Record<string, { sum: number; count: number }> = {};
 
       (data ?? []).forEach((row) => {
-        const r = row as SubscriptionRow;
-        const amount = Number(r.total_amount) || 0;
-        if (!r.service) return;
-        const prev = sums[r.service] ?? { sum: 0, count: 0 };
-        sums[r.service] = { sum: prev.sum + amount, count: prev.count + 1 };
+        const service = row.service;
+        if (!service) return;
+
+        const amount = Number(row.total_amount) || 0;
+        const prev = sums[service] ?? { sum: 0, count: 0 };
+        sums[service] = { sum: prev.sum + amount, count: prev.count + 1 };
       });
 
-      const avg: Record<string, number> = {};
-      Object.entries(sums).forEach(([service, { sum, count }]) => {
-        avg[service] = count > 0 ? Math.round(sum / count) : 0;
-      });
-
-      return avg;
+      return Object.fromEntries(
+        Object.entries(sums).map(([service, { sum, count }]) => [
+          service,
+          count > 0 ? Math.round(sum / count) : 0,
+        ])
+      );
     },
     enabled: services.length > 0,
   });
 
-  // 선택된 월의 총 금액 계산
   const monthlyTotalAmount = useMemo(
     () => calculateMonthlyTotal(subscriptions, selectedDate),
     [selectedDate, subscriptions]
   );
 
-  // 월별 데이터가 없거나 총 금액이 0인 경우
   const isMonthlyEmpty =
     !isSubscriptionsLoading && !isAllEmpty && monthlyTotalAmount === 0;
 
-  // 연령대 분리 하드코딩
   const ageBands = ["10s", "20s", "30s", "40s", "50s", "60s"] as const;
   const ageBand =
     ageBands[Math.min(Math.max(ageBandIndex, 0), ageBands.length - 1)];
@@ -137,17 +140,18 @@ export default function StatisticsPage() {
   } as const;
   const ageAverage = ageBandAverageMap[ageBand];
 
-  // 통계 비교를 위한 표시 금액 계산
   const displayAmount = isAllEmpty || isMonthlyEmpty ? 0 : monthlyTotalAmount;
   const diffAmount = Math.abs(displayAmount - ageAverage);
   const status = displayAmount > ageAverage ? "over" : "under";
 
-  // 월 변경 핸들러
-  const handleMonthChange = (date: Date) => {
-    setSelectedDate(date);
+  const handlePrevAgeBand = () => {
+    setAgeBandIndex((prev) => (prev === 0 ? ageBands.length - 1 : prev - 1));
   };
 
-  // 구독 서비스 변경 핸들러
+  const handleNextAgeBand = () => {
+    setAgeBandIndex((prev) => (prev === ageBands.length - 1 ? 0 : prev + 1));
+  };
+
   const handlePrevSubscription = () => {
     setCurrentSubscriptionIndex((prev) =>
       prev === 0 ? subscriptionSummaries.length - 1 : prev - 1
@@ -160,150 +164,145 @@ export default function StatisticsPage() {
     );
   };
 
-  // 연령대 변경 핸들러
-  const handlePrevAgeBand = () => {
-    setAgeBandIndex((prev) => (prev === 0 ? ageBands.length - 1 : prev - 1));
-  };
-
-  const handleNextAgeBand = () => {
-    setAgeBandIndex((prev) => (prev === ageBands.length - 1 ? 0 : prev + 1));
-  };
-
   return (
-    <main
-      className={`relative flex flex-col w-full min-h-screen bg-white ${isAllEmpty ? "overflow-hidden h-screen" : ""}`}
-    >
-      <Header variant="text" leftText="통계" hasNotification />
+    <>
+      <main
+        className={`relative flex min-h-screen w-full flex-col bg-white ${
+          isAllEmpty ? "h-screen overflow-hidden" : ""
+        }`}
+      >
+        <Header variant="text" leftText="통계" hasNotification />
 
-      <div className="flex flex-col w-full flex-1 pb-32">
-        <AIAnalysisBanner isAllEmpty={isAllEmpty} />
+        <div className="flex w-full flex-1 flex-col pb-32">
+          <AIAnalysisBanner isAllEmpty={isAllEmpty} />
 
-        <div className="relative flex-1 flex flex-col">
-          <MonthExpenseSelector
-            selectedDate={selectedDate}
-            groupCount={displayAmount}
-            onChangeDate={handleMonthChange}
-          />
+          <div className="relative flex flex-1 flex-col">
+            <MonthExpenseSelector
+              selectedDate={selectedDate}
+              groupCount={displayAmount}
+              onChangeDate={setSelectedDate}
+            />
 
-          <div className="relative flex-1 w-full">
-            {!isAllEmpty && !isMonthlyEmpty && (
-              <div className="w-full animate-in fade-in duration-500">
-                <div className="mt-4">
-                  <ComparisonInsight
-                    isLoading={isSubscriptionsLoading}
-                    title={`${ageBandLabelMap[ageBand]} 소비 비교`}
-                    diffAmount={diffAmount}
-                    status={status}
-                  />
-                  <div className="relative">
-                    <button
-                      type="button"
-                      aria-label="이전 연령대"
-                      className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
-                      onClick={handlePrevAgeBand}
-                    >
-                      <FontAwesomeIcon icon={faCaretLeft} size="lg" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="다음 연령대"
-                      className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600"
-                      onClick={handleNextAgeBand}
-                    >
-                      <FontAwesomeIcon icon={faCaretRight} size="lg" />
-                    </button>
-
-                    <ComparisonChart
-                      userName={`${userName}님`}
-                      userAmount={displayAmount}
-                      compareName={ageBandLabelMap[ageBand]}
-                      compareAmount={ageAverage}
+            <div className="relative flex-1 w-full">
+              {!isAllEmpty && !isMonthlyEmpty && (
+                <div className="w-full animate-in fade-in duration-500">
+                  <div className="mt-4">
+                    <ComparisonInsight
                       isLoading={isSubscriptionsLoading}
+                      title={`${ageBandLabelMap[ageBand]} 소비 비교`}
+                      diffAmount={diffAmount}
+                      status={status}
                     />
+
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={handlePrevAgeBand}
+                        aria-label="이전 연령대 비교 보기"
+                        className="absolute left-8 top-28 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-sm"
+                      >
+                        <FontAwesomeIcon icon={faCaretLeft} size="lg" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNextAgeBand}
+                        aria-label="다음 연령대 비교 보기"
+                        className="absolute right-8 top-28 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-sm"
+                      >
+                        <FontAwesomeIcon icon={faCaretRight} size="lg" />
+                      </button>
+
+                      <ComparisonChart
+                        userName={`${userName}님`}
+                        userAmount={displayAmount}
+                        compareName={ageBandLabelMap[ageBand]}
+                        compareAmount={ageAverage}
+                        isLoading={isSubscriptionsLoading}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                {/* 구독 데이터가 없는 경우 */}
-                {subscriptionSummaries.length > 0 && (
-                  <div className="mt-10">
-                    {(() => {
-                      const current =
-                        subscriptionSummaries[currentSubscriptionIndex] ||
-                        subscriptionSummaries[0];
-                      const serviceAvg = serviceAvgMap[current.service] ?? 0;
-                      const subDiff = Math.abs(serviceAvg - current.amount);
-                      const subStatus =
-                        current.amount > serviceAvg ? "over" : "under";
+                  {subscriptionSummaries.length > 0 && (
+                    <div className="mt-10">
+                      {(() => {
+                        const current =
+                          subscriptionSummaries[currentSubscriptionIndex] ||
+                          subscriptionSummaries[0];
+                        const serviceAvg = serviceAvgMap[current.service] ?? 0;
+                        const subDiff = Math.abs(serviceAvg - current.amount);
+                        const subStatus =
+                          current.amount > serviceAvg ? "over" : "under";
 
-                      return (
-                        <>
-                          <ComparisonInsight
-                            isLoading={
-                              isSubscriptionsLoading || isServiceAvgLoading
-                            }
-                            title={`${current.service} 유저 평균 소비와 비교`}
-                            diffAmount={subDiff}
-                            status={subStatus}
-                          />
-                          <div className="relative">
-                            {/* 이전 버튼 */}
-                            <button
-                              type="button"
-                              aria-label="이전 구독 서비스"
-                              className="absolute left-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600 shadow-sm"
-                              onClick={handlePrevSubscription}
-                            >
-                              <FontAwesomeIcon icon={faCaretLeft} size="lg" />
-                            </button>
-
-                            {/* 다음 버튼 */}
-                            <button
-                              type="button"
-                              aria-label="다음 구독 서비스"
-                              className="absolute right-8 top-28 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white/90 text-gray-600 shadow-sm"
-                              onClick={handleNextSubscription}
-                            >
-                              <FontAwesomeIcon icon={faCaretRight} size="lg" />
-                            </button>
-
-                            <ComparisonChart
-                              userName={current.service}
-                              userAmount={current.amount}
-                              compareName={`${current.service} 평균 소비`}
-                              compareAmount={serviceAvg}
-                              diffAmount={subDiff}
+                        return (
+                          <>
+                            <ComparisonInsight
                               isLoading={
                                 isSubscriptionsLoading || isServiceAvgLoading
                               }
+                              title={`${current.service} 유저 평균 소비와 비교`}
+                              diffAmount={subDiff}
+                              status={subStatus}
                             />
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
 
-                {analysisData && (
-                  <div className="mt-10 border-t-8 border-gray-50">
-                    <AnalysisSummary
-                      hasData={!!analysisData}
-                      analysisData={analysisData}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={handlePrevSubscription}
+                                aria-label="이전 서비스 비교 보기"
+                                className="absolute left-8 top-28 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-sm"
+                              >
+                                <FontAwesomeIcon icon={faCaretLeft} size="lg" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleNextSubscription}
+                                aria-label="다음 서비스 비교 보기"
+                                className="absolute right-8 top-28 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-600 shadow-sm"
+                              >
+                                <FontAwesomeIcon
+                                  icon={faCaretRight}
+                                  size="lg"
+                                />
+                              </button>
 
-            {/* 월별 분석 데이터가 없는 경우 */}
-            {!isAllEmpty && isMonthlyEmpty && <EmptyAnalysis />}
+                              <ComparisonChart
+                                userName={current.service}
+                                userAmount={current.amount}
+                                compareName={`${current.service} 평균 소비`}
+                                compareAmount={serviceAvg}
+                                isLoading={
+                                  isSubscriptionsLoading || isServiceAvgLoading
+                                }
+                              />
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {analysisData && (
+                    <div className="mt-10 border-t-8 border-gray-50">
+                      <AnalysisSummary
+                        hasData={!!analysisData}
+                        analysisData={
+                          analysisData as unknown as AnalysisResponse
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!isAllEmpty && isMonthlyEmpty && <EmptyAnalysis />}
+            </div>
+
+            {isAllEmpty && <EmptySubscriptionOverlay />}
           </div>
-
-          {/* 구독 데이터가 없는 경우 */}
-          {isAllEmpty && <EmptySubscriptionOverlay />}
         </div>
-      </div>
+      </main>
 
       <BottomNav />
-    </main>
+    </>
   );
 }

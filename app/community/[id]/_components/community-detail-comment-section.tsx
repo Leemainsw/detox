@@ -72,7 +72,7 @@ export default function CommunityDetailCommentSection({
   };
 
   const handleCommentLoginClick = () => {
-    if (isCurrentUserPending) {
+    if (isCurrentUserPending || isCurrentUserError) {
       return;
     }
 
@@ -109,7 +109,11 @@ export default function CommunityDetailCommentSection({
       )}
 
       <div className="mt-4 flex items-center rounded-lg bg-gray-50 px-4 py-3">
-        {isLoggedIn ? (
+        {isCurrentUserError ? (
+          <p className="flex-1 text-left text-base text-gray-300">
+            댓글을 입력할 수 없어요.
+          </p>
+        ) : isLoggedIn ? (
           <input
             ref={commentInputRef}
             type="text"

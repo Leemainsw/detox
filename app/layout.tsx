@@ -8,12 +8,12 @@ config.autoAddCss = false; // 자동으로 CSS 추가하는 기능 끄기
 
 import "../styles/globals.css";
 import { AlertProvider } from "./components/alert";
+import SupabaseLockErrorHandler from "./components/supabase-lock-error-handler";
 import GlobalTopFloatingButton from "./components/floating-button/global-top-floating-button";
 import { Toaster } from "./components/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import QueryProvider from "./providers/query-client-provider";
 import SupabaseAuthListener from "./components/supabase-auth-listener";
-import { cn } from "@/lib/utils";
 
 const pretendard = localFont({
   src: "../public/fonts/PretendardVariable.woff2",
@@ -27,7 +27,43 @@ export const metadata: Metadata = {
     default: "Detox",
     template: "%s | Detox",
   },
-  description: "구독 관리 앱",
+  description: "디지털 구독 다이어트 서비스",
+  applicationName: "Detox",
+  keywords: [
+    "Detox",
+    "구독 관리",
+    "구독",
+    "정기결제",
+    "월간 지출",
+    "소비 분석",
+    "구독 통계",
+  ],
+  category: "lifestyle",
+  openGraph: {
+    title: "Detox",
+    description: "디지털 구독 다이어트 서비스",
+    siteName: "Detox",
+    locale: "ko_KR",
+    type: "website",
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Detox",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Detox",
+    description: "디지털 구독 다이어트 서비스",
+    images: ["/images/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
@@ -37,16 +73,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={`${pretendard.variable} antialiased`}>
-      <body className={cn(pretendard.className, "max-w-(--max-width) mx-auto")}>
-        <SupabaseAuthListener />
-        <QueryProvider>
-          <TooltipProvider>
-            <AlertProvider />
-            <Toaster />
-            {children}
-            <GlobalTopFloatingButton />
-          </TooltipProvider>
-        </QueryProvider>
+      <body className={pretendard.className}>
+        <div className="mx-auto min-h-screen w-full max-w-(--max-width) bg-white shadow-2xl">
+          <SupabaseLockErrorHandler />
+          <SupabaseAuthListener />
+          <QueryProvider>
+            <TooltipProvider>
+              <AlertProvider />
+              <Toaster />
+              {children}
+              <GlobalTopFloatingButton />
+            </TooltipProvider>
+          </QueryProvider>
+        </div>
       </body>
     </html>
   );

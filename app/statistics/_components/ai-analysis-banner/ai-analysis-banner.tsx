@@ -1,6 +1,6 @@
 "use client";
 
-import Robot from "@/public/images/emoji/Robot.png";
+import Robot from "@/public/images/emoji/ai-bot.png";
 import Image from "next/image";
 import Button from "@/app/components/button";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ export default function AIAnalysisBanner({ isAllEmpty }: Props) {
           <span className="text-brand-primary">낭비되는 구독료</span>로<br />
           치킨을 먹을 수 있어요
         </h1>
-        <p className="bady-lg md:header-md text-gray-300 leading-[140%]">
+        <p className="body-lg md:header-md text-gray-300 leading-[140%]">
           숨겨진 구독료를 찾아
           <br />
           낭비를 줄여보세요
@@ -29,7 +29,7 @@ export default function AIAnalysisBanner({ isAllEmpty }: Props) {
       <div className="mt-5 transition-transform hover:scale-105 duration-300">
         <Image
           src={Robot}
-          alt="Robot Emoji"
+          alt="AI 디톡이 Emoji"
           width={100}
           height={100}
           className="w-24 h-24 md:w-32 md:h-32 object-contain"

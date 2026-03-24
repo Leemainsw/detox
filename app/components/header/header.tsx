@@ -98,14 +98,15 @@ export default function Header({
               <button
                 type="button"
                 aria-label="알림"
-                className="relative cursor-pointer"
+                className="relative cursor-pointer w-12 h-12"
               >
                 <FontAwesomeIcon
                   icon={faBell}
-                  className="w-7 h-7 text-gray-300"
+                  className="w-8 h-8 text-gray-300"
+                  size="lg"
                 />
                 {hasUnreadNotifications && (
-                  <span className="absolute top-0 right-[-5px] w-[6px] h-[6px] bg-brand-primary rounded-full" />
+                  <span className="absolute top-2/6 right-1/6 -translate-x-1/2 -translate-y-1/2 w-[6px] h-[6px] bg-brand-primary rounded-full" />
                 )}
               </button>
             </Link>

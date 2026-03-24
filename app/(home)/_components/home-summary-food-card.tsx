@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -24,16 +25,36 @@ export default function HomeSummaryFoodCard({ type, food, isLoading }: Props) {
     <>
       <div className="flex flex-col gap-4">
         <div className="title">
-          <h2 className="text-2xl">
-            {isSaved ? "지난달보다" : "이번달 구독료로"}
+          <h2 className="text-2xl overflow-hidden">
+            <motion.div
+              initial={{ y: "110%" }}
+              animate={{ y: 0 }}
+              transition={{
+                duration: 0.3,
+                delay: 0.1,
+                ease: "linear",
+              }}
+            >
+              {isSaved ? "지난달보다" : "이번달 구독료로"}
+            </motion.div>
           </h2>
-          <h1 className="header-md">
-            {food.label}{" "}
-            <span className="text-brand-primary">
-              {food.count}
-              {food.unit}
-            </span>{" "}
-            {isSaved ? "아꼈어요" : ""}
+          <h1 className="header-md overflow-hidden">
+            <motion.div
+              initial={{ y: "110%" }}
+              animate={{ y: 0 }}
+              transition={{
+                duration: 0.3,
+                delay: 0.3,
+                ease: "linear",
+              }}
+            >
+              {food.label}{" "}
+              <span className="text-brand-primary">
+                {food.count}
+                {food.unit}
+              </span>{" "}
+              {isSaved ? "아꼈어요" : ""}
+            </motion.div>
           </h1>
         </div>
 

@@ -146,7 +146,9 @@ export default function CommunityListPageClient({
           <div className="relative">
             <div
               className={`absolute right-0 transition-opacity duration-200 ease-out ${
-                showCreateFloatingButton ? "bottom-[calc(100%+0.75rem)]" : "bottom-0"
+                showCreateFloatingButton
+                  ? "bottom-[calc(100%+0.75rem)]"
+                  : "bottom-0"
               } ${
                 showTopFloatingButton
                   ? "visible opacity-100"
@@ -156,7 +158,9 @@ export default function CommunityListPageClient({
             >
               <FloatingButton variant="top" />
             </div>
-            {showCreateFloatingButton ? <CommunityCreateFloatingButton /> : null}
+            {showCreateFloatingButton ? (
+              <CommunityCreateFloatingButton />
+            ) : null}
           </div>
         </div>
       </main>

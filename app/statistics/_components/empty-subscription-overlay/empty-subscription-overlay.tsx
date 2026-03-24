@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import Button from "@/app/components/button";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useSupabase } from "@/hooks/useSupabase";
 
 export default function EmptySubscriptionOverlay() {
-  const router = useRouter();
+  const { session } = useSupabase();
+  const isLoggedIn = Boolean(session?.user);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -31,13 +32,18 @@ export default function EmptySubscriptionOverlay() {
       </div>
 
       <div className="w-full max-w-sm">
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={() => router.push("/subscription/add")}
-        >
-          구독 추가하기
-        </Button>
+        {isLoggedIn ? (
+          <Link href="/subscription/add" className="btn btn-primary btn-lg">
+            구독 추가하기
+          </Link>
+        ) : (
+          <Link
+            href="/login?redirect=/subscription/add"
+            className="btn btn-primary btn-lg"
+          >
+            로그인하고 구독 추가하기
+          </Link>
+        )}
       </div>
     </div>
   );
