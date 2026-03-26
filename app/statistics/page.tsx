@@ -158,6 +158,7 @@ export default function StatisticsPage() {
 
   // 유저 정보
   const { data: user } = useCurrentUserQuery();
+  const isUserResolved = user !== undefined;
   const { data: profile } = useUserProfileQuery(user?.id);
   const metadata = user?.user_metadata as
     | Record<string, string | undefined>
@@ -178,9 +179,13 @@ export default function StatisticsPage() {
 
   // 월별 통계 계산
   const monthlyTotalAmount = calculateMonthlyTotal(subscriptions, selectedDate);
-  const isAllEmpty = !isSubscriptionsLoading && subscriptions.length === 0;
+  const isAllEmpty =
+    isUserResolved && !isSubscriptionsLoading && subscriptions.length === 0;
   const isMonthlyEmpty =
-    !isSubscriptionsLoading && !isAllEmpty && monthlyTotalAmount === 0;
+    +isUserResolved &&
+    +!isSubscriptionsLoading &&
+    +!isAllEmpty &&
+    +monthlyTotalAmount === 0;
   const displayAmount = isAllEmpty || isMonthlyEmpty ? 0 : monthlyTotalAmount;
 
   return (

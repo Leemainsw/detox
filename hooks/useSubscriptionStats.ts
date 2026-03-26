@@ -9,20 +9,23 @@ type SubscriptionRow = Database["public"]["Tables"]["subscription"]["Row"];
 export function useSubscriptionStats() {
   const { data: user } = useCurrentUserQuery();
 
-  const { data: subscriptions = [], isLoading: isSubscriptionsLoading } =
-    useQuery<SubscriptionRow[]>({
-      queryKey: ["subscriptions", user?.id],
-      queryFn: async () => {
-        if (!user?.id) return [];
-        const { data, error } = await supabase
-          .from("subscription")
-          .select("*")
-          .eq("user_id", user.id);
-        if (error) throw error;
-        return data || [];
-      },
-      enabled: !!user?.id,
-    });
+  const {
+    data: subscriptions = [],
+    isLoading: isSubscriptionsLoading,
+    isError: isSubscriptionsError,
+  } = useQuery<SubscriptionRow[]>({
+    queryKey: ["subscriptions", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from("subscription")
+        .select("*")
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
 
   const subscriptionSummaries = useMemo(
     () =>
@@ -41,36 +44,35 @@ export function useSubscriptionStats() {
     [subscriptionSummaries]
   );
 
-  const { data: serviceAvgMap = {}, isLoading: isServiceAvgLoading } = useQuery<
-    Record<string, number>
-  >({
+  const {
+    data: serviceAvgMap = {},
+    isLoading: isServiceAvgLoading,
+    isError: isServiceAvgError,
+  } = useQuery<Record<string, number>>({
     queryKey: ["service-avg", services],
+
     queryFn: async () => {
       if (services.length === 0) return {};
 
-      const { data, error } = await supabase
-        .from("subscription")
-        .select("service, total_amount")
-        .in("service", services);
+      const { data, error } = await supabase.rpc("get_service_averages", {
+        service_names: services,
+      });
 
       if (error) throw error;
 
-      const sums: Record<string, { sum: number; count: number }> = {};
-      (data ?? []).forEach((row) => {
-        const service = row.service;
-        if (!service) return;
-        const amount = Number(row.total_amount) || 0;
-        const prev = sums[service] ?? { sum: 0, count: 0 };
-        sums[service] = { sum: prev.sum + amount, count: prev.count + 1 };
-      });
-
       return Object.fromEntries(
-        Object.entries(sums).map(([service, { sum, count }]) => [
-          service,
-          count > 0 ? Math.round(sum / count) : 0,
-        ])
+        (data ?? []).map(
+          ({
+            service,
+            avg_amount,
+          }: {
+            service: string;
+            avg_amount: number;
+          }) => [service, avg_amount]
+        )
       );
     },
+
     enabled: services.length > 0,
   });
 
@@ -80,5 +82,6 @@ export function useSubscriptionStats() {
     serviceAvgMap,
     isSubscriptionsLoading,
     isServiceAvgLoading,
+    isError: isSubscriptionsError || isServiceAvgError,
   };
 }
