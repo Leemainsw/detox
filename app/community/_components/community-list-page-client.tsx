@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { startTransition, Suspense, useEffect, useRef, useState } from "react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import TopFloatingButton from "@/app/components/floating-button/top-floating-button";
 import FeedbackState from "@/app/components/feedback-state";
@@ -143,7 +143,9 @@ export default function CommunityListPageClient({
       return;
     }
 
-    setSelectedService(nextService);
+    startTransition(() => {
+      setSelectedService(nextService);
+    });
     syncServiceToUrl(nextService);
   };
 
