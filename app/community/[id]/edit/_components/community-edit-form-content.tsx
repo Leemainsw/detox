@@ -48,7 +48,7 @@ export default function CommunityEditFormContent({
       });
 
       success("게시글을 수정했어요.");
-      router.back();
+      router.replace(`/community/${postId}`);
     } catch (updatePostError) {
       console.error(updatePostError);
       error("게시글 수정에 실패했어요.");
