@@ -1,5 +1,4 @@
 import { formatRelativeTime } from "@/app/utils/date/formatRelativeTime";
-import { getRequestOrigin } from "@/lib/request-origin";
 import type {
   CommunityCommentItemData,
   CommunityDetailData,
@@ -9,10 +8,7 @@ import type {
 } from "@/app/community/_types";
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
-import {
-  createCommunityListApiPath,
-  fetchCommunityListPage,
-} from "@/services/community-list-api";
+import { getCachedCommunityListPage } from "@/services/community-list-reader";
 import type { Tables } from "@/types/supabase.types";
 
 type UserPreview = Pick<Tables<"users">, "id" | "nickname" | "profile_image">;
@@ -24,12 +20,7 @@ export async function getServerCommunityListPage(params: {
   cursor?: CommunityListCursor | null;
   pageSize?: number;
 }): Promise<CommunityListPage> {
-  const origin = await getRequestOrigin();
-  const path = createCommunityListApiPath(params);
-
-  return fetchCommunityListPage(new URL(path, origin), {
-    cache: "no-store",
-  });
+  return getCachedCommunityListPage(params);
 }
 
 export async function getServerCommunityDetail(
