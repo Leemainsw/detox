@@ -10,6 +10,11 @@ import {
 } from "@/lib/community-list-cache";
 import { getCachedCommunityListPage } from "@/services/community-list-reader";
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ISO_DATETIME_REGEX =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+
 function parseService(value: string | null): SubscriptableBrandType | null {
   if (!value) {
     return null;
@@ -23,9 +28,17 @@ function parseService(value: string | null): SubscriptableBrandType | null {
 function parseCursor(
   cursorCreatedAt: string | null,
   cursorId: string | null
-): CommunityListCursor | null {
+): CommunityListCursor | null | "invalid" {
   if (!cursorCreatedAt || !cursorId) {
     return null;
+  }
+
+  if (
+    !ISO_DATETIME_REGEX.test(cursorCreatedAt) ||
+    Number.isNaN(Date.parse(cursorCreatedAt)) ||
+    !UUID_REGEX.test(cursorId)
+  ) {
+    return "invalid";
   }
 
   return {
@@ -51,6 +64,14 @@ export async function GET(request: NextRequest) {
       request.nextUrl.searchParams.get("cursorCreatedAt");
     const cursorId = request.nextUrl.searchParams.get("cursorId");
     const cursor = parseCursor(cursorCreatedAt, cursorId);
+
+    if (cursor === "invalid") {
+      return Response.json(
+        { message: "유효하지 않은 커서 값입니다." },
+        { status: 400 }
+      );
+    }
+
     const pageSize = parsePageSize(request.nextUrl.searchParams.get("pageSize"));
 
     const page = await getCachedCommunityListPage({
