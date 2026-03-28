@@ -35,7 +35,10 @@ export default async function CommunityListPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <CommunityListPageClient initialService={selectedService} />
+      <CommunityListPageClient
+        key={selectedService}
+        initialService={selectedService}
+      />
     </HydrationBoundary>
   );
 }
