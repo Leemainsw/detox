@@ -129,11 +129,9 @@ async function invalidateCommunityCollections(queryClient: QueryClient) {
   await Promise.all([
     queryClient.invalidateQueries({
       queryKey: communityKeys.lists(),
-      refetchType: "all",
     }),
     queryClient.invalidateQueries({
       queryKey: communityKeys.recommendations(),
-      refetchType: "all",
     }),
   ]);
 }
@@ -146,7 +144,6 @@ async function invalidateCommunityPost(
     invalidateCommunityCollections(queryClient),
     queryClient.invalidateQueries({
       queryKey: communityKeys.detail(postId),
-      refetchType: "all",
     }),
   ]);
 }
@@ -159,7 +156,6 @@ async function invalidateCommunityPostComments(
     invalidateCommunityPost(queryClient, postId),
     queryClient.invalidateQueries({
       queryKey: communityKeys.commentList(postId),
-      refetchType: "all",
     }),
   ]);
 }
@@ -173,7 +169,6 @@ async function invalidateCommunityPostLikes(
     invalidateCommunityPost(queryClient, postId),
     queryClient.invalidateQueries({
       queryKey: communityKeys.likeStatus(postId, userId),
-      refetchType: "all",
     }),
   ]);
 }
@@ -268,11 +263,9 @@ export function useDeleteCommunityPostMutation() {
       void Promise.all([
         queryClient.invalidateQueries({
           queryKey: communityKeys.lists(),
-          refetchType: "all",
         }),
         queryClient.invalidateQueries({
           queryKey: communityKeys.recommendations(),
-          refetchType: "all",
         }),
       ]);
       queryClient.removeQueries({
