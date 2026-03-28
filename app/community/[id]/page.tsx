@@ -3,7 +3,7 @@ import {
   getServerCommunityComments,
   getServerCommunityDetail,
   getServerRecommendedCommunityPosts,
-} from "@/services/community-server";
+} from "@/services/community.server";
 import CommunityDetailPageClient from "./_components/community-detail-page-client";
 
 type CommunityDetailPageProps = {
