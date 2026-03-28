@@ -29,7 +29,6 @@ import {
   getRecommendedCommunityPosts,
   reportCommunityComment,
   reportCommunityPost,
-  requestCommunityListRevalidation,
   toggleCommunityPostLike,
   updateCommunityPost,
 } from "@/services/community";
@@ -204,14 +203,6 @@ async function invalidateCommunityPostLikes(
   ]);
 }
 
-async function revalidateCommunityListCache() {
-  try {
-    await requestCommunityListRevalidation();
-  } catch (error) {
-    console.error(error);
-  }
-}
-
 //리스트
 export function useInfiniteCommunityListQuery(
   service?: SubscriptableBrandType,
@@ -298,11 +289,8 @@ export function useCreateCommunityPostMutation() {
   return useMutation({
     networkMode: "always",
     mutationFn: createCommunityPost,
-    onSuccess: async () => {
-      await Promise.all([
-        invalidateCommunityCollections(queryClient),
-        revalidateCommunityListCache(),
-      ]);
+    onSuccess: () => {
+      void invalidateCommunityCollections(queryClient);
     },
   });
 }
@@ -315,10 +303,7 @@ export function useUpdateCommunityPostMutation() {
     networkMode: "always",
     mutationFn: updateCommunityPost,
     onSuccess: async (_, variables) => {
-      await Promise.all([
-        invalidateCommunityPost(queryClient, variables.postId),
-        revalidateCommunityListCache(),
-      ]);
+      await invalidateCommunityPost(queryClient, variables.postId);
     },
   });
 }
@@ -329,8 +314,8 @@ export function useDeleteCommunityPostMutation() {
 
   return useMutation({
     mutationFn: deleteCommunityPost,
-    onSuccess: async (_, variables) => {
-      await Promise.all([
+    onSuccess: (_, variables) => {
+      void Promise.all([
         queryClient.invalidateQueries({
           queryKey: communityKeys.lists(),
           refetchType: "all",
@@ -339,7 +324,6 @@ export function useDeleteCommunityPostMutation() {
           queryKey: communityKeys.recommendations(),
           refetchType: "all",
         }),
-        revalidateCommunityListCache(),
       ]);
       queryClient.removeQueries({
         queryKey: communityKeys.likeStatuses(variables.postId),
@@ -391,10 +375,7 @@ export function useCreateCommunityCommentMutation() {
   return useMutation({
     mutationFn: createCommunityComment,
     onSuccess: async (_, variables) => {
-      await Promise.all([
-        invalidateCommunityPostComments(queryClient, variables.postId),
-        revalidateCommunityListCache(),
-      ]);
+      await invalidateCommunityPostComments(queryClient, variables.postId);
     },
   });
 }
@@ -523,10 +504,7 @@ export function useDeleteCommunityCommentMutation() {
   return useMutation({
     mutationFn: deleteCommunityComment,
     onSuccess: async (_, variables) => {
-      await Promise.all([
-        invalidateCommunityPostComments(queryClient, variables.postId),
-        revalidateCommunityListCache(),
-      ]);
+      await invalidateCommunityPostComments(queryClient, variables.postId);
     },
   });
 }
