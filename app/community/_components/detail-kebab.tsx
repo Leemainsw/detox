@@ -6,6 +6,28 @@ import KebabMenu from "@/app/components/kebabmenu";
 import { useToast } from "@/app/hooks/useToast";
 import type { AlertItem } from "@/store/useAlertStore";
 
+type ErrorWithMessage = {
+  message?: string | null;
+};
+
+function getErrorMessage(error: unknown, fallbackMessage: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof (error as ErrorWithMessage).message === "string" &&
+    (error as ErrorWithMessage).message
+  ) {
+    return (error as ErrorWithMessage).message as string;
+  }
+
+  return fallbackMessage;
+}
+
 interface DetailKebabProps {
   variant?: "default" | "edit";
   entityName?: string;
@@ -23,8 +45,6 @@ export default function DetailKebab({
 }: DetailKebabProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { success, warning, error: errorToast } = useToast();
-  const getErrorMessage = (error: unknown, fallbackMessage: string) =>
-    error instanceof Error && error.message ? error.message : fallbackMessage;
 
   const deleteAlert: AlertItem = {
     id: `delete-${entityName}-alert`,
