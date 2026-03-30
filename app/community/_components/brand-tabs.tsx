@@ -65,6 +65,7 @@ export default function BrandTabs(props: BrandTabsProps) {
     align: "start",
     dragFree: true,
   });
+
   const brandTabs = useMemo(
     () => [
       ...(includeAll ? [{ key: "all" as const, label: "전체" }] : []),
@@ -89,11 +90,7 @@ export default function BrandTabs(props: BrandTabsProps) {
   }, [brandTabs, emblaApi, value]);
 
   return (
-    <div
-      className="mt-5"
-      role="group"
-      aria-label="커뮤니티 카테고리"
-    >
+    <div className="mt-5" role="group" aria-label="커뮤니티 카테고리">
       <div
         ref={emblaRef}
         className="overflow-hidden [touch-action:pan-y_pinch-zoom]"
