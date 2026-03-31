@@ -77,3 +77,12 @@ export async function updateUserProfile(
     .select()
     .single();
 }
+
+/** 회원 탈퇴(소프트 삭제). 이후 클라이언트에서 signOut 호출 권장 */
+export async function softDeleteUserAccount(userId: string) {
+  return supabase
+    .from("users")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", userId)
+    .is("deleted_at", null);
+}

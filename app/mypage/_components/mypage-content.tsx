@@ -9,10 +9,12 @@ import Input from "@/app/components/input";
 import Button from "@/app/components/button";
 import BottomNav from "@/app/components/bottom-nav";
 import TextButton from "@/app/components/text-button";
+import { useAlert } from "@/app/hooks/useAlert";
 import {
   useLogoutMutation,
   useUpdateUserProfileMutation,
   useUserProfileSuspenseQuery,
+  useWithdrawAccountMutation,
 } from "@/query/users";
 import { uploadProfileImage } from "@/services/storage";
 import { useToast } from "@/app/hooks/useToast";
@@ -25,11 +27,16 @@ interface Props {
 export default function MypageContent({ userId }: Props) {
   const router = useRouter();
   const { success, error } = useToast();
+  const { alert } = useAlert();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: userProfile } = useUserProfileSuspenseQuery(userId);
-  const logoutMutation = useLogoutMutation();
-  const updateProfileMutation = useUpdateUserProfileMutation(userId);
+  const { mutateAsync: logout, isPending: isLogoutPending } =
+    useLogoutMutation();
+  const { mutateAsync: withdrawAccount, isPending: isWithdrawPending } =
+    useWithdrawAccountMutation(userId);
+  const { mutateAsync: updateProfile, isPending: isUpdateProfilePending } =
+    useUpdateUserProfileMutation(userId);
 
   const [nickname, setNickname] = useState(userProfile?.nickname ?? "");
   const [profileImage, setProfileImage] = useState(
@@ -38,7 +45,7 @@ export default function MypageContent({ userId }: Props) {
 
   const handleLogout = async () => {
     try {
-      await logoutMutation.mutateAsync();
+      await logout();
       router.push("/login");
     } catch (logoutError) {
       console.error(logoutError);
@@ -48,9 +55,32 @@ export default function MypageContent({ userId }: Props) {
 
   const trimmedNickname = nickname.trim();
 
+  const handleWithdrawConfirm = () => {
+    alert({
+      title: "정말 탈퇴하시겠어요?",
+      description:
+        "계정과 연동된 서비스 이용 기록은 복구할 수 없어요. 탈퇴 즉시 로그아웃됩니다.",
+      variant: "danger",
+      cancelText: "취소",
+      confirmText: "탈퇴하기",
+      onConfirm: handleWithdraw,
+    });
+  };
+
+  const handleWithdraw = async () => {
+    try {
+      await withdrawAccount();
+      success("탈퇴 처리되었어요.");
+      router.replace("/");
+    } catch (withdrawError) {
+      console.error(withdrawError);
+      error("탈퇴 처리에 실패했어요.");
+    }
+  };
+
   const handleSave = async () => {
     try {
-      await updateProfileMutation.mutateAsync({
+      await updateProfile({
         nickname: trimmedNickname === "" ? undefined : trimmedNickname,
       });
       success("저장되었어요.");
@@ -87,7 +117,7 @@ export default function MypageContent({ userId }: Props) {
 
     try {
       const publicUrl = await uploadProfileImage(userId, file);
-      await updateProfileMutation.mutateAsync({ profile_image: publicUrl });
+      await updateProfile({ profile_image: publicUrl });
       setProfileImage(publicUrl);
       success("프로필 이미지가 변경되었어요.");
     } catch (uploadError) {
@@ -110,7 +140,7 @@ export default function MypageContent({ userId }: Props) {
           <TextButton
             size="md"
             className="flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={logoutMutation.isPending}
+            disabled={isLogoutPending}
             onClick={handleLogout}
           >
             로그아웃
@@ -142,7 +172,7 @@ export default function MypageContent({ userId }: Props) {
                   fileInputRef.current.click();
                 }
               }}
-              disabled={updateProfileMutation.isPending}
+              disabled={isUpdateProfilePending}
             >
               <Image
                 src="/images/my-page/upload-image.png"
@@ -170,7 +200,7 @@ export default function MypageContent({ userId }: Props) {
             size="lg"
             onClick={handleSave}
             disabled={
-              updateProfileMutation.isPending ||
+              isUpdateProfilePending ||
               trimmedNickname === "" ||
               trimmedNickname === (userProfile?.nickname ?? "").trim()
             }
@@ -184,7 +214,9 @@ export default function MypageContent({ userId }: Props) {
         <TextButton
           size="md"
           underline
-          className="absolute left-1/2 -translate-x-1/2 bottom-[108px] w-auto flex items-center justify-center gap-2"
+          className="absolute left-1/2 -translate-x-1/2 bottom-[108px] w-auto gap-2 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={isWithdrawPending || isUpdateProfilePending}
+          onClick={handleWithdrawConfirm}
         >
           탈퇴하기
         </TextButton>

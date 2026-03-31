@@ -13,6 +13,7 @@ import {
   getUserProfile,
   signInAnonymously,
   signOut,
+  softDeleteUserAccount,
   updateUserProfile,
   upsertUser,
 } from "@/services/users";
@@ -82,6 +83,29 @@ export function useLogoutMutation() {
 
       if (error) {
         throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.clear();
+    },
+  });
+}
+
+/** 회원 탈퇴(소프트 삭제) 후 세션 종료 */
+export function useWithdrawAccountMutation(userId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: [...usersKeys.profile(), "withdraw", userId],
+    mutationFn: async () => {
+      const { error: deleteError } = await softDeleteUserAccount(userId);
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      const { error: signOutError } = await signOut();
+      if (signOutError) {
+        throw signOutError;
       }
     },
     onSuccess: () => {
