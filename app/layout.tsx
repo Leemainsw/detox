@@ -14,6 +14,7 @@ import { Toaster } from "./components/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import QueryProvider from "./providers/query-client-provider";
 import SupabaseAuthListener from "./components/supabase-auth-listener";
+import NotificationRealtimeListener from "./components/notification-realtime-listener";
 
 const pretendard = localFont({
   src: "../public/fonts/PretendardVariable.woff2",
@@ -78,6 +79,7 @@ export default function RootLayout({
           <SupabaseLockErrorHandler />
           <SupabaseAuthListener />
           <QueryProvider>
+            <NotificationRealtimeListener />
             <TooltipProvider>
               <AlertProvider />
               <Toaster />
