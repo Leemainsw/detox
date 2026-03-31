@@ -22,9 +22,10 @@ import { useRouter } from "next/navigation";
 
 interface Props {
   userId: string;
+  onLogoutStateChange?: (isLoggingOut: boolean) => void;
 }
 
-export default function MypageContent({ userId }: Props) {
+export default function MypageContent({ userId, onLogoutStateChange }: Props) {
   const router = useRouter();
   const { success, error } = useToast();
   const { alert } = useAlert();
@@ -44,10 +45,13 @@ export default function MypageContent({ userId }: Props) {
   );
 
   const handleLogout = async () => {
+    onLogoutStateChange?.(true);
+
     try {
       await logout();
-      router.push("/login");
+      router.replace("/");
     } catch (logoutError) {
+      onLogoutStateChange?.(false);
       console.error(logoutError);
       error("로그아웃에 실패했어요.");
     }
@@ -165,7 +169,7 @@ export default function MypageContent({ userId }: Props) {
             />
             <button
               type="button"
-              className="absolute bottom-0 right-[-10px]"
+              className="absolute bottom-0 right-[-10px] cursor-pointer"
               onClick={() => {
                 if (fileInputRef.current) {
                   fileInputRef.current.value = "";
@@ -177,8 +181,8 @@ export default function MypageContent({ userId }: Props) {
               <Image
                 src="/images/my-page/upload-image.png"
                 alt="edit-profile"
-                width={44}
-                height={44}
+                width={48}
+                height={48}
               />
             </button>
           </div>
