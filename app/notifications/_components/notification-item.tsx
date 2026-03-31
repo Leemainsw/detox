@@ -12,6 +12,7 @@ import {
 import { useToast } from "@/app/hooks/useToast";
 import type { Tables } from "@/types/supabase.types";
 import getNotificationTitle from "@/app/utils/notifications/getNotificationTitle";
+import { useRouter } from "next/navigation";
 
 type NotificationWithSubscription = Tables<"notification"> & {
   subscription?: Tables<"subscription"> | null;
@@ -23,6 +24,7 @@ interface Props {
 
 export default function NotificationItem({ notification }: Props) {
   const { error, success } = useToast();
+  const router = useRouter();
 
   const { mutateAsync: deleteNotification, isPending: isDeleting } =
     useDeleteNotificationMutation(notification.user_id);
@@ -37,6 +39,16 @@ export default function NotificationItem({ notification }: Props) {
     } catch (err) {
       const message = err instanceof Error ? err.message : "삭제에 실패했어요.";
       error(message);
+    }
+  };
+
+  const handleDetail = () => {
+    handleRead();
+    if (notification.type.includes("community")) {
+      router.push(`/community/${notification.post_id}`);
+    }
+    if (notification.type.includes("subscription")) {
+      router.push(`/subscription/${notification.subscription_id}`);
     }
   };
 
@@ -68,7 +80,7 @@ export default function NotificationItem({ notification }: Props) {
       )}
       role="button"
       tabIndex={0}
-      onClick={handleRead}
+      onClick={handleDetail}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
