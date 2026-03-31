@@ -154,7 +154,17 @@ export default function MypageContent({ userId, onLogoutStateChange }: Props) {
 
       <div className="w-full flex flex-col px-6 mt-18 gap-18">
         <div className="flex flex-col gap-4 items-center">
-          <div className="relative w-fit">
+          <div
+            className="relative w-fit cursor-pointer"
+            aria-label="edit-profile"
+            role="button"
+            onClick={() => {
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+                fileInputRef.current.click();
+              }
+            }}
+          >
             <Avatar
               size="xl"
               src={profileImage || undefined}
@@ -170,12 +180,6 @@ export default function MypageContent({ userId, onLogoutStateChange }: Props) {
             <button
               type="button"
               className="absolute bottom-0 right-[-10px] cursor-pointer"
-              onClick={() => {
-                if (fileInputRef.current) {
-                  fileInputRef.current.value = "";
-                  fileInputRef.current.click();
-                }
-              }}
               disabled={isUpdateProfilePending}
             >
               <Image
