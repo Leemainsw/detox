@@ -21,7 +21,7 @@ export default function HomeSubscriptionSection({
 }: Props) {
   return (
     <section className="pt-10 bg-white border-t-gray-100 border-t-16">
-      <div className="relative flex flex-col justify-start items-start gap-4  h-[calc(100vh_-_56px_-_148px_-_16px_-_148px)]">
+      <div className="relative flex flex-col justify-start items-start gap-4  min-h-[calc(100vh_-_56px_-_148px_-_16px_-_148px_-_70px)]">
         <div className="px-6 w-full flex justify-between items-center">
           <h6 className="title-md text-black">
             나의 구독{" "}
@@ -38,7 +38,7 @@ export default function HomeSubscriptionSection({
                 price={item.total_amount / Math.max(item.member_count, 1)}
                 billingCycle={item.billing_cycle}
                 group={item.subscription_mode === "group"}
-                groupCount={Math.max(item.member_count - 1, 0)}
+                groupCount={item.member_count}
                 isFreeTrial={item.payment_type === "trial"}
               />
             </li>
