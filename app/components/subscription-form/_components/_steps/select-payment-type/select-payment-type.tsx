@@ -110,6 +110,7 @@ export default function SelectPaymentType({
             label={`${values?.billing_cycle === "monthly" ? "매월" : "매년"} 얼마를 내고 있나요?`}
             placeholder="총 금액을 입력하세요"
             suffix="원"
+            isCurrency
             onChange={(e) => {
               setTotalAmount(Number(e.target.value));
             }}
@@ -139,6 +140,7 @@ export default function SelectPaymentType({
               label={`무료체험이 끝난뒤 ${values?.billing_cycle === "monthly" ? "매월" : "매년"} 얼마를 내야 하나요?`}
               placeholder="총 금액을 입력하세요"
               suffix="원"
+              isCurrency
               onChange={(e) => {
                 setTotalAmount(Number(e.target.value));
               }}
