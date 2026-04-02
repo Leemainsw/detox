@@ -11,8 +11,10 @@ import { generateNickname } from "@/app/utils/nickname";
 import {
   getCurrentUser,
   getUserProfile,
+  revertSoftDeleteUserAccount,
   signInAnonymously,
   signOut,
+  signOutWithRetry,
   softDeleteUserAccount,
   updateUserProfile,
   upsertUser,
@@ -92,7 +94,11 @@ export function useLogoutMutation() {
   });
 }
 
-/** 회원 탈퇴(소프트 삭제) 후 세션 종료 */
+/**
+ * 회원 탈퇴(소프트 삭제) 후 세션 종료.
+ * signOut을 먼저 할 수 없음 — 세션 없이는 RLS 하에 users.update(탈퇴)가 실패할 수 있음.
+ * softDelete 성공 후 signOut만 실패하면 재시도하고, 그래도 실패하면 탈퇴를 롤백한다.
+ */
 export function useWithdrawAccountMutation(userId: string) {
   const queryClient = useQueryClient();
 
@@ -104,9 +110,18 @@ export function useWithdrawAccountMutation(userId: string) {
         throw deleteError;
       }
 
-      const { error: signOutError } = await signOut();
+      const { error: signOutError } = await signOutWithRetry();
       if (signOutError) {
-        throw signOutError;
+        const { error: revertError } =
+          await revertSoftDeleteUserAccount(userId);
+        if (revertError) {
+          throw new Error(
+            "탈퇴 처리 후 로그아웃에 실패했고, 탈퇴 취소(복구)도 실패했어요. 고객지원으로 문의해 주세요."
+          );
+        }
+        throw new Error(
+          "로그아웃에 실패해 탈퇴 처리를 되돌렸어요. 잠시 후 다시 시도해 주세요."
+        );
       }
     },
     onSuccess: () => {
