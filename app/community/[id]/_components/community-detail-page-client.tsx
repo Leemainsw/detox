@@ -63,9 +63,9 @@ export default function CommunityDetailPageClient({
           </div>
 
           <div className="mt-4 text-sm text-gray-300">
-            <h6 className="mb-2 text-lg font-bold leading-[140%] text-black">
+            <h1 className="mb-2 text-lg font-bold leading-[140%] text-black">
               {post.title}
-            </h6>
+            </h1>
             <p className="text-base leading-[140%] text-gray-300 whitespace-pre-wrap">
               {post.content}
             </p>
@@ -96,8 +96,8 @@ export default function CommunityDetailPageClient({
         ) : recommendedPosts.length > 0 ? (
           <section className="bg-gray-50 px-6 py-6">
             <h3 className="title-md">
-              <span className="text-brand-primary">AI디톡이</span>가 추천해주는
-              관련 게시글
+              <span className="text-blue-600">AI디톡이</span>가 추천해주는 관련
+              게시글
             </h3>
 
             <CommunityList items={recommendedPosts} />

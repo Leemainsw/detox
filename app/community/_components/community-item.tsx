@@ -19,9 +19,9 @@ export default function CommunityItem({ item }: CommunityItemProps) {
           timeAgo={item.timeAgo}
         />
         <div className="mt-4 text-sm text-gray-300">
-          <h6 className="mb-2 line-clamp-2 text-lg font-bold leading-[140%] text-black">
+          <h1 className="mb-2 line-clamp-2 text-lg font-bold leading-[140%] text-black">
             {item.title}
-          </h6>
+          </h1>
           <p className="line-clamp-3 text-base leading-[140%] text-gray-300">
             {item.content}
           </p>
