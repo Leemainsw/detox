@@ -37,7 +37,7 @@ export default function CommentList({ items }: CommentListProps) {
                 author={item.author}
                 timeAgo={item.timeAgo}
               />
-              <p className="text-base leading-[140%] text-gray-300">
+              <p className="break-words text-base leading-[140%] text-gray-300">
                 {item.content}
               </p>
             </article>
