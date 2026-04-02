@@ -44,11 +44,20 @@ export default function NotificationItem({ notification }: Props) {
 
   const handleDetail = () => {
     handleRead();
-    if (notification.type.includes("community")) {
-      router.push(`/community/${notification.post_id}`);
-    }
-    if (notification.type.includes("subscription")) {
-      router.push(`/subscription/${notification.subscription_id}`);
+
+    switch (notification.type) {
+      case "community_comment":
+      case "community_like":
+        if (notification.post_id) {
+          router.push(`/community/${notification.post_id}`);
+        }
+        break;
+      case "payment_due":
+      case "trial_ending":
+        if (notification.subscription_id) {
+          router.push(`/subscription/${notification.subscription_id}`);
+        }
+        break;
     }
   };
 
