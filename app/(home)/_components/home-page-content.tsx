@@ -20,7 +20,9 @@ export default function HomePageContent() {
       sum +
       (item.payment_type === "trial"
         ? 0
-        : item.total_amount / Math.max(item.member_count, 1)),
+        : item.total_amount /
+          Math.max(item.member_count, 1) /
+          (item.billing_cycle === "monthly" ? 1 : 12)),
     0
   );
 
