@@ -1,16 +1,7 @@
 "use client";
 
-function digitsOnly(s: string): string {
-  return s.replace(/\D/g, "");
-}
-
-/** 정수 금액 천 단위 콤마 (ko-KR) */
-function formatCurrencyDisplay(digits: string): string {
-  if (!digits) return "";
-  const n = Number(digits);
-  if (Number.isNaN(n)) return "";
-  return n.toLocaleString("ko-KR");
-}
+import digitsOnly from "@/app/utils/subscriptions/digitsOnly";
+import formatCurrencyDisplay from "@/app/utils/subscriptions/formatCurrencyDisplay";
 
 interface InputProps {
   label?: string;
