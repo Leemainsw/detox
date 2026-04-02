@@ -89,6 +89,7 @@ export default function DatePicker({
       <div
         className={cn(
           "flex items-stretch gap-1 rounded-lg bg-gray-50 min-h-[46px]",
+          "focus-within:ring-2 focus-within:ring-brand-primary/40",
           "hover:bg-gray-100/80 transition-colors",
           disabled ? "opacity-50 pointer-events-none" : ""
         )}
