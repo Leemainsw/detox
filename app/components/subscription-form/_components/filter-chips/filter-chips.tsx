@@ -32,7 +32,10 @@ export default function FilterChips({
       return;
     }
 
-    const activeIndex = options.findIndex((tab) => tab.value === value);
+    const chipValues = ["all", ...options.map((tab) => tab.value)];
+    const activeIndex = chipValues.findIndex(
+      (chipValue) => chipValue === value
+    );
 
     if (activeIndex >= 0) {
       emblaApi.scrollTo(activeIndex);
