@@ -38,7 +38,6 @@ export default function useRealtimeNotifications(
           filter: `user_id=eq.${userId}`,
         },
         async (payload) => {
-          console.log("payload", payload);
           const row = payload.new as Tables<"notification">;
           await queryClient.invalidateQueries({
             queryKey: notificationsKeys.all,
