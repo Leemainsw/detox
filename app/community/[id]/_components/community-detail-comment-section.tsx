@@ -92,7 +92,7 @@ export default function CommunityDetailCommentSection({
 
   return (
     <section className="border-t border-gray-50 px-6 py-5">
-      <h3 className="title-md text-gray-400">댓글</h3>
+      <h1 className="title-md text-gray-400">댓글</h1>
 
       {isCommentsPending ? (
         <CommunityDetailCommentsSkeleton />

@@ -95,10 +95,10 @@ export default function CommunityDetailPageClient({
           <CommunityDetailRecommendedPostsSkeleton />
         ) : recommendedPosts.length > 0 ? (
           <section className="bg-gray-50 px-6 py-6">
-            <h3 className="title-md">
+            <h1 className="title-md">
               <span className="text-blue-600">AI디톡이</span>가 추천해주는 관련
               게시글
-            </h3>
+            </h1>
 
             <CommunityList items={recommendedPosts} />
           </section>
