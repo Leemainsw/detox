@@ -17,7 +17,6 @@ import { useAnonymousLoginMutation, useCurrentUserQuery } from "@/query/users";
 import { useToast } from "../hooks/useToast";
 import { getSafeRedirectPath } from "@/app/utils/auth/get-safe-redirect-path";
 import { signInWithOAuth } from "@/services/users";
-import Link from "next/link";
 
 function LoginContent() {
   const router = useRouter();
