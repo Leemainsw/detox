@@ -16,6 +16,7 @@ export type CommunityListItemData = {
 export type CommunityDetailData = CommunityListItemData & {
   userId: string;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type CommunityCommentItemData = {
