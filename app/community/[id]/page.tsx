@@ -24,6 +24,9 @@ export default async function CommunityDetailPage({
     getServerRecommendedCommunityPosts({
       postId: id,
       service: post.service,
+      sourceTitle: post.title,
+      sourceContent: post.content,
+      sourcePostUpdatedAt: post.updatedAt,
     }),
     getServerCommunityComments(id),
   ]);
