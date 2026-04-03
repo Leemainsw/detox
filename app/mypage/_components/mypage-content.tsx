@@ -78,7 +78,11 @@ export default function MypageContent({ userId, onLogoutStateChange }: Props) {
       router.replace("/");
     } catch (withdrawError) {
       console.error(withdrawError);
-      error("탈퇴 처리에 실패했어요.");
+      error(
+        withdrawError instanceof Error
+          ? withdrawError.message
+          : "탈퇴 처리에 실패했어요."
+      );
     }
   };
 
@@ -159,10 +163,9 @@ export default function MypageContent({ userId, onLogoutStateChange }: Props) {
             aria-label="edit-profile"
             role="button"
             onClick={() => {
-              if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-                fileInputRef.current.click();
-              }
+              if (isUpdateProfilePending || !fileInputRef.current) return;
+              fileInputRef.current.value = "";
+              fileInputRef.current.click();
             }}
           >
             <Avatar
