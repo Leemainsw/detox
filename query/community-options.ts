@@ -1,6 +1,9 @@
-import { infiniteQueryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import type {
+  CommunityCommentItemData,
+  CommunityDetailData,
   CommunityListCursor,
+  CommunityListItemData,
   CommunityListPage,
 } from "@/app/community/_types";
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
@@ -33,13 +36,28 @@ export const communityKeys = {
   ],
 } as const;
 
-export const COMMUNITY_LIST_STALE_TIME = 30 * 1000;
+export const COMMUNITY_STALE_TIME = 30 * 1000;
+export const COMMUNITY_LIST_STALE_TIME = COMMUNITY_STALE_TIME;
 
 type CommunityListPageFetcher = (params: {
   service?: SubscriptableBrandType;
   cursor?: CommunityListCursor | null;
   pageSize?: number;
 }) => Promise<CommunityListPage>;
+
+type CommunityDetailFetcher = (
+  postId: string
+) => Promise<CommunityDetailData | null>;
+
+type CommunityCommentsFetcher = (
+  postId: string
+) => Promise<CommunityCommentItemData[]>;
+
+type RecommendedCommunityPostsFetcher = (params: {
+  postId: string;
+  service: SubscriptableBrandType;
+  limit?: number;
+}) => Promise<CommunityListItemData[]>;
 
 export function createCommunityListInfiniteQueryOptions(params: {
   service?: SubscriptableBrandType;
@@ -54,6 +72,44 @@ export function createCommunityListInfiniteQueryOptions(params: {
         cursor: pageParam,
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    staleTime: COMMUNITY_LIST_STALE_TIME,
+    staleTime: COMMUNITY_STALE_TIME,
+  });
+}
+
+export function createCommunityDetailQueryOptions(params: {
+  postId: string;
+  fetchDetail: CommunityDetailFetcher;
+}) {
+  return queryOptions({
+    queryKey: communityKeys.detail(params.postId),
+    queryFn: () => params.fetchDetail(params.postId),
+    staleTime: COMMUNITY_STALE_TIME,
+  });
+}
+
+export function createCommunityCommentsQueryOptions(params: {
+  postId: string;
+  fetchComments: CommunityCommentsFetcher;
+}) {
+  return queryOptions({
+    queryKey: communityKeys.commentList(params.postId),
+    queryFn: () => params.fetchComments(params.postId),
+    staleTime: COMMUNITY_STALE_TIME,
+  });
+}
+
+export function createRecommendedCommunityPostsQueryOptions(params: {
+  postId: string;
+  service: SubscriptableBrandType;
+  fetchRecommendedPosts: RecommendedCommunityPostsFetcher;
+}) {
+  return queryOptions({
+    queryKey: communityKeys.recommendedPosts(params.postId, params.service),
+    queryFn: () =>
+      params.fetchRecommendedPosts({
+        postId: params.postId,
+        service: params.service,
+      }),
+    staleTime: COMMUNITY_STALE_TIME,
   });
 }

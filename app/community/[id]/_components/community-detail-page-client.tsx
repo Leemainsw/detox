@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import FeedbackPage from "@/app/components/feedback-page";
 import Header from "@/app/components/header";
 import {
   useCommunityCommentsQuery,
@@ -11,11 +12,6 @@ import {
 import CommunityReactionStats from "../../_components/community-reaction-stats";
 import CommunityList from "../../_components/community-list";
 import AuthorMeta from "../../_components/author-meta";
-import type {
-  CommunityDetailData,
-  CommunityCommentItemData,
-  CommunityListItemData,
-} from "../../_types";
 import CommunityDetailCommentSection from "./community-detail-comment-section";
 import CommunityDetailLoadingScreen from "./community-detail-loading-screen";
 import CommunityDetailPostActions from "./community-detail-post-actions";
@@ -24,41 +20,39 @@ import { getCommunityReturnTo } from "../../_utils/navigation";
 
 type CommunityDetailPageClientProps = {
   postId: string;
-  initialPost: CommunityDetailData;
-  initialRecommendedPosts: CommunityListItemData[];
-  initialComments: CommunityCommentItemData[];
 };
 
 export default function CommunityDetailPageClient({
   postId,
-  initialPost,
-  initialRecommendedPosts,
-  initialComments,
 }: CommunityDetailPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const commentInputRef = useRef<HTMLInputElement | null>(null);
   const returnTo = getCommunityReturnTo(searchParams.get("returnTo"));
-  const detailQuery = useCommunityDetailQuery(postId, initialPost);
-  const commentsQuery = useCommunityCommentsQuery(postId, initialComments);
+  const detailQuery = useCommunityDetailQuery(postId);
+  const post = detailQuery.data;
+  const commentsQuery = useCommunityCommentsQuery(postId);
   const recommendedPostsQuery = useRecommendedCommunityPostsQuery(
     postId,
-    initialPost.service,
-    initialRecommendedPosts
+    post?.service
   );
 
-  const post = detailQuery.data === undefined ? initialPost : detailQuery.data;
   const comments = commentsQuery.data ?? [];
   const recommendedPosts = recommendedPostsQuery.data ?? [];
 
-  useEffect(() => {
-    if (detailQuery.data === null) {
-      router.replace("/community");
-    }
-  }, [detailQuery.data, router]);
+  if (post === undefined) {
+    return <CommunityDetailLoadingScreen />;
+  }
 
   if (post === null) {
-    return <CommunityDetailLoadingScreen />;
+    return (
+      <FeedbackPage
+        title="페이지를 불러올 수 없어요"
+        description="삭제되었거나 없는 게시글입니다."
+        buttonLabel="커뮤니티 홈으로 이동"
+        buttonHref={returnTo}
+      />
+    );
   }
 
   return (
