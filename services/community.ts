@@ -497,7 +497,7 @@ export async function deleteCommunityComment(params: {
 //댓글신고
 export async function reportCommunityComment(params: {
   commentId: string;
-  postId?: string;
+  postId: string;
   reporterUserId: string;
 }) {
   await ensureCommentCanBeReported(params.commentId, params.reporterUserId);

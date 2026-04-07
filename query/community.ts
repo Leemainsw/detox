@@ -474,10 +474,6 @@ export function useReportCommunityCommentMutation() {
   return useMutation({
     mutationFn: reportCommunityComment,
     onSuccess: async (_, variables) => {
-      if (!variables.postId) {
-        return;
-      }
-
       await invalidateCommunityPostComments(queryClient, variables.postId);
     },
   });
