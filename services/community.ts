@@ -57,6 +57,7 @@ async function ensurePostCanBeReported(postId: string, reporterUserId: string) {
     .select("id, user_id")
     .eq("id", postId)
     .is("deleted_at", null)
+    .is("hidden_at", null)
     .maybeSingle();
 
   if (error) {
@@ -81,6 +82,7 @@ async function ensureCommentCanBeReported(
     .select("id, user_id")
     .eq("id", commentId)
     .is("deleted_at", null)
+    .is("hidden_at", null)
     .maybeSingle();
 
   if (error) {
