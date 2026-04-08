@@ -1,10 +1,15 @@
 "use client";
 
+import digitsOnly from "@/app/utils/subscriptions/digitsOnly";
+import formatCurrencyDisplay from "@/app/utils/subscriptions/formatCurrencyDisplay";
+
 interface InputProps {
   label?: string;
   placeholder?: string;
   prefix?: string | React.ReactNode;
   suffix?: string | React.ReactNode;
+  /** true면 숫자만 입력·표시에 천 단위 콤마, onChange에는 콤마 없는 숫자 문자열 */
+  isCurrency?: boolean;
 }
 
 export default function Input({
@@ -13,17 +18,48 @@ export default function Input({
   prefix,
   suffix,
   type = "text",
+  isCurrency = false,
   onKeyDown: externalOnKeyDown,
+  onChange,
+  value,
   ...props
 }: InputProps & React.InputHTMLAttributes<HTMLInputElement>) {
+  const inputType = isCurrency ? "text" : type;
+  const inputMode = isCurrency || type === "number" ? "numeric" : undefined;
+
+  const currencyDisplay =
+    value === undefined || value === null
+      ? ""
+      : formatCurrencyDisplay(digitsOnly(String(value)));
+
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (type === "number") {
-      if (event.key === "e" || event.key === "E") {
+    if (type === "number" || isCurrency) {
+      if (
+        event.key === "e" ||
+        event.key === "E" ||
+        event.key === "+" ||
+        event.key === "-"
+      ) {
         event.preventDefault();
       }
     }
-
+    if (isCurrency && (event.key === "." || event.key === ",")) {
+      event.preventDefault();
+    }
     externalOnKeyDown?.(event);
+  };
+
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!onChange) return;
+    const raw = digitsOnly(e.target.value);
+    const out = raw === "" ? "" : String(Number(raw));
+    const target = e.target;
+    const synthetic = {
+      ...e,
+      target: { ...target, value: out },
+      currentTarget: { ...target, value: out },
+    } as React.ChangeEvent<HTMLInputElement>;
+    onChange(synthetic);
   };
 
   return (
@@ -41,10 +77,12 @@ export default function Input({
           <input
             className="w-full outline-0 text-base text-gray-400 placeholder:text-gray-300"
             placeholder={placeholder}
-            type={type}
-            inputMode={type === "number" ? "numeric" : undefined}
+            type={inputType}
+            inputMode={inputMode}
             onKeyDown={onKeyDown}
             {...props}
+            value={isCurrency ? currencyDisplay : value}
+            onChange={isCurrency ? handleCurrencyChange : onChange}
           />
         </div>
         {suffix && (

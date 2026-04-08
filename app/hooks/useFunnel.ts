@@ -111,6 +111,8 @@ export function useFunnel<T, S extends readonly string[]>({
   // useEffect 의존성에 넣으면 렌더마다 initFunnel이 호출되어 퍼널이 계속 초기화됨
   const stepsRef = useRef(steps);
   const initialStateRef = useRef(initialState);
+  /** clearPersistedDraft 직후 한 번: 빈 퍼널이 다시 setDraft 되며 draft 키가 부활하는 것 방지 */
+  const suppressNextPersistRef = useRef(false);
 
   // draft 로드는 useEffect에서만 (localStorage는 클라이언트 전용 → 렌더 중 읽으면 hydration mismatch)
   useEffect(() => {
@@ -122,22 +124,16 @@ export function useFunnel<T, S extends readonly string[]>({
     const resolvedStepIndex =
       draft && draft.stepIndex >= 0 && draft.stepIndex < stepsRef.current.length
         ? draft.stepIndex
-        : initialStepIndex ?? 0;
+        : (initialStepIndex ?? 0);
 
     const queryStep = syncWithQuery ? searchParams.get(resolvedQueryKey) : null;
-    const queryStepIndex = queryStep
-      ? stepsRef.current.indexOf(queryStep)
-      : -1;
+    const queryStepIndex = queryStep ? stepsRef.current.indexOf(queryStep) : -1;
     const resolvedIndex =
       queryStepIndex >= 0 ? queryStepIndex : resolvedStepIndex;
 
     initFunnel(key, stepsRef.current, resolvedState, resolvedIndex);
 
-    if (
-      syncWithQuery &&
-      queryStepIndex < 0 &&
-      resolvedStepIndex > 0
-    ) {
+    if (syncWithQuery && queryStepIndex < 0 && resolvedStepIndex > 0) {
       const stepName = stepsRef.current[resolvedIndex];
       if (stepName) {
         const params = new URLSearchParams(searchParams.toString());
@@ -145,7 +141,17 @@ export function useFunnel<T, S extends readonly string[]>({
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
       }
     }
-  }, [key, persistKey, initialStepIndex, syncWithQuery, resolvedQueryKey, searchParams, pathname, router, initFunnel]);
+  }, [
+    key,
+    persistKey,
+    initialStepIndex,
+    syncWithQuery,
+    resolvedQueryKey,
+    searchParams,
+    pathname,
+    router,
+    initFunnel,
+  ]);
 
   // ─── destroyOnUnmount ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -158,8 +164,7 @@ export function useFunnel<T, S extends readonly string[]>({
 
   // ─── Derived state ──────────────────────────────────────────────────────────
   // funnel 초기화 전(첫 렌더)에는 initialState 사용 (SSR/클라이언트 동일 → hydration 안전)
-  const currentStepIndex =
-    funnel?.currentStepIndex ?? initialStepIndex ?? 0;
+  const currentStepIndex = funnel?.currentStepIndex ?? initialStepIndex ?? 0;
   const state = funnel?.state ?? initialState;
   const stepHistory = useMemo(
     () => funnel?.stepHistory ?? [],
@@ -251,6 +256,10 @@ export function useFunnel<T, S extends readonly string[]>({
   // persistKey 있으면 state/step 변경 시 자동으로 zustand persist (별도 draft 저장 없음)
   useEffect(() => {
     if (!persistKey || !funnel) return;
+    if (suppressNextPersistRef.current) {
+      suppressNextPersistRef.current = false;
+      return;
+    }
     useFunnelPersistStore
       .getState()
       .setDraft(
@@ -267,8 +276,13 @@ export function useFunnel<T, S extends readonly string[]>({
   }, [key, reset, updateQuery]);
 
   const clearPersistedDraft = useCallback(() => {
-    if (persistKey) useFunnelPersistStore.getState().clearDraft(persistKey);
-  }, [persistKey]);
+    if (!persistKey) return;
+    suppressNextPersistRef.current = true;
+    useFunnelPersistStore.getState().clearDraft(persistKey);
+    destroy(key);
+    initFunnel(key, stepsRef.current, initialStateRef.current, 0);
+    updateQuery(0);
+  }, [persistKey, destroy, initFunnel, key, updateQuery]);
 
   // ─── Return ─────────────────────────────────────────────────────────────────
   return {

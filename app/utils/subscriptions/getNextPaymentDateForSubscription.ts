@@ -13,16 +13,16 @@ type SubscriptionForNextPayment = {
 
 /**
  * 구독의 다음 결제 예정일 반환
- * - next_payment_date가 있으면 우선 사용
- * - 없으면 payment_day + billing_cycle로 계산 (무료체험 중이면 체험 종료일 이후 기준)
+ * - payment_day가 있으면 항상 오늘(또는 체험 종료일) 이후 다음 결제일을 계산
+ *   (DB의 next_payment_date는 등록 시점의 값이라 월이 지나도 갱신되지 않음)
+ * - payment_day가 없을 때만 저장된 next_payment_date 사용
  */
 export default function getNextPaymentDateForSubscription(
   subscription: SubscriptionForNextPayment
 ): string | null {
-  if (subscription.next_payment_date?.trim()) {
-    return subscription.next_payment_date;
+  if (subscription.payment_day == null) {
+    return subscription.next_payment_date?.trim() || null;
   }
-  if (subscription.payment_day == null) return null;
 
   let fromDate = new Date();
   const inTrial =
