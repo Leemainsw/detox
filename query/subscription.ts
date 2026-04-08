@@ -13,8 +13,15 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 
-/** 홈·통계 등에서 같은 목록 캐시를 공유할 때 짧게 유지 (초 단위) */
-export const SUBSCRIPTION_LIST_STALE_TIME_MS = 60 * 1000;
+/**
+ * 구독 목록은 앱 내 뮤테이션에서 invalidate/setQueryData로만 갱신하기 때문에
+ * 짧은 staleTime이면 홈 재진입마다 refetchOnMount로 API가 반복 호출됨,
+ * 따라서 무한대로 설정하여 캐시를 유지
+ */
+export const SUBSCRIPTION_LIST_STALE_TIME_MS = Infinity;
+
+/** 탭 이동 등으로 observer가 없을 때도 캐시를 조금 더 유지 */
+export const SUBSCRIPTION_LIST_GC_TIME_MS = 1000 * 60 * 30;
 
 export const subscriptionKeys = {
   all: ["subscription"] as const,
@@ -33,6 +40,7 @@ export const useGetSubscriptionListQuery = (userId: string) => {
     queryFn: () => getSubscriptionList(userId),
     enabled: !!userId,
     staleTime: SUBSCRIPTION_LIST_STALE_TIME_MS,
+    gcTime: SUBSCRIPTION_LIST_GC_TIME_MS,
   });
 };
 
@@ -44,6 +52,7 @@ export const useGetSubscriptionListSuspenseQuery = (userId: string) => {
     queryKey: subscriptionKeys.list(userId),
     queryFn: () => getSubscriptionList(userId),
     staleTime: SUBSCRIPTION_LIST_STALE_TIME_MS,
+    gcTime: SUBSCRIPTION_LIST_GC_TIME_MS,
   });
 };
 
