@@ -37,6 +37,7 @@ export default function StatisticsPage() {
     subscriptionSummaries,
     serviceAvgMap,
     isSubscriptionsLoading,
+    isSubscriptionsFetching,
     isServiceAvgLoading,
     isError,
   } = useSubscriptionStats();
@@ -46,11 +47,14 @@ export default function StatisticsPage() {
 
   // 월별 통계 계산
   const monthlyTotalAmount = calculateMonthlyTotal(subscriptions, selectedDate);
+  const hasUserId = Boolean(user?.id);
+  const isSubscriptionsBusy =
+    hasUserId && (isSubscriptionsLoading || isSubscriptionsFetching);
   const isAllEmpty =
-    isUserResolved && !isSubscriptionsLoading && subscriptions.length === 0;
+    isUserResolved && !isSubscriptionsBusy && subscriptions.length === 0;
   const isMonthlyEmpty =
     isUserResolved &&
-    !isSubscriptionsLoading &&
+    !isSubscriptionsBusy &&
     !isAllEmpty &&
     monthlyTotalAmount === 0;
   const displayAmount = isAllEmpty || isMonthlyEmpty ? 0 : monthlyTotalAmount;
@@ -87,14 +91,14 @@ export default function StatisticsPage() {
                   <AgeBandSection
                     userName={userName}
                     displayAmount={displayAmount}
-                    isSubscriptionsLoading={isSubscriptionsLoading}
+                    isSubscriptionsLoading={isSubscriptionsBusy}
                   />
 
                   {subscriptionSummaries.length > 0 && (
                     <ServiceComparisonSection
                       subscriptionSummaries={subscriptionSummaries}
                       serviceAvgMap={serviceAvgMap}
-                      isLoading={isSubscriptionsLoading || isServiceAvgLoading}
+                      isLoading={isSubscriptionsBusy || isServiceAvgLoading}
                     />
                   )}
 
