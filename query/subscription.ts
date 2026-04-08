@@ -13,9 +13,14 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 
+/** 홈·통계 등에서 같은 목록 캐시를 공유할 때 짧게 유지 (초 단위) */
+export const SUBSCRIPTION_LIST_STALE_TIME_MS = 60 * 1000;
+
 export const subscriptionKeys = {
   all: ["subscription"] as const,
-  list: () => [...subscriptionKeys.all, "list"] as const,
+  list: (userId: string) => [...subscriptionKeys.all, "list", userId] as const,
+  /** `list(userId)` 전부 무효화할 때 (접두사 매칭) */
+  listAll: () => [...subscriptionKeys.all, "list"] as const,
   detail: (id: string) => [...subscriptionKeys.all, "detail", id] as const,
 };
 
@@ -24,9 +29,21 @@ export const subscriptionKeys = {
  */
 export const useGetSubscriptionListQuery = (userId: string) => {
   return useQuery({
-    queryKey: subscriptionKeys.list(),
+    queryKey: subscriptionKeys.list(userId),
     queryFn: () => getSubscriptionList(userId),
     enabled: !!userId,
+    staleTime: SUBSCRIPTION_LIST_STALE_TIME_MS,
+  });
+};
+
+/**
+ * 구독 목록 조회 (Suspense — 로그인 유저 id가 있을 때만 사용)
+ */
+export const useGetSubscriptionListSuspenseQuery = (userId: string) => {
+  return useSuspenseQuery({
+    queryKey: subscriptionKeys.list(userId),
+    queryFn: () => getSubscriptionList(userId),
+    staleTime: SUBSCRIPTION_LIST_STALE_TIME_MS,
   });
 };
 
@@ -40,7 +57,7 @@ export const useCreateSubscriptionMutation = () => {
     mutationFn: createSubscription,
     onSuccess: (data) => {
       queryClient.setQueryData(
-        subscriptionKeys.list(),
+        subscriptionKeys.list(data.user_id),
         (old: Tables<"subscription">[] | undefined) => [...(old ?? []), data]
       );
     },
@@ -76,7 +93,7 @@ export const useDeleteSubscriptionMutation = () => {
   return useMutation({
     mutationFn: deleteSubscription,
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: subscriptionKeys.list() });
+      queryClient.invalidateQueries({ queryKey: subscriptionKeys.listAll() });
       queryClient.removeQueries({ queryKey: subscriptionKeys.detail(id) });
     },
   });
@@ -96,7 +113,9 @@ export const useUpdateSubscriptionMutation = () => {
       values: TablesUpdate<"subscription">;
     }) => updateSubscription(id, values),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: subscriptionKeys.list() });
+      queryClient.invalidateQueries({
+        queryKey: subscriptionKeys.list(data.user_id),
+      });
       queryClient.setQueryData(subscriptionKeys.detail(data.id), data);
     },
   });
