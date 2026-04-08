@@ -107,7 +107,7 @@ export async function readNotification(notificationId: string) {
 export async function hasUnreadNotifications(userId: string) {
   const { data, error } = await supabase
     .from("notification")
-    .select("*")
+    .select("*", { count: "exact", head: true })
     .eq("user_id", userId)
     .is("deleted_at", null)
     .is("is_read", false);
