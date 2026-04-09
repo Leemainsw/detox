@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useCurrentUserQuery } from "@/query/users";
 import { supabase } from "@/lib/supabase";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
 import { AnalysisResponse } from "@/app/utils/subscriptions/validation";
 import { calculateCategoryRatio } from "@/app/utils/ai/analysis";
 import { extractJsonChunk } from "@/app/utils/ai/stream-parser";
-
-export type CacheStatus = "hit" | "miss" | "prefetch" | "error";
 
 export interface Message {
   role: "user" | "ai";
@@ -18,18 +16,56 @@ export interface Message {
   analysisData?: AnalysisResponse;
 }
 
+export interface AIAnalyzeStreamPayload {
+  question: string;
+  userContext: { categoryRatio: Record<string, number> };
+}
+
 export function useAiChat() {
+  const [streamedResult, setStreamedResult] = useState("");
+  const streamAnalyze = useCallback(async (payload: AIAnalyzeStreamPayload) => {
+    setStreamedResult("");
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "");
+      throw new Error(errText || `분석 요청 실패 (${response.status})`);
+    }
+
+    if (!response.body) throw new Error("응답 본문이 없습니다.");
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let accumulatedText = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      accumulatedText += decoder.decode(value, { stream: true });
+      const { textPart } = extractJsonChunk(accumulatedText);
+      setStreamedResult(textPart);
+    }
+    accumulatedText += decoder.decode();
+
+    return accumulatedText;
+  }, []);
+
+  const clearStreamPreview = useCallback(() => {
+    setStreamedResult("");
+  }, []);
+
   const [aiStatus, setAiStatus] = useState<
     "text" | "analyzing" | "error" | "chart"
   >("text");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [streamedResult, setStreamedResult] = useState("");
   const [showQuickQuestions, setShowQuickQuestions] = useState(true);
-  const [cacheStatus, setCacheStatus] = useState<CacheStatus | null>(null);
-  const [lastLatency, setLastLatency] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { setResult } = useAnalysisStore();
+  const { setResultForQuestion } = useAnalysisStore();
   const { data: user } = useCurrentUserQuery();
 
   useEffect(() => {
@@ -45,7 +81,7 @@ export function useAiChat() {
     });
 
     setShowQuickQuestions(false);
-    setStreamedResult("");
+    clearStreamPreview();
     setMessages((prev) => [
       ...prev,
       { role: "user", content: question, time: now, type: "text" },
@@ -64,94 +100,58 @@ export function useAiChat() {
 
       const categoryRatio = calculateCategoryRatio(subscriptions || []);
 
-      const response = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, userContext: { categoryRatio } }),
+      const accumulatedText = await streamAnalyze({
+        question,
+        userContext: { categoryRatio },
       });
 
-      if (!response.ok) throw new Error("분석 실패");
+      const responseTime = new Date().toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
 
-      const cacheHeader = response.headers.get("x-cache-status");
-      setCacheStatus((cacheHeader as CacheStatus) ?? "miss");
+      const { textPart, jsonPart } = extractJsonChunk(accumulatedText);
 
-      if (!response.body) throw new Error("응답 본문이 없습니다.");
-
-      const startTime = performance.now();
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedText = "";
-
-      const readStream = async () => {
+      if (jsonPart) {
         try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            accumulatedText += chunk;
-
-            const { textPart } = extractJsonChunk(accumulatedText);
-            setStreamedResult(textPart);
-          }
-
-          const { textPart, jsonPart } = extractJsonChunk(accumulatedText);
-          const responseTime = new Date().toLocaleTimeString("ko-KR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-          setLastLatency(Math.round(performance.now() - startTime));
-
-          if (jsonPart) {
-            try {
-              const parsedData: AnalysisResponse = JSON.parse(jsonPart);
-              setAiStatus("chart");
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: "ai",
-                  type: "chart",
-                  content: parsedData.description || "",
-                  time: responseTime,
-                  analysisData: parsedData,
-                },
-              ]);
-              setResult(parsedData);
-            } catch (parseErr) {
-              console.error("최종 데이터 파싱 에러:", parseErr);
-              setAiStatus("text");
-              setMessages((prev) => [
-                ...prev,
-                {
-                  role: "ai",
-                  type: "text",
-                  content: textPart,
-                  time: responseTime,
-                },
-              ]);
-            }
-          } else {
-            setAiStatus("text");
-            setMessages((prev) => [
-              ...prev,
-              {
-                role: "ai",
-                type: "text",
-                content: textPart,
-                time: responseTime,
-              },
-            ]);
-          }
-        } catch (streamErr) {
-          console.error("스트리밍 읽기 중단:", streamErr);
-          setAiStatus("error");
-        } finally {
-          setShowQuickQuestions(true);
-          setStreamedResult("");
+          const parsedData: AnalysisResponse = JSON.parse(jsonPart);
+          setAiStatus("chart");
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "ai",
+              type: "chart",
+              content: parsedData.description || "",
+              time: responseTime,
+              analysisData: parsedData,
+            },
+          ]);
+          setResultForQuestion(question, parsedData);
+        } catch (parseErr) {
+          console.error("최종 데이터 파싱 에러:", parseErr);
+          setAiStatus("text");
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "ai",
+              type: "text",
+              content: textPart,
+              time: responseTime,
+            },
+          ]);
         }
-      };
-
-      readStream();
+      } else {
+        setAiStatus("text");
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "ai",
+            type: "text",
+            content: textPart,
+            time: responseTime,
+          },
+        ]);
+      }
     } catch (error) {
       console.error("분석 프로세스 오류:", error);
       setAiStatus("error");
@@ -164,6 +164,9 @@ export function useAiChat() {
           type: "error",
         },
       ]);
+    } finally {
+      setShowQuickQuestions(true);
+      clearStreamPreview();
     }
   };
 
@@ -171,8 +174,6 @@ export function useAiChat() {
     aiStatus,
     messages,
     streamedResult,
-    cacheStatus,
-    lastLatency,
     showQuickQuestions,
     scrollRef,
     handleQuestionSelect,

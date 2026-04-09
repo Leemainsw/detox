@@ -17,7 +17,7 @@ interface StatisticsPayload {
     analysis_items: AnalysisItem[];
     chart_data: { month: string; my_spend: number; avg_spend: number }[];
     diff_amount: number;
-    diff_message: string;
+    diff_message?: string;
   };
 }
 
@@ -42,10 +42,14 @@ const isAnalysisResult = (value: unknown): value is AnalysisResult => {
   });
 };
 
+function normalizeQuestionKey(question: string) {
+  return question.trim();
+}
+
 interface AnalysisState {
-  result: AnalysisResult | null;
+  byQuestion: Record<string, AnalysisResult>;
   isLoading: boolean;
-  setResult: (newResult: unknown) => void;
+  setResultForQuestion: (question: string, newResult: unknown) => void;
   setIsLoading: (status: boolean) => void;
   clearResult: () => void;
 }
@@ -53,10 +57,10 @@ interface AnalysisState {
 export const useAnalysisStore = create<AnalysisState>()(
   persist(
     (set) => ({
-      result: null,
+      byQuestion: {},
       isLoading: false,
 
-      setResult: (newResult) => {
+      setResultForQuestion: (question, newResult) => {
         if (!isAnalysisResult(newResult)) {
           console.error(
             "[AnalysisStore] 데이터 형식이 올바르지 않습니다:",
@@ -64,15 +68,19 @@ export const useAnalysisStore = create<AnalysisState>()(
           );
           return;
         }
-        set({ result: newResult, isLoading: false });
+        const key = normalizeQuestionKey(question);
+        set((state) => ({
+          byQuestion: { ...state.byQuestion, [key]: newResult },
+          isLoading: false,
+        }));
       },
 
       setIsLoading: (status) => set({ isLoading: status }),
-      clearResult: () => set({ result: null, isLoading: false }),
+      clearResult: () => set({ byQuestion: {}, isLoading: false }),
     }),
     {
-      name: "ai-analysis-storage",
-      partialize: (state) => ({ result: state.result }),
+      name: "ai-analysis-by-question",
+      partialize: (state) => ({ byQuestion: state.byQuestion }),
     }
   )
 );

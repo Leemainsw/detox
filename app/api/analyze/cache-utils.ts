@@ -1,15 +1,25 @@
-const CACHE_TTL_MS = 1000 * 60 * 30; // 30분 유효
+const CACHE_TTL_MS = 1000 * 60 * 30;
 const inMemoryCache = new Map<
   string,
   { responseText: string; updatedAt: number }
 >();
+
+function stableRatioKey(categoryRatio: Record<string, number>) {
+  const sorted = Object.keys(categoryRatio)
+    .sort()
+    .reduce<Record<string, number>>((acc, k) => {
+      acc[k] = categoryRatio[k]!;
+      return acc;
+    }, {});
+  return JSON.stringify(sorted);
+}
 
 export function makeCacheKey(
   userId: string,
   question: string,
   categoryRatio: Record<string, number>
 ) {
-  return `${userId}::${question.trim() || "__default__"}::${JSON.stringify(categoryRatio)}`;
+  return `analyze::${userId}::${question.trim() || "__default__"}::${stableRatioKey(categoryRatio)}`;
 }
 
 export async function getCachedAnalysis(
