@@ -27,10 +27,7 @@ export default function getNextPaymentDateForSubscription(
   let fromDate = new Date();
   const inTrial =
     subscription.payment_type === "trial" &&
-    calculateTrial(
-      subscription.start_date!,
-      subscription.trial_months ?? 0
-    );
+    calculateTrial(subscription.start_date!, subscription.trial_months ?? 0);
   if (inTrial && subscription.start_date) {
     const trialEnd = addMonths(
       parseISO(subscription.start_date.split("T")[0]),
