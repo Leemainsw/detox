@@ -1,4 +1,14 @@
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 import { notFound } from "next/navigation";
+import {
+  createCommunityCommentsQueryOptions,
+  createCommunityDetailQueryOptions,
+  createRecommendedCommunityPostsQueryOptions,
+} from "@/query/community-options";
 import {
   getServerCommunityComments,
   getServerCommunityDetail,
@@ -14,26 +24,38 @@ export default async function CommunityDetailPage({
   params,
 }: CommunityDetailPageProps) {
   const { id } = await params;
+  const queryClient = new QueryClient();
 
-  const post = await getServerCommunityDetail(id);
+  const post = await queryClient.fetchQuery(
+    createCommunityDetailQueryOptions({
+      postId: id,
+      fetchDetail: getServerCommunityDetail,
+    })
+  );
 
   if (!post) {
     notFound();
   }
-  const [recommendedPosts, initialComments] = await Promise.all([
-    getServerRecommendedCommunityPosts({
-      postId: id,
-      service: post.service,
-    }),
-    getServerCommunityComments(id),
+
+  await Promise.all([
+    queryClient.prefetchQuery(
+      createRecommendedCommunityPostsQueryOptions({
+        postId: id,
+        service: post.service,
+        fetchRecommendedPosts: getServerRecommendedCommunityPosts,
+      })
+    ),
+    queryClient.prefetchQuery(
+      createCommunityCommentsQueryOptions({
+        postId: id,
+        fetchComments: getServerCommunityComments,
+      })
+    ),
   ]);
 
   return (
-    <CommunityDetailPageClient
-      postId={id}
-      initialPost={post}
-      initialRecommendedPosts={recommendedPosts}
-      initialComments={initialComments}
-    />
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <CommunityDetailPageClient postId={id} />
+    </HydrationBoundary>
   );
 }

@@ -96,7 +96,7 @@ export const subscriptableBrand: SubscriptableBrand = {
     category: "education",
   },
   perplexity: {
-    label: "퍼플렉 시티",
+    label: "퍼플렉시티",
     image: "/images/subscribe-logos/perplexity.png",
     category: "ai",
   },

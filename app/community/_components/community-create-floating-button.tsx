@@ -4,13 +4,19 @@ import { useRouter } from "next/navigation";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import FloatingButton from "@/app/components/floating-button";
+import { buildCommunityNewPath } from "../_utils/navigation";
 
-export default function CommunityCreateFloatingButton() {
+interface CommunityCreateFloatingButtonProps {
+  returnTo?: string;
+}
+
+export default function CommunityCreateFloatingButton({
+  returnTo,
+}: CommunityCreateFloatingButtonProps) {
   const router = useRouter();
-  const createPath = "/community/new";
 
   const handleCreateClick = () => {
-    router.push(createPath);
+    router.push(buildCommunityNewPath(returnTo));
   };
 
   return (

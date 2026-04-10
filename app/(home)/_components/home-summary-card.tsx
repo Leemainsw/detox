@@ -38,11 +38,7 @@ export default function HomeSummaryCard({
 
     case "saved":
       return (
-        <HomeSummaryFoodCard
-          type="saved"
-          food={food}
-          isLoading={isLoading}
-        />
+        <HomeSummaryFoodCard type="saved" food={food} isLoading={isLoading} />
       );
 
     case "this-month":

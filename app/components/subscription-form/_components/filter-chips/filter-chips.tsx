@@ -1,6 +1,8 @@
 "use client";
 
 import { cn } from "@/app/utils/class";
+import useEmblaCarousel from "embla-carousel-react";
+import { useEffect } from "react";
 
 export interface FilterChipOption {
   label: string;
@@ -20,46 +22,71 @@ export default function FilterChips({
   onChange,
   className,
 }: Props) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    dragFree: true,
+  });
+
+  useEffect(() => {
+    if (!emblaApi) {
+      return;
+    }
+
+    const chipValues = ["all", ...options.map((tab) => tab.value)];
+    const activeIndex = chipValues.findIndex(
+      (chipValue) => chipValue === value
+    );
+
+    if (activeIndex >= 0) {
+      emblaApi.scrollTo(activeIndex);
+    }
+  }, [options, emblaApi, value]);
+
   return (
     <div
-      className={cn(
-        "flex gap-2 overflow-x-auto pb-1 scrollbar-hide",
-        className ?? ""
-      )}
+      className={cn("pb-1 ", className ?? "")}
+      role="group"
       aria-label="필터 선택"
     >
-      <button
-        type="button"
-        aria-pressed={value === "all"}
-        onClick={() => onChange("all")}
-        className={cn(
-          "shrink-0 rounded-xl px-3 py-2 body-lg transition-colors",
-          value === "all"
-            ? "bg-brand-primary text-white font-bold"
-            : "bg-white text-gray-300 border border-gray-100"
-        )}
+      <div
+        ref={emblaRef}
+        className="overflow-hidden [touch-action:pan-y_pinch-zoom] cursor-grab"
       >
-        전체
-      </button>
-      {options.map((option) => {
-        const isSelected = value === option.value;
-        return (
+        <div className="tab-wrap ml-6 mr-6 flex gap-2 transition-transform">
           <button
-            key={option.value}
             type="button"
-            aria-pressed={isSelected}
-            onClick={() => onChange(option.value)}
+            aria-pressed={value === "all"}
+            onClick={() => onChange("all")}
             className={cn(
-              "shrink-0 rounded-xl px-3 py-2 body-lg transition-colors",
-              isSelected
+              "shrink-0 rounded-xl px-3 py-2 body-lg transition-colors cursor-pointer",
+              value === "all"
                 ? "bg-brand-primary text-white font-bold"
                 : "bg-white text-gray-300 border border-gray-100"
             )}
           >
-            {option.label}
+            전체
           </button>
-        );
-      })}
+          {options.map((option) => {
+            const isSelected = value === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => onChange(option.value)}
+                className={cn(
+                  "shrink-0 rounded-xl px-3 py-2 body-lg transition-colors cursor-pointer",
+                  isSelected
+                    ? "bg-brand-primary text-white font-bold"
+                    : "bg-white text-gray-300 border border-gray-100"
+                )}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

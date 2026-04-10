@@ -9,7 +9,6 @@ import StatisticsPageClient from "./statistics-page-client";
 
 type SubscriptionRow = Database["public"]["Tables"]["subscription"]["Row"];
 
-/** `query/users.ts`의 `useCurrentUserQuery` / `useUserProfileQuery`와 동일한 키 */
 const currentUserQueryKey = ["users", "auth", "current-user"] as const;
 const profileByIdQueryKey = (userId: string) =>
   ["users", "profile", userId] as const;

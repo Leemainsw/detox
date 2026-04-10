@@ -7,15 +7,18 @@ import {
   useReportCommunityPostMutation,
 } from "@/query/community";
 import { useCurrentUserQuery } from "@/query/users";
+import { buildCommunityEditPath } from "../../_utils/navigation";
 
 interface CommunityDetailPostActionsProps {
   postId: string;
   postUserId: string;
+  returnTo: string;
 }
 
 export default function CommunityDetailPostActions({
   postId,
   postUserId,
+  returnTo,
 }: CommunityDetailPostActionsProps) {
   const router = useRouter();
   const { data: currentUser } = useCurrentUserQuery();
@@ -28,7 +31,7 @@ export default function CommunityDetailPostActions({
   const isAuthor = currentUserId === postUserId;
 
   const handleEdit = () => {
-    router.push(`/community/${postId}/edit`);
+    router.push(buildCommunityEditPath(postId, returnTo));
   };
 
   const handleDelete = async () => {
@@ -41,7 +44,7 @@ export default function CommunityDetailPostActions({
       userId: currentUserId,
     });
 
-    router.replace("/community");
+    router.replace(returnTo);
   };
 
   const handleReport = async () => {

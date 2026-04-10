@@ -10,6 +10,7 @@ import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import { subscriptableBrand } from "@/app/utils/brand/brand";
 import { BillingCycle } from "../subscription-form/types/type";
 import formatBillingCycle from "@/app/utils/subscriptions/formatBillingCycle";
+import { cn } from "@/lib/utils";
 
 interface Badge {
   label: string;
@@ -39,7 +40,10 @@ export default function SubscriptionList({
   return (
     <Link
       href={href ?? ""}
-      className="w-full grid grid-cols-[1fr_auto_auto] items-center gap-4 py-4 bg-white"
+      className={cn(
+        "w-full grid grid-cols-[1fr_auto_auto] items-center gap-4 py-4 bg-white",
+        href ? "cursor-pointer" : "cursor-default"
+      )}
     >
       <div className="flex items-start gap-3">
         <BrandBox brandType={brandType} size="sm" />
@@ -63,7 +67,12 @@ export default function SubscriptionList({
         </div>
       </div>
       {badge && <Badge variant={badge.variant}>{badge.label}</Badge>}
-      <FontAwesomeIcon icon={faAngleRight} className="w-5 h-5 text-gray-300" />
+      {href && (
+        <FontAwesomeIcon
+          icon={faAngleRight}
+          className="w-5 h-5 text-gray-300"
+        />
+      )}
     </Link>
   );
 }

@@ -16,6 +16,8 @@ import getNextPaymentDateForSubscription from "@/app/utils/subscriptions/getNext
 import SubscriptionList from "@/app/components/subscription-list";
 import { SubscriptableBrandType } from "@/app/utils/brand/type";
 import calculateTrial from "@/app/utils/subscriptions/calculateTrial";
+import getCalendarDaysUntilPaymentDate from "@/app/utils/subscriptions/getCalendarDaysUntilPaymentDate";
+import getTrialPaidSoonMessage from "@/app/utils/subscriptions/getTrialPaidSoonMessage";
 
 export default function SubscriptionDetailContent() {
   const router = useRouter();
@@ -51,6 +53,16 @@ export default function SubscriptionDetailContent() {
   };
 
   const nextPaymentDate = getNextPaymentDateForSubscription(subscription);
+
+  const daysUntilFirstPayment =
+    subscription.payment_type === "trial"
+      ? getCalendarDaysUntilPaymentDate(nextPaymentDate)
+      : null;
+  const showTrialPaidSoonBanner =
+    subscription.payment_type === "trial" &&
+    daysUntilFirstPayment !== null &&
+    daysUntilFirstPayment >= 0 &&
+    daysUntilFirstPayment <= 3;
 
   return (
     <>
@@ -103,15 +115,26 @@ export default function SubscriptionDetailContent() {
         />
       </div>
 
-      <TextButton
-        size="sm"
-        className="absolute left-1/2 -translate-x-1/2 bottom-[108px]"
-        underline
-        onClick={handleDeleteConfirm}
-        disabled={isDeletePending}
-      >
-        구독 삭제하기
-      </TextButton>
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-10 flex flex-col gap-4 w-full px-6">
+        {showTrialPaidSoonBanner && daysUntilFirstPayment !== null && (
+          <div className="rounded-lg bg-red-50 py-4 w-full flex flex-col gap-1 items-center justify-center">
+            <span className="body-lg font-bold text-red-500">
+              {getTrialPaidSoonMessage(daysUntilFirstPayment)}
+            </span>
+            <span className="body-md text-gray-300">
+              원치않는다면 구독삭제 해주세요
+            </span>
+          </div>
+        )}
+        <TextButton
+          size="sm"
+          underline
+          onClick={handleDeleteConfirm}
+          disabled={isDeletePending}
+        >
+          구독 삭제하기
+        </TextButton>
+      </div>
     </>
   );
 }

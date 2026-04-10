@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import FeedbackPage from "@/app/components/feedback-page";
 import Header from "@/app/components/header";
 import LoadingScreen from "@/app/components/loading-screen";
@@ -13,11 +13,18 @@ import { useToast } from "@/app/hooks/useToast";
 import type { CommunityServiceValue } from "../_types";
 import { useCurrentUserQuery } from "@/query/users";
 import { useCreateCommunityPostMutation } from "@/query/community";
+import {
+  buildCommunityDetailPath,
+  buildCommunityNewPath,
+  getCommunityReturnTo,
+} from "../_utils/navigation";
 
 function CommunityNewPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { error } = useToast();
-  const { moveToLogin } = useLoginRedirect("/community/new");
+  const returnTo = getCommunityReturnTo(searchParams.get("returnTo"));
+  const { moveToLogin } = useLoginRedirect(buildCommunityNewPath(returnTo));
 
   const [selectedService, setSelectedService] =
     useState<CommunityServiceValue>("netflix");
@@ -69,7 +76,7 @@ function CommunityNewPageContent() {
         content: content.trim(),
       });
 
-      router.replace(`/community/${createdPost.id}`);
+      router.replace(buildCommunityDetailPath(createdPost.id, returnTo));
     } catch (createPostError) {
       console.error(createPostError);
       error("게시글 작성에 실패했어요.");
@@ -78,7 +85,12 @@ function CommunityNewPageContent() {
 
   return (
     <>
-      <Header variant="back" title="게시글 작성하기" />
+      <Header
+        variant="back"
+        title="게시글 작성하기"
+        onBack={() => router.replace(returnTo)}
+        fallbackPath={returnTo}
+      />
 
       <BrandTabs
         value={selectedService}
