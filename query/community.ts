@@ -17,6 +17,7 @@ import type {
 } from "@/app/community/_types";
 import type { SubscriptableBrandType } from "@/app/utils/brand/type";
 import {
+  COMMUNITY_STALE_TIME,
   communityKeys,
   createCommunityCommentsQueryOptions,
   createCommunityDetailQueryOptions,
@@ -214,15 +215,34 @@ export function useCommunityDetailQuery(
 //추천게시글조회
 export function useRecommendedCommunityPostsQuery(
   postId: string,
-  service?: SubscriptableBrandType
+  post: Pick<
+    CommunityDetailData,
+    "service" | "title" | "content" | "updatedAt"
+  > | null
 ) {
+  const ready = Boolean(postId && post?.service && post?.updatedAt);
+
   return useQuery({
-    ...createRecommendedCommunityPostsQueryOptions({
-      postId,
-      service: service!,
-      fetchRecommendedPosts: getRecommendedCommunityPosts,
-    }),
-    enabled: Boolean(postId && service),
+    ...(ready && post
+      ? createRecommendedCommunityPostsQueryOptions({
+          postId,
+          service: post.service,
+          sourceTitle: post.title,
+          sourceContent: post.content,
+          sourcePostUpdatedAt: post.updatedAt,
+          fetchRecommendedPosts: (p) =>
+            getRecommendedCommunityPosts({
+              postId: p.postId,
+              service: p.service,
+              limit: p.limit,
+            }),
+        })
+      : {
+          queryKey: [...communityKeys.recommendationList(postId), "pending"],
+          queryFn: () => Promise.resolve([] as CommunityListItemData[]),
+          staleTime: COMMUNITY_STALE_TIME,
+        }),
+    enabled: ready,
   });
 }
 

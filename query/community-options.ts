@@ -56,6 +56,9 @@ type CommunityCommentsFetcher = (
 type RecommendedCommunityPostsFetcher = (params: {
   postId: string;
   service: SubscriptableBrandType;
+  sourceTitle?: string;
+  sourceContent?: string;
+  sourcePostUpdatedAt: string;
   limit?: number;
 }) => Promise<CommunityListItemData[]>;
 
@@ -101,14 +104,23 @@ export function createCommunityCommentsQueryOptions(params: {
 export function createRecommendedCommunityPostsQueryOptions(params: {
   postId: string;
   service: SubscriptableBrandType;
+  sourceTitle?: string;
+  sourceContent?: string;
+  sourcePostUpdatedAt: string;
   fetchRecommendedPosts: RecommendedCommunityPostsFetcher;
 }) {
   return queryOptions({
-    queryKey: communityKeys.recommendedPosts(params.postId, params.service),
+    queryKey: [
+      ...communityKeys.recommendedPosts(params.postId, params.service),
+      params.sourcePostUpdatedAt,
+    ],
     queryFn: () =>
       params.fetchRecommendedPosts({
         postId: params.postId,
         service: params.service,
+        sourceTitle: params.sourceTitle,
+        sourceContent: params.sourceContent,
+        sourcePostUpdatedAt: params.sourcePostUpdatedAt,
       }),
     staleTime: COMMUNITY_STALE_TIME,
   });

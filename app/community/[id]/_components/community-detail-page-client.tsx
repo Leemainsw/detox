@@ -34,7 +34,7 @@ export default function CommunityDetailPageClient({
   const commentsQuery = useCommunityCommentsQuery(postId);
   const recommendedPostsQuery = useRecommendedCommunityPostsQuery(
     postId,
-    post?.service
+    post ?? null
   );
 
   const comments = commentsQuery.data ?? [];
