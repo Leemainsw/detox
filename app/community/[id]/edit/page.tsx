@@ -1,15 +1,23 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import FeedbackPage from "@/app/components/feedback-page";
 import Header from "@/app/components/header";
 import { useCurrentAuthUser } from "@/app/hooks/use-current-auth-user";
 import LoadingScreen from "@/app/components/loading-screen";
 import { useCommunityDetailQuery } from "@/query/community";
 import CommunityEditFormContent from "./_components/community-edit-form-content";
+import {
+  buildCommunityDetailPath,
+  getCommunityReturnTo,
+} from "../../_utils/navigation";
 
 function CommunityEditPageContent() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = getCommunityReturnTo(searchParams.get("returnTo"));
+  const detailPath = buildCommunityDetailPath(id, returnTo);
   const {
     currentUserId,
     isPending: isCurrentUserPending,
@@ -48,7 +56,7 @@ function CommunityEditPageContent() {
         title="수정 권한이 없어요."
         description="작성한 게시글만 수정할 수 있어요."
         buttonLabel="게시글로 가기"
-        buttonHref={`/community/${id}`}
+        buttonHref={detailPath}
       />
     );
   }
@@ -58,13 +66,15 @@ function CommunityEditPageContent() {
       <Header
         variant="back"
         title="게시글 수정하기"
-        fallbackPath={`/community/${id}`}
+        onBack={() => router.replace(detailPath)}
+        fallbackPath={detailPath}
       />
       <CommunityEditFormContent
         key={id}
         postId={id}
         currentUserId={currentUserId}
         initialPost={communityDetail}
+        returnTo={returnTo}
       />
     </>
   );

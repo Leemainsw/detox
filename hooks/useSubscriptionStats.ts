@@ -1,31 +1,19 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUserQuery } from "@/query/users";
-import { Database } from "@/types/supabase.types";
+import { useGetSubscriptionListQuery } from "@/query/subscription";
 import { supabase } from "@/lib/supabase";
-
-type SubscriptionRow = Database["public"]["Tables"]["subscription"]["Row"];
 
 export function useSubscriptionStats() {
   const { data: user } = useCurrentUserQuery();
+  const userId = user?.id ?? "";
 
   const {
     data: subscriptions = [],
     isLoading: isSubscriptionsLoading,
+    isFetching: isSubscriptionsFetching,
     isError: isSubscriptionsError,
-  } = useQuery<SubscriptionRow[]>({
-    queryKey: ["subscriptions", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from("subscription")
-        .select("*")
-        .eq("user_id", user.id);
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!user?.id,
-  });
+  } = useGetSubscriptionListQuery(userId);
 
   const subscriptionSummaries = useMemo(
     () =>
@@ -81,6 +69,7 @@ export function useSubscriptionStats() {
     subscriptionSummaries,
     serviceAvgMap,
     isSubscriptionsLoading,
+    isSubscriptionsFetching,
     isServiceAvgLoading,
     isError: isSubscriptionsError || isServiceAvgError,
   };

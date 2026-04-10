@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import TopFloatingButton from "@/app/components/floating-button/top-floating-button";
 import FeedbackState from "@/app/components/feedback-state";
@@ -15,6 +15,7 @@ import CommunityPostListSkeleton from "./community-post-list-skeleton";
 import type { CommunityServiceFilter } from "../_types";
 import { useSuspenseInfiniteCommunityListQuery } from "@/query/community";
 import { useCurrentUserQuery } from "@/query/users";
+import { getCommunityListPath } from "../_utils/navigation";
 
 interface CommunityListPageClientProps {
   initialService: CommunityServiceFilter;
@@ -22,8 +23,10 @@ interface CommunityListPageClientProps {
 
 function CommunityListContent({
   service,
+  returnTo,
 }: {
   service: CommunityServiceFilter;
+  returnTo: string;
 }) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const queryService = service === "all" ? undefined : service;
@@ -79,14 +82,14 @@ function CommunityListContent({
 
   return (
     <>
-      <CommunityList items={items} />
+      <CommunityList items={items} returnTo={returnTo} />
       {isFetchingNextPage && renderFetchMoreLoading()}
       <div ref={loadMoreRef} className="h-10" />
     </>
   );
 }
 
-function CommunityFloatingActions() {
+function CommunityFloatingActions({ returnTo }: { returnTo: string }) {
   const showTopFloatingButton = useTopFloatingButtonVisible();
   const {
     data: currentUser,
@@ -113,7 +116,9 @@ function CommunityFloatingActions() {
         >
           <TopFloatingButton />
         </div>
-        {showCreateFloatingButton ? <CommunityCreateFloatingButton /> : null}
+        {showCreateFloatingButton ? (
+          <CommunityCreateFloatingButton returnTo={returnTo} />
+        ) : null}
       </div>
     </div>
   );
@@ -125,10 +130,10 @@ export default function CommunityListPageClient({
   const [selectedService, setSelectedService] =
     useState<CommunityServiceFilter>(initialService);
   const resetKey = selectedService;
+  const currentListPath = getCommunityListPath(selectedService);
 
   const syncServiceToUrl = (service: CommunityServiceFilter) => {
-    const nextUrl =
-      service === "all" ? "/community" : `/community?service=${service}`;
+    const nextUrl = getCommunityListPath(service);
 
     window.history.replaceState(null, "", nextUrl);
   };
@@ -146,7 +151,10 @@ export default function CommunityListPageClient({
     <div className="bg-gray-100 pb-15 min-h-screen">
       <Header variant="text" leftText="커뮤니티" hasNotification />
 
-      <main>
+      <main aria-labelledby="community-page-title">
+        <h1 id="community-page-title" className="sr-only">
+          커뮤니티
+        </h1>
         <BrandTabs value={selectedService} onChange={handleChangeService} />
 
         <section className="px-6">
@@ -158,14 +166,17 @@ export default function CommunityListPageClient({
                     <CommunityPostListSkeleton count={4} className="pt-6" />
                   }
                 >
-                  <CommunityListContent service={selectedService} />
+                  <CommunityListContent
+                    service={selectedService}
+                    returnTo={currentListPath}
+                  />
                 </Suspense>
               </CommunityListErrorBoundary>
             )}
           </QueryErrorResetBoundary>
         </section>
 
-        <CommunityFloatingActions />
+        <CommunityFloatingActions returnTo={currentListPath} />
       </main>
 
       <BottomNav />

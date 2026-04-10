@@ -11,17 +11,20 @@ import type {
   CommunityServiceValue,
 } from "@/app/community/_types";
 import { useUpdateCommunityPostMutation } from "@/query/community";
+import { buildCommunityDetailPath } from "@/app/community/_utils/navigation";
 
 interface CommunityEditFormContentProps {
   postId: string;
   currentUserId: string;
   initialPost: CommunityDetailData;
+  returnTo: string;
 }
 
 export default function CommunityEditFormContent({
   postId,
   currentUserId,
   initialPost,
+  returnTo,
 }: CommunityEditFormContentProps) {
   const router = useRouter();
   const { success, error } = useToast();
@@ -48,7 +51,7 @@ export default function CommunityEditFormContent({
       });
 
       success("게시글을 수정했어요.");
-      router.back();
+      router.replace(buildCommunityDetailPath(postId, returnTo));
     } catch (updatePostError) {
       console.error(updatePostError);
       error("게시글 수정에 실패했어요.");
