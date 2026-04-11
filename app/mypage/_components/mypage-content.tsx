@@ -18,12 +18,31 @@ import {
 } from "@/query/users";
 import { uploadProfileImage } from "@/services/storage";
 import { useToast } from "@/app/hooks/useToast";
+import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 interface Props {
   userId: string;
   onLogoutStateChange?: (isLoggingOut: boolean) => void;
 }
+
+const authProviderMeta = {
+  google: {
+    label: "구글",
+    image: "/images/login/google.png",
+    badgeClassName: "bg-white border border-gray-100",
+  },
+  kakao: {
+    label: "카카오",
+    image: "/images/login/kakao.png",
+    badgeClassName: "bg-[#FFE400]",
+  },
+  "custom:naver": {
+    label: "네이버",
+    image: "/images/login/naver.png",
+    badgeClassName: "bg-[#00CB4B]",
+  },
+} as const;
 
 export default function MypageContent({ userId, onLogoutStateChange }: Props) {
   const router = useRouter();
@@ -138,6 +157,11 @@ export default function MypageContent({ userId, onLogoutStateChange }: Props) {
 
   const displayNickname = userProfile?.nickname ?? "사용자";
   const email = userProfile?.email ?? "이메일 정보가 없어요.";
+  const authProvider = userProfile?.provider
+    ? (authProviderMeta[
+        userProfile.provider as keyof typeof authProviderMeta
+      ] ?? null)
+    : null;
 
   return (
     <main className="w-full min-h-screen flex flex-col items-center relative">
@@ -195,7 +219,25 @@ export default function MypageContent({ userId, onLogoutStateChange }: Props) {
           </div>
           <div className="flex flex-col gap-1 items-center">
             <span className="body-lg font-bold">{displayNickname}</span>
-            <span className="body-md font-normal text-gray-300">{email}</span>
+            <div className="flex items-center gap-2 body-md font-normal text-gray-300">
+              {authProvider ? (
+                <span
+                  className={cn(
+                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+                    authProvider.badgeClassName
+                  )}
+                >
+                  <Image
+                    src={authProvider.image}
+                    alt={`${authProvider.label} 로그인`}
+                    width={24}
+                    height={24}
+                    className="shrink-0"
+                  />
+                </span>
+              ) : null}
+              <span>{email}</span>
+            </div>
           </div>
         </div>
 
